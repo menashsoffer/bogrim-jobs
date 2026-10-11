@@ -67,7 +67,9 @@ export const travelSection = (job) => {
       if (!Number.isFinite(minutes) || minutes < 0) {
         transit.value = record.transitMinutes == null ? '' : String(record.transitMinutes);
         error.hidden = false;
-        error.textContent = 'הזינו מספר דקות שאינו שלילי';
+        error.textContent = Number.isFinite(minutes)
+          ? 'הזינו מספר דקות שאינו שלילי'
+          : 'זה לא מספר. הזינו דקות בספרות בלבד, למשל 40';
         return;
       }
       record.transitMinutes = minutes;

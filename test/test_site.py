@@ -251,7 +251,7 @@ def main():
             page.locator("#transit-minutes").evaluate("(node) => { node.value = '-3'; node.dispatchEvent(new Event('change', { bubbles: true })); }")
             check("אינו שלילי" in page.locator("#transit-error").inner_text(), "negative transit time")
             page.locator("#transit-minutes").evaluate("(node) => { node.value = 'שעה'; node.dispatchEvent(new Event('change', { bubbles: true })); }")
-            check("אינו שלילי" in page.locator("#transit-error").inner_text(), "non-numeric transit time")
+            check("זה לא מספר" in page.locator("#transit-error").inner_text(), "non-numeric transit time")
             check(page.evaluate("() => { const job = window.__app.state.jobs[location.hash.slice(5)]; return !job || job.transitMinutes == null; }"), "invalid transit was stored")
             page.locator("#transit-minutes").fill("42")
             page.locator("#transit-minutes").dispatch_event("change")
