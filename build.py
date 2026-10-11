@@ -87,6 +87,7 @@ CATEGORY_FIELDS = (
 )
 
 SOURCE_URL = "https://www.bogrim-muni.com/jobs"
+PUBLIC_BASE_URL = "https://menashsoffer.github.io/bogrim-jobs/"
 
 
 def clean_text(value):
@@ -276,9 +277,21 @@ def write_site(dest, jobs, localities, include_contacts):
             raise SystemExit("refusing to write data.json that contains emails or phones")
     with open(os.path.join(dest, "data.json"), "w", encoding="utf-8") as handle:
         handle.write(blob)
+    base = PUBLIC_BASE_URL if PUBLIC_BASE_URL.endswith("/") else PUBLIC_BASE_URL + "/"
     for name in sorted(os.listdir(SRC)):
-        if os.path.splitext(name)[1] in {".html", ".js", ".css", ".svg", ".png"}:
-            shutil.copy(os.path.join(SRC, name), os.path.join(dest, name))
+        if os.path.splitext(name)[1] not in {".html", ".js", ".css", ".svg", ".png"}:
+            continue
+        source_path = os.path.join(SRC, name)
+        dest_path = os.path.join(dest, name)
+        if name == "index.html":
+            with open(source_path, encoding="utf-8") as handle:
+                page = handle.read().replace("__PUBLIC_BASE_URL__", base)
+            if "__PUBLIC_BASE_URL__" in page or PUBLIC_BASE_URL not in page:
+                raise SystemExit("index.html did not receive PUBLIC_BASE_URL")
+            with open(dest_path, "w", encoding="utf-8") as handle:
+                handle.write(page)
+            continue
+        shutil.copy(source_path, dest_path)
     leaflet_dest = os.path.join(dest, "vendor", "leaflet")
     if os.path.isdir(leaflet_dest):
         shutil.rmtree(leaflet_dest)
