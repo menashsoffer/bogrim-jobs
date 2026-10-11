@@ -56,7 +56,9 @@ export const exportCsv = () => {
   toast('קובץ ה-CSV ירד');
 };
 export const exportJson = () => {
-  const payload = { app: 'bogrim-jobs', version: 1, exportedAt: new Date().toISOString(), state: store.state };
+  const state = { ...store.state };
+  delete state.routingKey;
+  const payload = { app: 'bogrim-jobs', version: 1, exportedAt: new Date().toISOString(), state };
   download('bogrim-jobs-backup.json', JSON.stringify(payload, null, 2), 'application/json');
   toast('קובץ ה-JSON ירד');
 };

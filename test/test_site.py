@@ -287,6 +287,7 @@ def main():
             json_download.value.save_as(str(json_path))
             backup = json.loads(json_path.read_text(encoding="utf-8"))
             check(backup["state"]["jobs"], "export was empty")
+            check("routingKey" not in backup["state"], "export included the routing key")
 
             with page.expect_download() as csv_download:
                 page.click("#export-csv")
