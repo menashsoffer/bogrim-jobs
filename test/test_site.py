@@ -4,7 +4,7 @@ import json
 
 from playwright.sync_api import sync_playwright
 
-from site_harness import DIST, ROOT, TINY_PNG, chrome_path, parse_csv, search_count, serve
+from site_harness import DIST, ROOT, TINY_PNG, chrome_path, parse_csv, search_count, serve, shown_count, wait_count
 
 
 def main():
@@ -55,19 +55,6 @@ def main():
     def check(condition, message):
         if not condition:
             raise AssertionError(message)
-
-    def shown_count(page):
-        text = page.locator("#result-count").inner_text()
-        return int(text.replace("מוצגות", "").replace("משרות", "").strip())
-
-    def wait_count(page, count):
-        page.wait_for_function(
-            """(expected) => {
-              const match = (document.getElementById('result-count').textContent || '').match(/מוצגות\\s+(\\d+)/);
-              return match !== null && Number(match[1]) === expected;
-            }""",
-            arg=count,
-        )
 
     try:
         with sync_playwright() as playwright:
@@ -260,6 +247,16 @@ def main():
             page.wait_for_function("() => window.__app.state.home && window.__app.state.home.label.includes('רחובות')")
             page.locator('#nav [data-view="list"]').click()
             check("קו אווירי (הערכה)" in page.locator(".travel-line").first.inner_text(), "air distance label")
+            page.locator("button.card-open").first.click()
+            page.locator("#transit-minutes").evaluate("(node) => { node.value = '-3'; node.dispatchEvent(new Event('change', { bubbles: true })); }")
+            check("אינו שלילי" in page.locator("#transit-error").inner_text(), "negative transit time")
+            page.locator("#transit-minutes").evaluate("(node) => { node.value = 'שעה'; node.dispatchEvent(new Event('change', { bubbles: true })); }")
+            check("אינו שלילי" in page.locator("#transit-error").inner_text(), "non-numeric transit time")
+            check(page.evaluate("() => { const job = window.__app.state.jobs[location.hash.slice(5)]; return !job || job.transitMinutes == null; }"), "invalid transit was stored")
+            page.locator("#transit-minutes").fill("42")
+            page.locator("#transit-minutes").dispatch_event("change")
+            page.wait_for_function("() => window.__app.state.jobs[location.hash.slice(5)].transitMinutes === 42")
+            page.keyboard.press("Escape")
 
             page.locator('#nav [data-view="settings"]').click()
             phase["nominatim"] = "fail"

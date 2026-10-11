@@ -50,16 +50,28 @@ export const travelSection = (job) => {
     externalLink(moovit, 'Moovit'),
     externalLink(waze, 'Waze'),
   ]));
+  const savedMinutes = peekJob(job.id).transitMinutes;
   const transit = el('input', {
     id: 'transit-minutes',
-    type: 'number',
-    min: '0',
-    step: '1',
-    value: peekJob(job.id).transitMinutes == null ? '' : String(peekJob(job.id).transitMinutes),
+    type: 'text',
+    inputmode: 'numeric',
+    value: savedMinutes == null ? '' : String(savedMinutes),
   });
+  const error = el('p', { id: 'transit-error', class: 'alert', role: 'alert', hidden: true });
   transit.addEventListener('change', () => {
+    const raw = transit.value.trim();
     const record = ensureJob(job.id);
-    record.transitMinutes = transit.value === '' ? null : Number(transit.value);
+    if (raw !== '') {
+      const minutes = Number(raw);
+      if (!Number.isFinite(minutes) || minutes < 0) {
+        transit.value = record.transitMinutes == null ? '' : String(record.transitMinutes);
+        error.hidden = false;
+        error.textContent = 'הזינו מספר דקות שאינו שלילי';
+        return;
+      }
+      record.transitMinutes = minutes;
+    } else record.transitMinutes = null;
+    error.hidden = true;
     save();
     refreshDrawer('transit-minutes');
     renderResults();
@@ -67,6 +79,7 @@ export const travelSection = (job) => {
   section.append(el('label', { class: 'field' }, [
     el('span', { class: 'field-label', text: 'זמן תחבורה ציבורית שמצאתי (דקות)' }),
     transit,
+    error,
   ]));
   section.append(el('p', { class: 'hint', text: 'בלי מסלול מחושב מוצג קו אווירי (הערכה). חישוב המסלול נעשה רק בהגדרות, אחרי אישור.' }));
   return section;

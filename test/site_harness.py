@@ -78,6 +78,21 @@ def parse_csv(text):
     return rows
 
 
+def shown_count(page):
+    text = page.locator("#result-count").inner_text()
+    return int(text.replace("מוצגות", "").replace("משרות", "").strip())
+
+
+def wait_count(page, count):
+    page.wait_for_function(
+        """(expected) => {
+          const match = (document.getElementById('result-count').textContent || '').match(/מוצגות\\s+(\\d+)/);
+          return match !== null && Number(match[1]) === expected;
+        }""",
+        arg=count,
+    )
+
+
 def search_count(jobs, query):
     needle = query.lower()
     found = 0
