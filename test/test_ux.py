@@ -60,6 +60,61 @@ def main():
             page.wait_for_function("() => !document.getElementById('drawer')")
             kept = page.evaluate("() => window.scrollY")
             check(before > 400 and abs(kept - before) < 48, f"scroll {before} became {kept}")
+
+            context = browser.new_context(locale="he-IL", viewport={"width": 390, "height": 844})
+            first = context.new_page()
+            second = context.new_page()
+            first.set_default_timeout(20000)
+            second.set_default_timeout(20000)
+            first.goto(base)
+            second.goto(base)
+            first.wait_for_function("() => window.__app && window.__app.jobs.length === 211")
+            second.wait_for_function("() => window.__app && window.__app.jobs.length === 211")
+            remote_id = second.evaluate(
+                """() => {
+                  const id = window.__app.jobs[0].id;
+                  const state = JSON.parse(JSON.stringify(window.__app.state));
+                  state.jobs[id] = {
+                    favorite: false, status: 'לא נבדק', notes: '',
+                    ratings: { role: 5 }, criterionNotes: {}, callLog: [],
+                  };
+                  localStorage.setItem('bogrim-jobs.v1', JSON.stringify(state));
+                  return id;
+                }"""
+            )
+            first.wait_for_function(
+                "(id) => window.__app.state.jobs[id] && window.__app.state.jobs[id].ratings.role === 5",
+                arg=remote_id,
+            )
+            other_id = first.evaluate("() => window.__app.jobs[1].id")
+            first.evaluate(
+                """(id) => {
+                  const state = JSON.parse(localStorage.getItem('bogrim-jobs.v1'));
+                  state.jobs[id] = {
+                    favorite: false, status: 'לא נבדק', notes: '',
+                    ratings: { conditions: 3 }, criterionNotes: {}, callLog: [],
+                  };
+                  localStorage.setItem('bogrim-jobs.v1', JSON.stringify(state));
+                }""",
+                other_id,
+            )
+            first.locator("button.card-open").nth(2).click()
+            first.locator("#star-role-5").click()
+            first.wait_for_function(
+                """(ids) => {
+                  const raw = localStorage.getItem('bogrim-jobs.v1');
+                  if (!raw) return false;
+                  const jobs = JSON.parse(raw).jobs;
+                  const third = Object.entries(jobs).some(([id, job]) => (
+                    id !== ids.remote && id !== ids.other && job.ratings && job.ratings.role === 5
+                  ));
+                  return third
+                    && jobs[ids.remote] && jobs[ids.remote].ratings.role === 5
+                    && jobs[ids.other] && jobs[ids.other].ratings.conditions === 3;
+                }""",
+                arg={"remote": remote_id, "other": other_id},
+            )
+            context.close()
             browser.close()
     finally:
         server.shutdown()

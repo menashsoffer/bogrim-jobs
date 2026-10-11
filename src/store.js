@@ -53,7 +53,9 @@ export const store = {
   saveTimer: 0,
   ignoreHistory: false,
   sawPop: false,
+  lastSaved: '',
 };
+const dirtyJobIds = new Set();
 export const homeKey = (home) => (home ? `${home.lat.toFixed(5)},${home.lon.toFixed(5)}` : '');
 export const normName = (value) => String(value || '').replace(/[\s\-–־'"״׳"().,]/g, '').toLowerCase();
 export const uid = () => (crypto.randomUUID ? crypto.randomUUID() : `id-${Date.now()}-${Math.random().toString(16).slice(2)}`);
@@ -85,6 +87,7 @@ export const ensureJob = (id) => {
   if (!current.criterionNotes) current.criterionNotes = {};
   if (!Array.isArray(current.callLog)) current.callLog = [];
   if (!STATUSES.includes(current.status)) current.status = STATUSES[0];
+  dirtyJobIds.add(id);
   return current;
 };
 export const sanitizeRoutes = (routes) => {
@@ -184,10 +187,56 @@ export const loadState = () => {
     return defaultState();
   }
 };
-export const saveNow = () => {
+const readStored = () => {
+  try {
+    return localStorage.getItem(STORAGE_KEY);
+  } catch (error) {
+    return null;
+  }
+};
+const absorbRemoteJobs = () => {
+  const raw = readStored();
+  if (!raw || raw === store.lastSaved) return;
+  let disk;
+  try {
+    disk = sanitizeState(JSON.parse(raw));
+  } catch (error) {
+    return;
+  }
+  Object.entries(disk.jobs).forEach(([id, job]) => {
+    if (!dirtyJobIds.has(id)) store.state.jobs[id] = job;
+  });
+  Object.keys(store.state.jobs).forEach((id) => {
+    if (!dirtyJobIds.has(id) && !disk.jobs[id]) delete store.state.jobs[id];
+  });
+};
+export const takeRemoteState = () => {
+  const raw = readStored();
+  if (raw === store.lastSaved) return false;
+  const kept = new Map();
+  dirtyJobIds.forEach((id) => {
+    if (store.state.jobs[id]) kept.set(id, store.state.jobs[id]);
+  });
+  try {
+    store.state = raw ? sanitizeState(JSON.parse(raw)) : defaultState();
+  } catch (error) {
+    return false;
+  }
+  kept.forEach((job, id) => { store.state.jobs[id] = job; });
+  dirtyJobIds.forEach((id) => {
+    if (!kept.has(id)) delete store.state.jobs[id];
+  });
+  store.lastSaved = raw || '';
+  return true;
+};
+export const saveNow = (mode) => {
   clearTimeout(store.saveTimer);
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(store.state));
+    if (!mode || !mode.replace) absorbRemoteJobs();
+    const raw = JSON.stringify(store.state);
+    localStorage.setItem(STORAGE_KEY, raw);
+    store.lastSaved = raw;
+    dirtyJobIds.clear();
   } catch (error) {
     toast('השמירה בדפדפן נכשלה');
   }

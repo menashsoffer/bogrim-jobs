@@ -5,8 +5,8 @@ import { closeFilterSheet, renderListShell, renderResults, updateCompareCount } 
 import { formatDuration } from './dom.js';
 import { moovitAppUrl, moovitWebUrl } from './moovit.js';
 import { airKm, scoreJob, travelMinutes, travelSummary } from './score.js';
-import { showView } from './shell.js';
-import { loadState, saveNow, store } from './store.js';
+import { refreshAfterStorage, showView } from './shell.js';
+import { STORAGE_KEY, loadState, saveNow, store, takeRemoteState } from './store.js';
 
 const syncFromLocation = () => {
   store.ignoreHistory = true;
@@ -36,6 +36,7 @@ export const boot = async () => {
     store.authorityPoint.set(job.authority, job);
   });
   store.state = loadState();
+  try { store.lastSaved = localStorage.getItem(STORAGE_KEY) || ''; } catch (error) { store.lastSaved = ''; }
   store.state.compareIds = store.state.compareIds.filter((id) => store.jobsById.has(id));
   const count = document.getElementById('job-count');
   if (count) count.textContent = `${store.data.meta && store.data.meta.count ? store.data.meta.count : store.jobs.length} משרות`;
@@ -76,6 +77,12 @@ export const boot = async () => {
     syncFromLocation();
   });
   window.addEventListener('pagehide', () => saveNow());
+  window.addEventListener('storage', (event) => {
+    if (event.key !== STORAGE_KEY) return;
+    if (!takeRemoteState()) return;
+    store.state.compareIds = store.state.compareIds.filter((id) => store.jobsById.has(id));
+    refreshAfterStorage();
+  });
   renderListShell();
   renderResults();
   updateCompareCount();

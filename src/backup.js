@@ -89,7 +89,7 @@ export const importText = (text) => {
   if (!window.confirm('ייבוא יחליף את הנתונים השמורים בדפדפן. להמשיך?')) return;
   store.state = sanitizeState(incoming);
   store.state.compareIds = store.state.compareIds.filter((id) => store.jobsById.has(id));
-  saveNow();
+  saveNow({ replace: true });
   rebuildShells();
   toast('הנתונים יובאו');
 };
