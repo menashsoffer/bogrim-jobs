@@ -11,6 +11,16 @@ export const renderCompare = () => {
   view.replaceChildren(el('div', { class: 'panel' }, [
     el('h2', { text: 'השוואה' }),
     el('p', { class: 'hint', text: chosen.length < 2 ? 'בחרו לפחות 2 משרות להשוואה, ועד 4.' : 'עד 4 משרות זו לצד זו.' }),
+    chosen.length < 2 ? el('button', {
+      type: 'button',
+      class: 'btn',
+      id: 'compare-back',
+      text: 'לרשימת המשרות',
+      on: { click: () => {
+        const tab = document.querySelector('#nav [data-view="list"]');
+        if (tab) tab.click();
+      }},
+    }) : null,
   ]));
   if (!chosen.length) {
     view.append(el('div', { class: 'empty-state' }, [

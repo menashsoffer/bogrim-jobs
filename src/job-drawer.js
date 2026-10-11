@@ -2,7 +2,7 @@ import { STATUSES, el, formatStamp, labelOrUnknown, safeHttps, toast } from './d
 import { backIf, pushJob } from './history.js';
 import { icon } from './icons.js';
 import { contactsSection, factsSection, travelSection } from './drawer-sections.js';
-import { jobPlace, noteListDirty, renderResults } from './job-list.js';
+import { jobPlace, noteListDirty, renderResults, toggleCompare } from './job-list.js';
 import { criterionValue, scoreNode } from './score.js';
 import { ensureJob, peekJob, save, store, uid } from './store.js';
 
@@ -80,6 +80,19 @@ export const paintDrawer = () => {
           noteListDirty();
         }},
       }, [icon(user.favorite ? 'heart-fill' : 'heart'), 'מועדף']),
+      el('button', {
+        type: 'button',
+        class: 'btn',
+        id: 'drawer-compare',
+        'aria-pressed': store.state.compareIds.includes(job.id) ? 'true' : 'false',
+        text: '＋ להשוואה',
+        on: { click: () => {
+          const next = !store.state.compareIds.includes(job.id);
+          if (!toggleCompare(job.id, next)) return;
+          noteListDirty();
+          refreshDrawer('drawer-compare');
+        }},
+      }),
     ]),
     el('h2', { id: 'drawer-title', text: job.title || job.role }),
     el('p', { class: 'muted', text: `${job.authority} · ${labelOrUnknown(job.district)} · ${labelOrUnknown(job.authorityType)}` }),
