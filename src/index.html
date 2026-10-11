@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: https://tile.openstreetmap.org; connect-src 'self' https://nominatim.openstreetmap.org https://routing.openstreetmap.de https://api.openrouteservice.org; object-src 'none'; base-uri 'self'; form-action 'none'">
+  <title>בוחר המשרות – השוואת משרות לבוגרי הצוערים</title>
+  <meta name="description" content="כלי אישי להשוואה ודירוג של 211 משרות השמה לבוגרי תכנית הצוערים לשלטון המקומי. הדירוגים נשמרים רק בדפדפן.">
+  <meta property="og:title" content="בוחר המשרות">
+  <meta property="og:description" content="כלי אישי להשוואה ודירוג של 211 משרות השמה לבוגרי תכנית הצוערים לשלטון המקומי. הדירוגים נשמרים רק בדפדפן.">
+  <meta property="og:url" content="__PUBLIC_BASE_URL__">
+  <meta property="og:image" content="__PUBLIC_BASE_URL__og-image.png">
+  <meta property="og:image:alt" content="בוחר המשרות — השוואת משרות לבוגרי הצוערים">
+  <meta property="og:locale" content="he_IL">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles-media.css">
+</head>
+<body>
+  <a class="skip" href="#main">דילוג לתוכן</a>
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">ב</span>
+        <div>
+          <h1>בוחר המשרות</h1>
+          <p class="brand-count" id="job-count">211 משרות</p>
+        </div>
+      </div>
+      <nav class="nav" id="nav" aria-label="ראשי">
+        <button type="button" data-view="list" class="is-active" aria-current="page">משרות</button>
+        <button type="button" data-view="compare">השוואה <span id="compare-count">0</span></button>
+        <button type="button" data-view="map">מפה</button>
+        <button type="button" data-view="settings">הגדרות</button>
+        <button type="button" data-view="privacy">פרטיות</button>
+        <button type="button" data-view="help">עזרה</button>
+      </nav>
+    </div>
+    <p class="source-banner">הנתונים מתוך אתר <a href="https://www.bogrim-muni.com/jobs" rel="noopener noreferrer">בוגרים לשלטון המקומי</a>. זהו כלי אישי נפרד — בלי העיצוב ובלי הסמל של אתר המקור.</p>
+  </header>
+  <main id="main" tabindex="-1">
+    <section id="view-list" aria-label="רשימת משרות">
+      <p id="boot-status">טוען משרות…</p>
+    </section>
+    <section id="view-compare" hidden aria-label="השוואה"></section>
+    <section id="view-map" hidden aria-label="מפה">
+      <p class="notice">פתיחת המפה טוענת אריחים מ-OpenStreetMap. שאר האתר עובד גם בלי המפה.</p>
+      <div id="map"></div>
+    </section>
+    <section id="view-settings" hidden aria-label="הגדרות"></section>
+    <section id="view-privacy" hidden aria-label="פרטיות">
+      <article class="panel prose">
+        <h2>פרטיות</h2>
+        <p>האתר הזה הוא דפים סטטיים שנפתחים בדפדפן שלכם. אין כאן שרת שלנו, אין חשבון, והדירוגים לא נשלחים אלינו.</p>
+        <h3>מה נשמר במכשיר</h3>
+        <p>ב-<span dir="ltr">localStorage</span> נשמרים רק הנתונים שלכם: דירוגים, הערות לכל קריטריון, הערות כלליות, יומן שיחות, סטטוס, מועדפים, קריטריונים ומשקלים, סינונים ומיון, כתובת הבית והקואורדינטות שלה, זמני נסיעה שחישבתם או שהקלדתם, ומפתח ניתוב אם הזנתם אחד.</p>
+        <h3>מתי פונים לשירות חיצוני</h3>
+        <ul>
+          <li>איתור כתובת — רק אחרי לחיצה על «אתר כתובת», ורק אם היישוב לא נמצא ברשימה המקומית. הבקשה נשלחת אל Nominatim של OpenStreetMap, והתוצאה נשמרת במכשיר.</li>
+          <li>מסלול ברכב, באופניים או בהליכה — רק אחרי לחיצה על «חשב זמני נסיעה» ואישור. נשלחות קואורדינטות אל OSRM, או אל openrouteservice אם הוזן מפתח.</li>
+          <li>מפה — אריחי OpenStreetMap נטענים רק כשפותחים את לשונית «מפה».</li>
+          <li>מיקום המכשיר — רק אחרי לחיצה על «המיקום שלי».</li>
+          <li>Google Maps, Waze, Moovit ומודעת המקור נפתחים רק בלחיצה, אצל הספק עצמו.</li>
+        </ul>
+        <p>בטעינת העמוד לא נשלחת בקשה לשום שירות חיצוני.</p>
+        <p>כפתור «נקה נתונים» בהגדרות מוחק את כל מה שנשמר בדפדפן הזה.</p>
+      </article>
+    </section>
+    <section id="view-help" hidden aria-label="עזרה">
+      <article class="panel prose">
+        <h2>עזרה</h2>
+        <ol>
+          <li>בהגדרות, מלאו «כתובת הבית» ולחצו «אתר כתובת». יישוב מהרשימה המקומית נקבע בלי רשת.</li>
+          <li>לחצו «חשב זמני נסיעה» אם אתם רוצים דקות נסיעה אמיתיות. בלי זה מוצג «קו אווירי (הערכה)».</li>
+          <li>בחרו אם ציון «מרחק מהבית» מחושב לפי רכב, אופניים, הליכה או תחבורה ציבורית. לתחבורה ציבורית פותחים את Google Maps או Moovit ומקלידים את הדקות שמצאתם.</li>
+          <li>דרגו כל משרה. קריטריון בלי דירוג לא נספר כאפס — הציון הוא ממוצע משוקלל של מה שדורג, ומוצג «דורג 2/5» וסימון «חלקי».</li>
+          <li>סננו, מיינו, סמנו עד 4 משרות להשוואה, וגבו את הנתונים בקובץ JSON.</li>
+        </ol>
+        <p>אין בנתונים שכר, היקף משרה, דדליין או דרישות סף — הם לא פורסמו במקור, ולכן הם לא מופיעים כאן. פרטי אנשי קשר אישיים לא כלולים; «למודעה המקורית» מוביל לאתר המקור.</p>
+      </article>
+    </section>
+  </main>
+  <footer class="site-footer">
+    <p>מקור הרשימה: <a href="https://www.bogrim-muni.com/jobs" rel="noopener noreferrer">bogrim-muni.com/jobs</a>. הכלים כאן לא מפעילים את אתר המקור ולא מייצגים אותו.</p>
+  </footer>
+  <div id="drawer-root"></div>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <input id="import-file" type="file" accept="application/json,.json" hidden>
+  <noscript><p class="notice">להצגת המשרות צריך JavaScript מקומי. אין טעינה של ספריות משרת חיצוני.</p></noscript>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
