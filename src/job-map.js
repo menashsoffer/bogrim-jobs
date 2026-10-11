@@ -76,7 +76,7 @@ export const ensureMap = async () => {
       store.map = leaflet.map(host, { zoomControl: true });
       leaflet.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
-        attribution: '&copy; OpenStreetMap',
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
       }).addTo(store.map);
       store.map.setView([31.4, 34.9], 8);
     }
