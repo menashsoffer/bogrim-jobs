@@ -313,7 +313,19 @@ export const renderListShell = () => {
         el('label', { class: 'field', style: null }, [el('span', { class: 'field-label', text: 'מיון' }), sort]),
         dirButton,
       ]),
-      el('p', { id: 'home-hint', class: 'hint', hidden: Boolean(store.state.home), text: 'כדי לראות מרחק, הגדירו כתובת בית בהגדרות.' }),
+      el('button', {
+        type: 'button',
+        id: 'home-hint',
+        class: 'btn',
+        hidden: Boolean(store.state.home),
+        text: 'הגדרת כתובת בית',
+        on: { click: () => {
+          const tab = document.querySelector('#nav [data-view="settings"]');
+          if (tab) tab.click();
+          const address = document.getElementById('home-address');
+          if (address) address.focus();
+        }},
+      }),
       el('p', { id: 'limit-alert', class: 'alert', role: 'alert', hidden: true }),
       el('div', { id: 'results', class: 'results' }),
     ]),

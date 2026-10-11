@@ -61,6 +61,15 @@ def main():
             kept = page.evaluate("() => window.scrollY")
             check(before > 400 and abs(kept - before) < 48, f"scroll {before} became {kept}")
 
+            page.locator("button.card-open").first.click()
+            page.locator("#drawer").wait_for()
+            check("הגדירו כתובת בית לציון אוטומטי" in page.locator("#drawer").inner_text(), "travel criterion lacks a home step")
+            page.locator("#drawer-close").click()
+            page.wait_for_function("() => !document.getElementById('drawer')")
+            page.locator("#home-hint").click()
+            page.locator("#home-address").wait_for()
+            check(page.evaluate("() => document.activeElement && document.activeElement.id === 'home-address'"), "home address was not focused")
+
             context = browser.new_context(locale="he-IL", viewport={"width": 390, "height": 844})
             first = context.new_page()
             second = context.new_page()

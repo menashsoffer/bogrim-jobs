@@ -179,7 +179,9 @@ export const paintDrawer = () => {
       }));
       control = group;
     } else if (criterion.type === 'travel') {
-      const text = result.value == null ? 'לא דורג' : `ציון אוטומטי: ${result.value} מתוך 5`;
+      let text = 'לא דורג';
+      if (!store.state.home) text = 'הגדירו כתובת בית לציון אוטומטי';
+      else if (result.value != null) text = `ציון אוטומטי: ${result.value} מתוך 5`;
       control = el('p', { text });
     }
     const notes = el('textarea', {
