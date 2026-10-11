@@ -1,4 +1,6 @@
 import { STATUSES, UNKNOWN, el, labelOrUnknown, showLimit, statusClass, toast } from './dom.js';
+import { distanceText, scoreText, timeText } from './filter-scale.js';
+import { mountSteppedRange, refreshFilterScales } from './filter-controls.js';
 import { backIf, filtersFromHash, pushFilters } from './history.js';
 import { DOMAIN_ICON, STATUS_ICON, TYPE_ICON, icon } from './icons.js';
 import { openJob, refreshDrawer } from './job-drawer.js';
@@ -39,7 +41,10 @@ export const toggleCompare = (id, on) => {
 const activeFilterCount = () => {
   const current = store.state.filters;
   const defaults = defaultFilters();
-  return Object.keys(defaults).filter((key) => String(current[key] ?? '') !== String(defaults[key] ?? '')).length;
+  return Object.keys(defaults).filter((key) => {
+    if (key === 'includeUnrated' && (current.minScore === '' || current.minScore == null)) return false;
+    return String(current[key] ?? '') !== String(defaults[key] ?? '');
+  }).length;
 };
 const paintFilterToggle = () => {
   const toggle = document.getElementById('filter-toggle');
@@ -61,6 +66,7 @@ export const renderResults = () => {
   const host = document.getElementById('results');
   const count = document.getElementById('result-count');
   if (!host) return;
+  refreshFilterScales();
   const list = visibleJobs();
   if (count) count.textContent = `מוצגות ${list.length} משרות`;
   paintFilterToggle();
@@ -69,10 +75,11 @@ export const renderResults = () => {
   host.replaceChildren();
   if (!list.length) {
     const minScore = store.state.filters.minScore;
+    const hideUnrated = minScore !== '' && minScore != null && !store.state.filters.includeUnrated;
     host.append(el('div', { class: 'empty-state' }, [
       el('div', { class: 'art-slot', 'data-art': 'empty-results', 'aria-hidden': 'true' }),
       el('p', { class: 'empty', text: 'אין משרות שמתאימות לסינון' }),
-      minScore !== '' && minScore != null ? el('p', { class: 'hint', text: 'רק משרות שדירגת מקבלות ציון' }) : null,
+      hideUnrated ? el('p', { class: 'hint', text: 'משרות ללא ציון מוסתרות' }) : null,
       el('button', {
         type: 'button',
         class: 'btn',
@@ -174,39 +181,6 @@ export const renderListShell = () => {
     });
     return el('label', { class: 'field' }, [el('span', { class: 'field-label', text: label }), control]);
   };
-  const numberField = (id, label, current, assign) => {
-    const control = el('input', { id, type: 'number', min: '0', step: '1', value: current });
-    control.addEventListener('change', () => {
-      assign(control.value);
-      save();
-      renderResults();
-    });
-    return el('label', { class: 'field' }, [el('span', { class: 'field-label', text: label }), control]);
-  };
-  const rangeField = (id, label, max, step, unit, current, assign) => {
-    const control = el('input', {
-      id,
-      type: 'range',
-      min: '0',
-      max: String(max),
-      step: String(step),
-      value: current === '' || current == null ? String(max) : String(current),
-    });
-    const readout = el('span', { class: 'range-readout' });
-    const paint = () => {
-      const number = Number(control.value);
-      readout.textContent = number >= max ? 'בלי הגבלה' : `עד ${number} ${unit}`;
-    };
-    paint();
-    control.addEventListener('input', () => {
-      paint();
-      const number = Number(control.value);
-      assign(number >= max ? '' : String(number));
-      save();
-      renderResults();
-    });
-    return el('label', { class: 'field' }, [el('span', { class: 'field-label', text: label }), control, readout]);
-  };
   const search = el('input', {
     id: 'search',
     type: 'search',
@@ -285,9 +259,34 @@ export const renderListShell = () => {
     selectField('filter-domain', 'תחום', uniqueValues(store.jobs.flatMap((job) => job.categories || [])), filters.domain, (value) => { store.state.filters.domain = value; }),
     selectField('filter-authority', 'רשות', uniqueValues(store.jobs.map((job) => job.authority)), filters.authority, (value) => { store.state.filters.authority = value; }),
     selectField('filter-status', 'סטטוס', STATUSES, filters.status, (value) => { store.state.filters.status = value; }),
-    rangeField('filter-max-min', 'זמן נסיעה מקסימלי ברכב', 180, 5, 'דק׳', filters.maxMinutes, (value) => { store.state.filters.maxMinutes = value; }),
-    rangeField('filter-max-km', 'מרחק מקסימלי', 250, 5, 'ק"מ', filters.maxKm, (value) => { store.state.filters.maxKm = value; }),
-    numberField('filter-min-score', 'ציון מינימלי', filters.minScore, (value) => { store.state.filters.minScore = value; }),
+    mountSteppedRange('filter-max-min', 'זמן נסיעה מקסימלי ברכב', timeText, (value) => {
+      store.state.filters.maxMinutes = value;
+      save();
+      renderResults();
+    }),
+    mountSteppedRange('filter-max-km', 'מרחק מקסימלי', distanceText, (value) => {
+      store.state.filters.maxKm = value;
+      save();
+      renderResults();
+    }),
+    mountSteppedRange('filter-min-score', 'ציון מינימלי', scoreText, (value) => {
+      store.state.filters.minScore = value;
+      save();
+      renderResults();
+    }),
+    el('label', { class: 'check' }, [
+      el('input', {
+        id: 'include-unrated',
+        type: 'checkbox',
+        on: { change: (event) => {
+          store.state.filters.includeUnrated = event.target.checked;
+          save();
+          renderResults();
+        }},
+      }),
+      'הצג גם משרות ללא ציון',
+    ]),
+    el('p', { class: 'hint', id: 'unrated-hint', hidden: true, text: 'בלי הסימון, משרות ללא ציון מוסתרות.' }),
     el('label', { class: 'check' }, [favorite, 'מועדפים בלבד']),
     el('button', {
       type: 'button',

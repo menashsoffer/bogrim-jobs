@@ -1,4 +1,5 @@
 import { CRIT_TYPES, STATUSES, toast } from './dom.js';
+import { distanceStops, maxSample, snapScore, snapUp, timeStops } from './filter-scale.js';
 
 export const STORAGE_KEY = 'bogrim-jobs.v1';
 export const OSRM = { host: 'routed-car', profile: 'driving' };
@@ -22,6 +23,7 @@ export const defaultFilters = () => ({
   maxMinutes: '',
   maxKm: '',
   minScore: '',
+  includeUnrated: false,
 });
 export const defaultState = () => ({
   version: 1,
@@ -164,6 +166,7 @@ export const sanitizeState = (saved) => {
   if (saved.filters && typeof saved.filters === 'object') {
     next.filters = { ...defaultFilters(), ...saved.filters };
     next.filters.favorite = Boolean(saved.filters.favorite);
+    next.filters.includeUnrated = saved.filters.includeUnrated === true;
     next.filters.q = String(saved.filters.q || '');
   }
   if (['score', 'time', 'name', 'completeness', 'distance'].includes(saved.sortKey)) next.sortKey = saved.sortKey;
@@ -173,6 +176,23 @@ export const sanitizeState = (saved) => {
   }
   if (typeof saved.routingKey === 'string') next.routingKey = saved.routingKey.slice(0, 200);
   next.routes = sanitizeRoutes(saved.routes);
+  const routePeak = (field) => {
+    const samples = [];
+    Object.values(next.routes).forEach((bucket) => {
+      Object.values(bucket.car || {}).forEach((value) => {
+        if (typeof value[field] === 'number') samples.push(value[field]);
+      });
+    });
+    return maxSample(samples);
+  };
+  const scalePeak = (observed, saved) => {
+    const number = Number(saved);
+    if (observed > 0) return observed;
+    return Number.isFinite(number) && number > 0 ? number : 0;
+  };
+  next.filters.maxMinutes = snapUp(timeStops(scalePeak(routePeak('min'), next.filters.maxMinutes)), next.filters.maxMinutes);
+  next.filters.maxKm = snapUp(distanceStops(scalePeak(routePeak('km'), next.filters.maxKm)), next.filters.maxKm);
+  next.filters.minScore = snapScore(next.filters.minScore);
   if (saved.geocodeCache && typeof saved.geocodeCache === 'object') next.geocodeCache = saved.geocodeCache;
   if (Array.isArray(saved.compareIds)) next.compareIds = saved.compareIds.filter((id) => typeof id === 'string').slice(0, 4);
   next.welcomeSeen = saved.welcomeSeen === true;

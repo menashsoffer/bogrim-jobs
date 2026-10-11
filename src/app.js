@@ -1,4 +1,5 @@
 import { importText } from './backup.js';
+import { distanceStops, distanceText, scoreStops, scoreText, timeStops, timeText } from './filter-scale.js';
 import { filtersFromHash, jobIdFromHash, viewFromHash } from './history.js';
 import { closeJob, openJob, trapFocus } from './job-drawer.js';
 import { closeFilterSheet, renderListShell, renderResults, updateCompareCount } from './job-list.js';
@@ -105,6 +106,12 @@ export const boot = async () => {
       moovitWebUrl,
       moovitAppUrl,
       airKm,
+      timeStops,
+      distanceStops,
+      scoreStops,
+      timeText,
+      distanceText,
+      scoreText,
     };
   }
 };

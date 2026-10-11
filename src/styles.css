@@ -124,6 +124,7 @@ input[type="search"], input[type="text"], input[type="number"], input[type="pass
   background: var(--surface);
 }
 input[type="range"] { accent-color: var(--accent); padding-inline: 0; }
+input.step-range { direction: ltr; }
 .range-readout { color: var(--muted); font-size: var(--fs-sm); font-weight: var(--fw-semibold); }
 textarea { min-height: var(--textarea-min); resize: vertical; }
 .check {

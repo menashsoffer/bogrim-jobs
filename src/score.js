@@ -25,6 +25,11 @@ export const travelMinutes = (job) => {
   const hit = routeFor(job);
   return hit ? hit.min : null;
 };
+export const filterKm = (job) => {
+  const hit = routeFor(job);
+  if (hit && typeof hit.km === 'number') return hit.km;
+  return airKm(job);
+};
 export const minutesToScore = (minutes) => {
   const limits = store.state.thresholds.min;
   for (let index = 0; index < limits.length; index += 1) {
@@ -117,17 +122,18 @@ export const matches = (job) => {
   if (filters.authority && job.authority !== filters.authority) return false;
   if (filters.status && user.status !== filters.status) return false;
   if (filters.favorite && !user.favorite) return false;
-  if (filters.maxKm !== '' && filters.maxKm != null) {
-    const km = airKm(job);
+  if (store.state.home && filters.maxKm !== '' && filters.maxKm != null) {
+    const km = filterKm(job);
     if (km == null || km > Number(filters.maxKm)) return false;
   }
-  if (filters.maxMinutes !== '' && filters.maxMinutes != null) {
+  if (store.state.home && filters.maxMinutes !== '' && filters.maxMinutes != null) {
     const minutes = travelMinutes(job);
     if (minutes == null || minutes > Number(filters.maxMinutes)) return false;
   }
   if (filters.minScore !== '' && filters.minScore != null) {
     const scored = scoreJob(job);
-    if (scored.score == null || scored.score < Number(filters.minScore)) return false;
+    if (scored.score == null) return Boolean(filters.includeUnrated);
+    if (scored.score < Number(filters.minScore)) return false;
   }
   return true;
 };

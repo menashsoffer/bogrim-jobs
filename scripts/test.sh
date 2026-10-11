@@ -8,6 +8,7 @@ python3 test/test_build.py
 python3 test/test_tokens.py
 python3 test/test_site.py
 python3 test/test_ux.py
+python3 test/test_filters.py
 python3 test/test_map_layer.py
 python3 test/test_travel.py
 python3 test/test_duration.py

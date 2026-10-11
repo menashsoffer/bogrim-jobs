@@ -142,9 +142,10 @@ def main():
             page.fill("#search", "zzzz-no-such-job")
             page.wait_for_selector(".empty")
             check(page.locator(".empty").inner_text() == "אין משרות שמתאימות לסינון", "empty state")
-            page.fill("#filter-min-score", "5")
-            page.locator("#filter-min-score").blur()
-            check("רק משרות שדירגת מקבלות ציון" in page.locator("#results").inner_text(), "min score note")
+            page.locator("#filter-min-score").evaluate(
+                "node => { node.value = '1'; node.dispatchEvent(new Event('input', { bubbles: true })); }"
+            )
+            check("משרות ללא ציון מוסתרות" in page.locator("#results").inner_text(), "min score note")
             page.click("#empty-clear-filters")
             wait_count(page, 211)
 
