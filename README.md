@@ -91,7 +91,7 @@ python3 build.py --include-contacts
 - [x] `localStorage`, ייצוא JSON, ייבוא עם אימות, CSV עם BOM
 - [x] `lang="he"`, `dir="rtl"`, מטרות מגע, תגיות שיתוף
 - [ ] אנשי קשר `tel:` / `mailto:` במגירה הציבורית — בכוונה לא מוצגים. רשימת הקבלה ביקשה אותם; הם מאחורי `--include-contacts`
-- [ ] Lighthouse לנגישות (יעד 90) — לא הורץ
+- [x] Lighthouse למובייל: נגישות 100, ביצועים 96, שיטות עבודה מומלצות 100. SEO 63 רק בגלל `noindex`
 - [ ] אין כתובת מוחלטת ל-`og:image` כי אין אתר ציבורי, ואין פריסה ל-GitHub Pages
 
 ## אבטחה
