@@ -13,6 +13,10 @@ const paintSortDirection = (button, direction) => {
   else button.textContent = label;
   button.setAttribute('aria-label', `כיוון מיון: ${label}`);
 };
+export const noteListDirty = () => {
+  store.listDirty = true;
+};
+export const jobPlace = (id) => [...document.querySelectorAll('button.card-open')].findIndex((button) => button.dataset.job === id);
 export const updateCompareCount = () => {
   const badge = document.getElementById('compare-count');
   if (badge) badge.textContent = String(store.state.compareIds.length);

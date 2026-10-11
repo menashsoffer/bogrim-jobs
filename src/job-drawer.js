@@ -2,7 +2,7 @@ import { STATUSES, el, formatScore, formatStamp, labelOrUnknown, safeHttps, scor
 import { backIf, pushJob } from './history.js';
 import { icon } from './icons.js';
 import { contactsSection, factsSection, travelSection } from './drawer-sections.js';
-import { renderResults } from './job-list.js';
+import { jobPlace, noteListDirty, renderResults } from './job-list.js';
 import { completionText, criterionValue, scoreJob } from './score.js';
 import { ensureJob, peekJob, save, store, uid } from './store.js';
 
@@ -31,7 +31,7 @@ const chooseStar = (jobId, criterionId, star, focusId) => {
   ensureJob(jobId).ratings[criterionId] = star;
   save();
   refreshDrawer(focusId);
-  renderResults();
+  noteListDirty();
 };
 const moveStar = (event, jobId, criterionId) => {
   if (event.target.getAttribute('role') !== 'radio') return;
@@ -77,7 +77,7 @@ export const paintDrawer = () => {
           ensureJob(job.id).favorite = !ensureJob(job.id).favorite;
           save();
           refreshDrawer('drawer-favorite');
-          renderResults();
+          noteListDirty();
         }},
       }, [icon(user.favorite ? 'heart-fill' : 'heart'), 'מועדף']),
     ]),
@@ -106,7 +106,7 @@ export const paintDrawer = () => {
   status.addEventListener('change', () => {
     ensureJob(job.id).status = status.value;
     save();
-    renderResults();
+    noteListDirty();
   });
   body.append(el('label', { class: 'field' }, [el('span', { class: 'field-label', text: 'סטטוס' }), status]));
 
@@ -146,7 +146,7 @@ export const paintDrawer = () => {
           delete ensureJob(job.id).ratings[criterion.id];
           save();
           refreshDrawer();
-          renderResults();
+          noteListDirty();
         }},
       }));
       control = group;
@@ -162,7 +162,7 @@ export const paintDrawer = () => {
             ensureJob(job.id).ratings[criterion.id] = flag;
             save();
             refreshDrawer();
-            renderResults();
+            noteListDirty();
           }},
         }));
       });
@@ -174,7 +174,7 @@ export const paintDrawer = () => {
           delete ensureJob(job.id).ratings[criterion.id];
           save();
           refreshDrawer();
-          renderResults();
+          noteListDirty();
         }},
       }));
       control = group;
@@ -293,6 +293,9 @@ export const refreshDrawer = (focusId) => {
 export const openJob = (id, opener) => {
   if (!store.jobsById.has(id)) return;
   store.returnFocus = opener instanceof HTMLElement ? opener : null;
+  store.returnScroll = window.scrollY;
+  store.returnIndex = jobPlace(id);
+  store.listDirty = false;
   store.openJobId = id;
   pushJob(id);
   paintDrawer();
@@ -304,16 +307,26 @@ export const closeJob = () => {
   if (!store.openJobId && !document.getElementById('drawer')) return;
   const jobId = store.openJobId;
   const focus = store.returnFocus;
+  const scroll = store.returnScroll || 0;
+  const previousIndex = store.returnIndex;
   store.openJobId = '';
   store.returnFocus = null;
   document.getElementById('drawer-root').replaceChildren();
   setBackgroundInert(false);
+  if (store.listDirty) {
+    store.listDirty = false;
+    renderResults();
+  }
   if (!backIf('job') && location.hash.startsWith('#job=')) {
     history.replaceState({ bogrim: 'list' }, '', `${location.pathname}${location.search}`);
   }
-  if (focus && document.contains(focus)) focus.focus();
-  else if (jobId) {
-    const button = document.querySelector(`button.card-open[data-job="${CSS.escape(jobId)}"]`);
-    if (button) button.focus();
+  const fresh = jobId ? document.querySelector(`button.card-open[data-job="${CSS.escape(jobId)}"]`) : null;
+  const target = focus && document.contains(focus) ? focus : fresh;
+  if (target) target.focus({ preventScroll: true });
+  window.scrollTo(0, scroll);
+  const nextIndex = jobId ? jobPlace(jobId) : -1;
+  if (previousIndex >= 0 && nextIndex >= 0 && nextIndex !== previousIndex) {
+    const place = nextIndex + 1;
+    toast(nextIndex < previousIndex ? `המשרה עלתה למקום ${place}` : `המשרה ירדה למקום ${place}`);
   }
 };

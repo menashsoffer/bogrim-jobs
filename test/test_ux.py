@@ -50,6 +50,16 @@ def main():
             page.go_back()
             page.wait_for_function("() => !document.getElementById('filters').classList.contains('is-open')")
             check(page.url.startswith(origin), "back left the site from the filter sheet")
+
+            page.evaluate("() => document.querySelectorAll('button.card-open')[12].scrollIntoView({ block: 'center' })")
+            page.locator("button.card-open").nth(12).click()
+            page.locator("#drawer").wait_for()
+            before = page.evaluate("() => window.scrollY")
+            page.locator("#star-role-5").click()
+            page.locator("#drawer-close").click()
+            page.wait_for_function("() => !document.getElementById('drawer')")
+            kept = page.evaluate("() => window.scrollY")
+            check(before > 400 and abs(kept - before) < 48, f"scroll {before} became {kept}")
             browser.close()
     finally:
         server.shutdown()
