@@ -13,10 +13,33 @@ sys.path.insert(0, ROOT)
 import build  # noqa: E402
 import privacy_scan  # noqa: E402
 
-SKIP_DIR_NAMES = {".git", "dist-contacts", "__pycache__", "node_modules", ".pytest_cache", "test-results", "playwright-report"}
+SKIP_DIR_NAMES = {
+    ".git", "dist-contacts", "__pycache__", "node_modules", ".pytest_cache",
+    "test-results", "playwright-report", ".venv", "venv",
+}
 
 
-def text_files(root):
+def git_text_files(root):
+    """Tracked text files, or None when this directory is not a git checkout."""
+    try:
+        output = subprocess.check_output(
+            ["git", "-C", root, "ls-files", "-z"],
+            stderr=subprocess.DEVNULL,
+        )
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return None
+    found = []
+    for rel in output.decode("utf-8", "surrogateescape").split("\0"):
+        if not rel or os.path.splitext(rel)[1].lower() not in privacy_scan.TEXT_EXTENSIONS:
+            continue
+        path = os.path.join(root, rel)
+        if privacy_scan.skip_personal_scan(path) or not os.path.isfile(path):
+            continue
+        found.append(path)
+    return found
+
+
+def walked_text_files(root):
     found = []
     for dirpath, dirnames, filenames in os.walk(root):
         dirnames[:] = [name for name in dirnames if name not in SKIP_DIR_NAMES and not privacy_scan.skip_personal_scan(os.path.join(dirpath, name))]
@@ -35,6 +58,11 @@ def text_files(root):
                 continue
             found.append(os.path.join(dirpath, name))
     return found
+
+
+def text_files(root):
+    listed = git_text_files(root)
+    return walked_text_files(root) if listed is None else listed
 
 
 class BuildTests(unittest.TestCase):
