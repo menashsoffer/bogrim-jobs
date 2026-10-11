@@ -28,12 +28,13 @@ export const drawMarkers = (leaflet) => {
   const bounds = [];
   groups.forEach((group) => {
     const best = group.map((job) => scoreJob(job).score).filter((score) => score != null).sort((a, b) => b - a)[0];
-    const color = best == null ? '#57534e' : ({ 1: '#9f1239', 2: '#9a3412', 3: '#1e3a8a', 4: '#1d4e89', 5: '#166534' }[Math.max(1, Math.min(5, Math.round(best)))] || '#57534e');
+    const theme = getComputedStyle(document.documentElement);
+    const band = best == null ? 'none' : String(Math.max(1, Math.min(5, Math.round(best))));
     const marker = leaflet.circleMarker([group[0].lat, group[0].lon], {
       radius: 8,
-      color: '#fff',
+      color: theme.getPropertyValue('--surface').trim(),
       weight: 2,
-      fillColor: color,
+      fillColor: theme.getPropertyValue(`--score-${band}`).trim(),
       fillOpacity: 0.95,
     });
     marker.on('click', () => {

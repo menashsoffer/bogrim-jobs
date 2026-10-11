@@ -36,6 +36,7 @@ export const defaultState = () => ({
   routes: {},
   geocodeCache: {},
   compareIds: [],
+  welcomeSeen: false,
 });
 export const store = {
   data: null,
@@ -169,6 +170,7 @@ export const sanitizeState = (saved) => {
   next.routes = sanitizeRoutes(saved.routes);
   if (saved.geocodeCache && typeof saved.geocodeCache === 'object') next.geocodeCache = saved.geocodeCache;
   if (Array.isArray(saved.compareIds)) next.compareIds = saved.compareIds.filter((id) => typeof id === 'string').slice(0, 4);
+  next.welcomeSeen = saved.welcomeSeen === true;
   return next;
 };
 export const loadState = () => {

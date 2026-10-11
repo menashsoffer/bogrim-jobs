@@ -1,4 +1,5 @@
 import { STATUSES, el, formatScore, formatStamp, labelOrUnknown, safeHttps, scoreBand, toast } from './dom.js';
+import { icon } from './icons.js';
 import { contactsSection, factsSection, travelSection } from './drawer-sections.js';
 import { renderResults } from './job-list.js';
 import { completionText, criterionValue, scoreJob } from './score.js';
@@ -63,23 +64,21 @@ export const paintDrawer = () => {
         type: 'button',
         class: 'btn',
         id: 'drawer-close',
-        text: '× סגירה',
         on: { click: () => closeJob() },
-      }),
+      }, [icon('x'), 'סגירה']),
       el('button', {
         type: 'button',
         class: `btn fav${user.favorite ? ' is-on' : ''}`,
         id: 'drawer-favorite',
         'aria-pressed': user.favorite ? 'true' : 'false',
         'aria-label': `${user.favorite ? '★ מועדף' : '☆ מועדף'}: ${job.title || job.role} – ${job.authority}`,
-        text: user.favorite ? '★ מועדף' : '☆ מועדף',
         on: { click: () => {
           ensureJob(job.id).favorite = !ensureJob(job.id).favorite;
           save();
           refreshDrawer('drawer-favorite');
           renderResults();
         }},
-      }),
+      }, [icon(user.favorite ? 'heart-fill' : 'heart'), 'מועדף']),
     ]),
     el('h2', { id: 'drawer-title', text: job.title || job.role }),
     el('p', { class: 'muted', text: `${job.authority} · ${labelOrUnknown(job.district)} · ${labelOrUnknown(job.authorityType)}` }),
@@ -94,8 +93,7 @@ export const paintDrawer = () => {
       href: url,
       target: '_blank',
       rel: 'noopener noreferrer',
-      text: 'למודעה המקורית',
-    }) : el('p', { text: 'אין קישור למודעה' }),
+    }, [icon('external-link', 'sm'), 'למודעה המקורית']) : el('p', { text: 'אין קישור למודעה' }),
   ]);
 
   const status = el('select', { id: 'job-status' });
@@ -197,12 +195,12 @@ export const paintDrawer = () => {
         criterion.type === 'text' ? el('span', { class: 'muted', text: 'לא נכלל בציון' }) : el('span', { class: 'muted', text: `משקל ${criterion.weight}` }),
       ]),
       control,
-      el('label', { class: 'field' }, [el('span', { class: 'field-label', text: 'הערות' }), notes]),
+      el('label', { class: 'field' }, [el('span', { class: 'field-label' }, [icon('notebook-pen', 'sm'), 'הערות']), notes]),
     ]));
   });
 
   body.append(el('label', { class: 'field' }, [
-    el('span', { class: 'field-label', text: 'הערות כלליות' }),
+    el('span', { class: 'field-label' }, [icon('notebook-pen', 'sm'), 'הערות כלליות']),
     el('textarea', {
       id: 'general-notes',
       value: user.notes,

@@ -1,5 +1,5 @@
 @media (min-width: 960px) {
-  .nav { width: auto; margin-inline-start: auto; padding-bottom: 10px; }
+  .nav { width: auto; margin-inline-start: auto; padding-bottom: var(--space-5); }
   .list-layout { grid-template-columns: 300px minmax(0, 1fr); align-items: start; }
   .filters { position: sticky; top: 108px; max-height: calc(100vh - 124px); overflow: auto; }
   .filter-toggle, .close-filters { display: none; }
@@ -15,24 +15,30 @@
     max-height: none;
     border-radius: 0;
     overflow: auto;
+    background: var(--surface);
   }
 }
 @media (max-width: 720px) {
-  .header-inner { gap: 2px 8px; padding: 4px 8px 0; }
-  .brand { gap: 6px; }
-  .brand-mark { width: 28px; height: 28px; font-size: 15px; border-radius: 8px; }
-  .brand h1 { font-size: 0.95rem; white-space: nowrap; }
-  .brand-count { font-size: 0.75rem; line-height: 1.1; }
-  .nav { flex-wrap: wrap; overflow: visible; gap: 2px; padding: 0 0 4px; }
+  .header-inner { gap: var(--space-1) var(--space-4); padding: var(--space-2) var(--space-4) 0; }
+  .brand { gap: var(--space-3); }
+  .brand-mark { width: var(--mark-sm); height: var(--mark-sm); font-size: var(--fs-md); border-radius: var(--radius-sm); }
+  .brand h1 { font-size: var(--fs-lg); white-space: nowrap; }
+  .brand-count { font-size: var(--fs-2xs); line-height: var(--lh-tight); }
+  .nav { flex-wrap: wrap; overflow: visible; gap: var(--space-1); padding: 0 0 var(--space-2); }
   .nav button {
     flex: 1 1 30%;
-    padding: 4px 6px;
+    padding: var(--space-2) var(--space-3);
     white-space: nowrap;
-    font-size: 0.8rem;
-    line-height: 1.15;
+    font-size: var(--fs-xs);
+    line-height: var(--lh-tight);
   }
-  .source-banner { font-size: 0.75rem; line-height: 1.25; padding: 3px 8px; }
+  .nav .icon-lg { width: var(--icon); height: var(--icon); }
+  .source-banner { font-size: var(--fs-2xs); line-height: var(--lh-snug); padding: var(--space-2) var(--space-4); }
 }
 @media (prefers-reduced-motion: reduce) {
-  * { scroll-behavior: auto !important; transition: none !important; }
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
 }

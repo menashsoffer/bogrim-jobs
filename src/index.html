@@ -17,7 +17,9 @@
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles-tokens.css">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles-structure.css">
   <link rel="stylesheet" href="styles-media.css">
 </head>
 <body>
@@ -32,10 +34,10 @@
         </div>
       </div>
       <nav class="nav" id="nav" aria-label="ראשי">
-        <button type="button" data-view="list" class="is-active" aria-current="page">משרות</button>
-        <button type="button" data-view="compare">השוואה <span id="compare-count">0</span></button>
-        <button type="button" data-view="map">מפה</button>
-        <button type="button" data-view="settings">הגדרות</button>
+        <button type="button" data-view="list" class="is-active" aria-current="page"><svg class="icon icon-lg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="icons.svg#i-briefcase"/></svg><span>משרות</span></button>
+        <button type="button" data-view="compare"><svg class="icon icon-lg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="icons.svg#i-columns-3"/></svg><span>השוואה</span> <span id="compare-count">0</span></button>
+        <button type="button" data-view="map"><svg class="icon icon-lg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="icons.svg#i-map"/></svg><span>מפה</span></button>
+        <button type="button" data-view="settings"><svg class="icon icon-lg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="icons.svg#i-settings-2"/></svg><span>הגדרות</span></button>
         <button type="button" data-view="privacy">פרטיות</button>
         <button type="button" data-view="help">עזרה</button>
       </nav>
@@ -44,7 +46,12 @@
   </header>
   <main id="main" tabindex="-1">
     <section id="view-list" aria-label="רשימת משרות">
-      <p id="boot-status">טוען משרות…</p>
+      <div id="boot-status" class="skeleton" role="status" aria-live="polite">
+        <p>טוען משרות…</p>
+        <span class="skeleton-block" aria-hidden="true"></span>
+        <span class="skeleton-block" aria-hidden="true"></span>
+        <span class="skeleton-block" aria-hidden="true"></span>
+      </div>
     </section>
     <section id="view-compare" hidden aria-label="השוואה"></section>
     <section id="view-map" hidden aria-label="מפה">

@@ -1,5 +1,6 @@
 import { exportCsv, exportJson } from './backup.js';
 import { CRIT_TYPES, el, toast } from './dom.js';
+import { icon } from './icons.js';
 import { renderResults } from './job-list.js';
 import { clearData } from './shell.js';
 import { defaultCriteria, save, store, uid } from './store.js';
@@ -89,7 +90,7 @@ export const renderSettings = () => {
   const editor = el('div', { id: 'criteria-editor' });
   view.replaceChildren(
     el('section', { class: 'panel' }, [
-      el('h2', { text: 'כתובת הבית' }),
+      el('h2', { class: 'panel-title' }, [icon('house'), 'כתובת הבית']),
       el('label', { class: 'field' }, [el('span', { class: 'field-label', text: 'כתובת הבית' }), homeInput]),
       el('div', { class: 'row' }, [
         el('button', { type: 'button', class: 'btn primary', id: 'geocode-home', text: 'אתר כתובת', on: { click: () => { onGeocode(); } } }),
@@ -100,7 +101,7 @@ export const renderSettings = () => {
       el('p', { class: 'hint', text: 'אם היישוב לא ברשימה המקומית, הכתובת נשלחת ל-Nominatim (OpenStreetMap) רק אחרי הלחיצה.' }),
     ]),
     el('section', { class: 'panel' }, [
-      el('h2', { text: 'נסיעה' }),
+      el('h2', { class: 'panel-title' }, [icon('car'), 'נסיעה']),
       el('p', { class: 'notice', id: 'route-notice', text: 'החישוב מחשב זמן נסיעה ברכב ושולח את קואורדינטות הבית ומיקומי הרשויות לשירות חיצוני.' }),
       el('div', { class: 'row' }, [
         el('button', { type: 'button', class: 'btn primary', id: 'compute-routes', text: 'חשב זמני נסיעה', on: { click: () => { computeRoutes(); } } }),
@@ -113,7 +114,7 @@ export const renderSettings = () => {
       el('p', { class: 'hint', text: 'המפתח נשמר רק במכשיר. בלי מפתח משתמשים ב-OSRM הציבורי.' }),
     ]),
     el('section', { class: 'panel' }, [
-      el('h2', { text: 'קריטריונים' }),
+      el('h2', { class: 'panel-title' }, [icon('scale'), 'קריטריונים']),
       el('p', { class: 'hint', text: 'קריטריון בלי דירוג לא נספר כאפס. הציון הוא ממוצע משוקלל של הקריטריונים שדורגו.' }),
       editor,
       el('div', { class: 'row' }, [
@@ -132,7 +133,6 @@ export const renderSettings = () => {
           type: 'button',
           class: 'btn',
           id: 'reset-criteria',
-          text: 'איפוס לברירת מחדל',
           on: { click: () => {
             if (!window.confirm('לאפס את הקריטריונים לברירת המחדל?')) return;
             store.state.criteria = defaultCriteria();
@@ -140,15 +140,15 @@ export const renderSettings = () => {
             renderCriteriaEditor(editor);
             renderResults();
           }},
-        }),
+        }, [icon('undo-2', 'sm'), 'איפוס לברירת מחדל']),
       ]),
     ]),
     el('section', { class: 'panel' }, [
-      el('h2', { text: 'שמירה' }),
+      el('h2', { class: 'panel-title' }, [icon('download'), 'שמירה']),
       el('div', { class: 'row' }, [
-        el('button', { type: 'button', class: 'btn primary', id: 'export-json', text: 'ייצוא JSON', on: { click: () => exportJson() } }),
-        el('button', { type: 'button', class: 'btn', id: 'import-json', text: 'ייבוא JSON', on: { click: () => document.getElementById('import-file').click() } }),
-        el('button', { type: 'button', class: 'btn', id: 'export-csv', text: 'ייצוא CSV', on: { click: () => exportCsv() } }),
+        el('button', { type: 'button', class: 'btn primary', id: 'export-json', on: { click: () => exportJson() } }, [icon('download', 'sm'), 'ייצוא JSON']),
+        el('button', { type: 'button', class: 'btn', id: 'import-json', on: { click: () => document.getElementById('import-file').click() } }, [icon('upload', 'sm'), 'ייבוא JSON']),
+        el('button', { type: 'button', class: 'btn', id: 'export-csv', on: { click: () => exportCsv() } }, [icon('download', 'sm'), 'ייצוא CSV']),
         el('button', { type: 'button', class: 'btn danger', id: 'clear-data', text: 'נקה נתונים', on: { click: () => clearData() } }),
       ]),
       el('p', { class: 'hint', text: 'הקבצים נשמרים אצלכם. ייבוא מחליף את הנתונים בדפדפן רק אחרי אישור.' }),

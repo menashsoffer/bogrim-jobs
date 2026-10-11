@@ -1,11 +1,18 @@
-import { UNKNOWN, el, externalLink, labelOrUnknown, safeMail, safeTel, safeTravelUrl } from './dom.js';
+import { UNKNOWN, el, labelOrUnknown, safeMail, safeTel, safeTravelUrl } from './dom.js';
+import { icon } from './icons.js';
 import { moovitLink } from './moovit.js';
 import { travelSummary } from './score.js';
 import { store } from './store.js';
 
-const travelLink = (href, text) => {
+const travelLink = (href, text, name) => {
   const safe = safeTravelUrl(href);
-  return safe ? externalLink(safe, text) : null;
+  if (!safe) return null;
+  return el('a', {
+    class: 'btn',
+    href: safe,
+    target: '_blank',
+    rel: 'noopener noreferrer',
+  }, [icon(name, 'sm'), text]);
 };
 const travelLinks = (job) => {
   const destination = `${job.lat},${job.lon}`;
@@ -17,11 +24,13 @@ const travelLinks = (job) => {
   const waze = origin
     ? `https://www.waze.com/ul?ll=${destination}&navigate=yes&from=${origin}`
     : `https://www.waze.com/ul?ll=${destination}&navigate=yes`;
+  const moovit = moovitLink(store.state.home, { name: job.authority || '', lat: job.lat, lon: job.lon });
+  if (moovit) moovit.prepend(icon('bus', 'sm'));
   return [
-    travelLink(google('driving'), 'Google Maps · רכב'),
-    travelLink(waze, 'Waze'),
-    travelLink(google('transit'), 'Google Maps · תחבורה ציבורית'),
-    moovitLink(store.state.home, { name: job.authority || '', lat: job.lat, lon: job.lon }),
+    travelLink(google('driving'), 'Google Maps · רכב', 'car'),
+    travelLink(waze, 'Waze', 'car'),
+    travelLink(google('transit'), 'Google Maps · תחבורה ציבורית', 'bus'),
+    moovit,
   ].filter(Boolean);
 };
 export const travelSection = (job) => {
@@ -43,7 +52,7 @@ export const factsSection = (job) => el('section', { class: 'block' }, [
   el('dl', { class: 'facts' }, [
     el('dt', { text: 'תפקיד' }), el('dd', { text: job.role || UNKNOWN }),
     el('dt', { text: 'תחום' }), el('dd', { text: (job.categories || []).join(', ') || UNKNOWN }),
-    el('dt', { text: 'אוכלוסייה' }), el('dd', { text: labelOrUnknown(job.population) }),
+    el('dt', {}, [icon('users-round', 'sm'), 'אוכלוסייה']), el('dd', { text: labelOrUnknown(job.population) }),
     el('dt', { text: 'אשכול חברתי-כלכלי' }), el('dd', { text: labelOrUnknown(job.socioEconomic) }),
     el('dt', { text: 'מדד פריפריאליות' }), el('dd', { text: labelOrUnknown(job.peripherality) }),
     el('dt', { text: 'תפקיד המנהל/ת' }), el('dd', { text: labelOrUnknown(job.managerTitle) }),

@@ -1,4 +1,5 @@
 import { el, formatScore } from './dom.js';
+import { icon } from './icons.js';
 import { openJob } from './job-drawer.js';
 import { renderResults, toggleCompare } from './job-list.js';
 import { completionText, criterionValue, scoreJob, travelSummary } from './score.js';
@@ -12,7 +13,10 @@ export const renderCompare = () => {
     el('p', { class: 'hint', text: chosen.length < 2 ? 'בחרו לפחות 2 משרות להשוואה, ועד 4.' : 'עד 4 משרות זו לצד זו.' }),
   ]));
   if (!chosen.length) {
-    view.append(el('p', { class: 'empty', text: 'בחרו 2-4 משרות להשוואה' }));
+    view.append(el('div', { class: 'empty-state' }, [
+      el('div', { class: 'art-slot', 'data-art': 'empty-compare', 'aria-hidden': 'true' }),
+      el('p', { class: 'empty' }, [icon('columns-3'), 'בחרו 2-4 משרות להשוואה']),
+    ]));
     return;
   }
   const table = el('table');

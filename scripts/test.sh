@@ -5,6 +5,7 @@ cd "$(dirname "$0")/.."
 python3 -m pip install -r requirements.txt
 python3 build.py
 python3 test/test_build.py
+python3 test/test_tokens.py
 python3 test/test_site.py
 python3 test/test_map_layer.py
 python3 test/test_travel.py
