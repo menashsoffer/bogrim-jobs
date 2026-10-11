@@ -354,5 +354,6 @@ th { background: var(--table-head); }
   opacity: 0;
   pointer-events: none;
 }
-.toast.is-on { opacity: 1; }
+.toast.is-on { opacity: 1; pointer-events: auto; }
+.toast .btn { margin-inline-start: var(--space-4); }
 .filter-toggle, .close-filters { display: inline-flex; }

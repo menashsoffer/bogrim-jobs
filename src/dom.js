@@ -90,13 +90,24 @@ export const safeMail = (email) => {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || ''))) return '';
   return `mailto:${email}`;
 };
-export const toast = (message) => {
+export const toast = (message, action) => {
   const node = document.getElementById('toast');
   if (!node) return;
-  node.textContent = message;
+  node.replaceChildren(document.createTextNode(message));
+  if (action) {
+    node.append(el('button', {
+      type: 'button',
+      class: 'btn',
+      text: action.label,
+      on: { click: () => {
+        node.classList.remove('is-on');
+        action.run();
+      }},
+    }));
+  }
   node.classList.add('is-on');
   clearTimeout(node._timer);
-  node._timer = setTimeout(() => node.classList.remove('is-on'), 3200);
+  node._timer = setTimeout(() => node.classList.remove('is-on'), action ? 5000 : 3200);
 };
 export const showLimit = (message) => {
   const alert = document.getElementById('limit-alert');

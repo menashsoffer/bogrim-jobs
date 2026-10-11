@@ -1,4 +1,4 @@
-import { STATUSES, UNKNOWN, el, labelOrUnknown, showLimit, statusClass } from './dom.js';
+import { STATUSES, UNKNOWN, el, labelOrUnknown, showLimit, statusClass, toast } from './dom.js';
 import { backIf, filtersFromHash, pushFilters } from './history.js';
 import { DOMAIN_ICON, STATUS_ICON, TYPE_ICON, icon } from './icons.js';
 import { openJob, refreshDrawer } from './job-drawer.js';
@@ -234,6 +234,20 @@ export const renderListShell = () => {
     sort.append(option);
   });
   sort.addEventListener('change', () => {
+    if ((sort.value === 'time' || sort.value === 'distance') && !store.state.home) {
+      const subject = sort.value === 'time' ? 'זמן נסיעה' : 'מרחק';
+      toast(`כדי למיין לפי ${subject} צריך כתובת בית`, {
+        label: 'הגדרות',
+        run: () => {
+          const tab = document.querySelector('#nav [data-view="settings"]');
+          if (tab) tab.click();
+          const address = document.getElementById('home-address');
+          if (address) address.focus();
+        },
+      });
+      sort.value = store.state.sortKey;
+      return;
+    }
     store.state.sortKey = sort.value;
     if (store.state.sortKey === 'name' || store.state.sortKey === 'time' || store.state.sortKey === 'distance') store.state.sortDir = 'asc';
     else store.state.sortDir = 'desc';
