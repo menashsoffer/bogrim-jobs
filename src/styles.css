@@ -317,18 +317,6 @@ textarea { min-height: 88px; resize: vertical; }
   border-radius: 10px;
 }
 .star.is-on { color: var(--star); }
-.modes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.mode {
-  text-align: start;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: #fff;
-  padding: 8px;
-  min-height: var(--tap);
-  cursor: pointer;
-}
-.mode.is-selected { border-color: var(--pri); background: var(--pri-soft); }
-.mode strong { display: block; }
 .call { border-bottom: 1px solid var(--line); padding: 8px 0; }
 .muted { color: var(--muted); }
 .criterion-editor { display: grid; gap: 8px; padding: 10px 0; border-bottom: 1px solid var(--line); }

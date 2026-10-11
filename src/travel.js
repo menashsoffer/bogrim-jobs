@@ -123,19 +123,18 @@ export const onGps = () => {
     { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 },
   );
 };
-export const storeRoute = (mode, authority, value) => {
+export const storeRoute = (authority, value) => {
   const key = homeKey(store.state.home);
-  if (!store.state.routes[key]) store.state.routes[key] = { car: {}, bike: {}, walk: {} };
-  if (!store.state.routes[key][mode]) store.state.routes[key][mode] = {};
-  store.state.routes[key][mode][authority] = value;
+  if (!store.state.routes[key]) store.state.routes[key] = { car: {} };
+  if (!store.state.routes[key].car) store.state.routes[key].car = {};
+  store.state.routes[key].car[authority] = value;
 };
-export const fetchOsrm = async (mode, names) => {
-  const spec = OSRM[mode];
+export const fetchOsrm = async (names) => {
   const coords = [`${store.state.home.lon},${store.state.home.lat}`].concat(names.map((name) => {
     const point = store.authorityPoint.get(name);
     return `${point.lon},${point.lat}`;
   })).join(';');
-  const url = `https://routing.openstreetmap.de/${spec.host}/table/v1/${spec.profile}/${coords}?sources=0&annotations=duration,distance`;
+  const url = `https://routing.openstreetmap.de/${OSRM.host}/table/v1/${OSRM.profile}/${coords}?sources=0&annotations=duration,distance`;
   const response = await fetch(url);
   if (!response.ok) throw new Error('osrm');
   const body = await response.json();
@@ -144,15 +143,15 @@ export const fetchOsrm = async (mode, names) => {
     const duration = body.durations[0][index + 1];
     const distance = body.distances && body.distances[0] ? body.distances[0][index + 1] : null;
     if (duration == null) return;
-    storeRoute(mode, name, { min: Math.max(0, Math.round(duration / 60)), km: distance == null ? null : Math.round(distance / 100) / 10 });
+    storeRoute(name, { min: Math.max(0, Math.round(duration / 60)), km: distance == null ? null : Math.round(distance / 100) / 10 });
   });
 };
-export const fetchOrs = async (mode, names) => {
+export const fetchOrs = async (names) => {
   const locations = [[store.state.home.lon, store.state.home.lat]].concat(names.map((name) => {
     const point = store.authorityPoint.get(name);
     return [point.lon, point.lat];
   }));
-  const response = await fetch(`https://api.openrouteservice.org/v2/matrix/${ORS[mode]}`, {
+  const response = await fetch(`https://api.openrouteservice.org/v2/matrix/${ORS}`, {
     method: 'POST',
     headers: { Authorization: store.state.routingKey, 'Content-Type': 'application/json' },
     body: JSON.stringify({ locations, sources: [0], metrics: ['duration', 'distance'], units: 'm' }),
@@ -163,7 +162,7 @@ export const fetchOrs = async (mode, names) => {
     const duration = body.durations && body.durations[0] ? body.durations[0][index + 1] : null;
     const distance = body.distances && body.distances[0] ? body.distances[0][index + 1] : null;
     if (duration == null) return;
-    storeRoute(mode, name, { min: Math.max(0, Math.round(duration / 60)), km: distance == null ? null : Math.round(distance / 100) / 10 });
+    storeRoute(name, { min: Math.max(0, Math.round(duration / 60)), km: distance == null ? null : Math.round(distance / 100) / 10 });
   });
 };
 export const computeRoutes = async () => {
@@ -173,35 +172,30 @@ export const computeRoutes = async () => {
     return;
   }
   const names = [...store.authorityPoint.keys()];
-  const missing = ['car', 'bike', 'walk'].some((mode) => names.some((name) => !(store.state.routes[homeKey(store.state.home)] && store.state.routes[homeKey(store.state.home)][mode] && store.state.routes[homeKey(store.state.home)][mode][name])));
-  if (!missing) {
+  const bucket = store.state.routes[homeKey(store.state.home)];
+  const todo = names.filter((name) => !(bucket && bucket.car && bucket.car[name]));
+  if (!todo.length) {
     if (status) status.textContent = 'זמני הנסיעה כבר שמורים במכשיר.';
     return;
   }
   const service = store.state.routingKey ? 'openrouteservice' : 'OSRM';
-  const agreed = window.confirm(`חישוב המסלול שולח את קואורדינטות הבית ומיקומי הרשויות לשירות חיצוני (${service}). להמשיך?`);
+  const agreed = window.confirm(`חישוב זמן הנסיעה ברכב שולח את קואורדינטות הבית ומיקומי הרשויות לשירות חיצוני (${service}). להמשיך?`);
   if (!agreed) {
     if (status) status.textContent = 'החישוב בוטל. מוצג קו אווירי (הערכה).';
     return;
   }
-  if (status) status.textContent = 'מחשב מסלולים…';
+  if (status) status.textContent = 'מחשב זמן נסיעה ברכב…';
   let failed = false;
-  for (let index = 0; index < ['car', 'bike', 'walk'].length; index += 1) {
-    const mode = ['car', 'bike', 'walk'][index];
-    const todo = names.filter((name) => !(store.state.routes[homeKey(store.state.home)] && store.state.routes[homeKey(store.state.home)][mode] && store.state.routes[homeKey(store.state.home)][mode][name]));
-    if (!todo.length) continue;
-    if (index > 0) await sleep(1200);
-    try {
-      const chunks = [];
-      for (let start = 0; start < todo.length; start += 80) chunks.push(todo.slice(start, start + 80));
-      for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex += 1) {
-        if (chunkIndex > 0) await sleep(1200);
-        if (store.state.routingKey) await fetchOrs(mode, chunks[chunkIndex]);
-        else await fetchOsrm(mode, chunks[chunkIndex]);
-      }
-    } catch (error) {
-      failed = true;
+  try {
+    const chunks = [];
+    for (let start = 0; start < todo.length; start += 80) chunks.push(todo.slice(start, start + 80));
+    for (let index = 0; index < chunks.length; index += 1) {
+      if (index > 0) await sleep(1200);
+      if (store.state.routingKey) await fetchOrs(chunks[index]);
+      else await fetchOsrm(chunks[index]);
     }
+  } catch (error) {
+    failed = true;
   }
   saveNow();
   if (status) status.textContent = failed

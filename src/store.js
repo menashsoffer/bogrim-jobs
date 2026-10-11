@@ -1,12 +1,8 @@
-import { CRIT_TYPES, SCORE_MODES, STATUSES, toast } from './dom.js';
+import { CRIT_TYPES, STATUSES, toast } from './dom.js';
 
 export const STORAGE_KEY = 'bogrim-jobs.v1';
-export const OSRM = {
-  car: { host: 'routed-car', profile: 'driving' },
-  bike: { host: 'routed-bike', profile: 'bike' },
-  walk: { host: 'routed-foot', profile: 'foot' },
-};
-export const ORS = { car: 'driving-car', bike: 'cycling-regular', walk: 'foot-walking' };
+export const OSRM = { host: 'routed-car', profile: 'driving' };
+export const ORS = 'driving-car';
 export const defaultCriteria = () => ([
   { id: 'role', name: 'התפקיד והאנשים', type: 'rating', weight: 35 },
   { id: 'distance', name: 'מרחק מהבית', type: 'travel', weight: 25 },
@@ -35,7 +31,6 @@ export const defaultState = () => ({
   filters: defaultFilters(),
   sortKey: 'score',
   sortDir: 'desc',
-  scoreMode: 'car',
   thresholds: { min: [25, 40, 60, 90] },
   routingKey: '',
   routes: {},
@@ -67,7 +62,6 @@ export const emptyJob = () => ({
   ratings: {},
   criterionNotes: {},
   callLog: [],
-  transitMinutes: null,
 });
 export const peekJob = (id) => {
   const current = store.state.jobs[id];
@@ -79,7 +73,6 @@ export const peekJob = (id) => {
     ratings: current.ratings && typeof current.ratings === 'object' ? current.ratings : {},
     criterionNotes: current.criterionNotes && typeof current.criterionNotes === 'object' ? current.criterionNotes : {},
     callLog: Array.isArray(current.callLog) ? current.callLog : [],
-    transitMinutes: typeof current.transitMinutes === 'number' ? current.transitMinutes : null,
   };
 };
 export const ensureJob = (id) => {
@@ -90,6 +83,23 @@ export const ensureJob = (id) => {
   if (!Array.isArray(current.callLog)) current.callLog = [];
   if (!STATUSES.includes(current.status)) current.status = STATUSES[0];
   return current;
+};
+export const sanitizeRoutes = (routes) => {
+  const next = {};
+  if (!routes || typeof routes !== 'object' || Array.isArray(routes)) return next;
+  Object.entries(routes).forEach(([key, bucket]) => {
+    if (!bucket || typeof bucket !== 'object' || !bucket.car || typeof bucket.car !== 'object') return;
+    const car = {};
+    Object.entries(bucket.car).forEach(([name, value]) => {
+      if (!value || typeof value.min !== 'number' || !Number.isFinite(value.min) || value.min < 0) return;
+      car[String(name)] = {
+        min: value.min,
+        km: typeof value.km === 'number' && Number.isFinite(value.km) ? value.km : null,
+      };
+    });
+    if (Object.keys(car).length) next[key] = { car };
+  });
+  return next;
 };
 export const validCriterion = (criterion) => Boolean(criterion)
   && typeof criterion.id === 'string'
@@ -117,9 +127,6 @@ export const sanitizeState = (saved) => {
       job.favorite = Boolean(value.favorite);
       job.status = STATUSES.includes(value.status) ? value.status : STATUSES[0];
       job.notes = typeof value.notes === 'string' ? value.notes : '';
-      job.transitMinutes = typeof value.transitMinutes === 'number' && value.transitMinutes >= 0
-        ? value.transitMinutes
-        : null;
       if (value.ratings && typeof value.ratings === 'object') {
         Object.entries(value.ratings).forEach(([key, rating]) => {
           if (typeof rating === 'number' || typeof rating === 'boolean') job.ratings[key] = rating;
@@ -155,12 +162,11 @@ export const sanitizeState = (saved) => {
   }
   if (['score', 'time', 'name', 'completeness', 'distance'].includes(saved.sortKey)) next.sortKey = saved.sortKey;
   if (saved.sortDir === 'asc' || saved.sortDir === 'desc') next.sortDir = saved.sortDir;
-  if (SCORE_MODES.some(([mode]) => mode === saved.scoreMode)) next.scoreMode = saved.scoreMode;
   if (saved.thresholds && Array.isArray(saved.thresholds.min) && saved.thresholds.min.length === 4) {
     next.thresholds.min = saved.thresholds.min.map((value) => Number(value) || 0);
   }
   if (typeof saved.routingKey === 'string') next.routingKey = saved.routingKey.slice(0, 200);
-  if (saved.routes && typeof saved.routes === 'object') next.routes = saved.routes;
+  next.routes = sanitizeRoutes(saved.routes);
   if (saved.geocodeCache && typeof saved.geocodeCache === 'object') next.geocodeCache = saved.geocodeCache;
   if (Array.isArray(saved.compareIds)) next.compareIds = saved.compareIds.filter((id) => typeof id === 'string').slice(0, 4);
   return next;

@@ -101,7 +101,7 @@ export const renderSettings = () => {
     ]),
     el('section', { class: 'panel' }, [
       el('h2', { text: 'נסיעה' }),
-      el('p', { class: 'notice', id: 'route-notice', text: 'החישוב שולח את קואורדינטות הבית ומיקומי הרשויות לשירות חיצוני.' }),
+      el('p', { class: 'notice', id: 'route-notice', text: 'החישוב מחשב זמן נסיעה ברכב ושולח את קואורדינטות הבית ומיקומי הרשויות לשירות חיצוני.' }),
       el('div', { class: 'row' }, [
         el('button', { type: 'button', class: 'btn primary', id: 'compute-routes', text: 'חשב זמני נסיעה', on: { click: () => { computeRoutes(); } } }),
       ]),

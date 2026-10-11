@@ -7,12 +7,6 @@ export const CRIT_TYPES = [
   ['text', 'טקסט'],
   ['travel', 'נסיעה אוטומטית'],
 ];
-export const SCORE_MODES = [
-  ['car', 'רכב'],
-  ['bike', 'אופניים'],
-  ['walk', 'הליכה'],
-  ['transit', 'תחבורה ציבורית'],
-];
 export const el = (tag, attrs = {}, kids = []) => {
   const node = document.createElement(tag);
   Object.entries(attrs).forEach(([key, value]) => {

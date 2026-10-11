@@ -1,5 +1,5 @@
-import { AIR_LABEL, SCORE_MODES, UNKNOWN, el, formatKm, formatScore, labelOrUnknown, scoreBand } from './dom.js';
-import { OSRM, homeKey, peekJob, store } from './store.js';
+import { AIR_LABEL, UNKNOWN, el, formatKm, formatScore, labelOrUnknown, scoreBand } from './dom.js';
+import { homeKey, peekJob, store } from './store.js';
 
 export const haversineKm = (from, to) => {
   const radius = 6371;
@@ -14,19 +14,15 @@ export const airKm = (job) => {
   if (!store.state.home || job.lat == null || job.lon == null) return null;
   return haversineKm(store.state.home, { lat: job.lat, lon: job.lon });
 };
-export const routeFor = (job, mode) => {
-  if (!store.state.home || !OSRM[mode]) return null;
+export const routeFor = (job) => {
+  if (!store.state.home) return null;
   const bucket = store.state.routes[homeKey(store.state.home)];
-  const hit = bucket && bucket[mode] ? bucket[mode][job.authority] : null;
+  const hit = bucket && bucket.car ? bucket.car[job.authority] : null;
   if (!hit || typeof hit.min !== 'number') return null;
   return hit;
 };
 export const travelMinutes = (job) => {
-  if (store.state.scoreMode === 'transit') {
-    const minutes = peekJob(job.id).transitMinutes;
-    return typeof minutes === 'number' ? minutes : null;
-  }
-  const hit = routeFor(job, store.state.scoreMode);
+  const hit = routeFor(job);
   return hit ? hit.min : null;
 };
 export const minutesToScore = (minutes) => {
@@ -87,17 +83,12 @@ export const scoreNode = (job) => {
 };
 export const travelSummary = (job) => {
   if (!store.state.home) return '';
-  const mode = store.state.scoreMode;
-  const modeLabel = (SCORE_MODES.find(([key]) => key === mode) || ['', ''])[1];
-  if (job.lat == null || job.lon == null) return `${modeLabel}: ${UNKNOWN}`;
-  if (mode === 'transit') {
-    const minutes = peekJob(job.id).transitMinutes;
-    if (typeof minutes === 'number') return `תחבורה ציבורית: ${minutes} דק׳`;
-    const km = airKm(job);
-    return `${AIR_LABEL}: ${formatKm(km)}`;
+  if (job.lat == null || job.lon == null) return `רכב: ${UNKNOWN}`;
+  const hit = routeFor(job);
+  if (hit) {
+    const distance = hit.km == null ? '' : ` · ${formatKm(hit.km)}`;
+    return `רכב: ${hit.min} דק׳${distance}`;
   }
-  const hit = routeFor(job, mode);
-  if (hit) return `${modeLabel}: ${hit.min} דק׳ · ${hit.km == null ? '' : formatKm(hit.km)}`.replace(/ · $/, '');
   return `${AIR_LABEL}: ${formatKm(airKm(job))}`;
 };
 export const matches = (job) => {

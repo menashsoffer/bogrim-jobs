@@ -1,4 +1,4 @@
-import { SCORE_MODES, STATUSES, UNKNOWN, el, labelOrUnknown, showLimit, statusClass } from './dom.js';
+import { STATUSES, UNKNOWN, el, labelOrUnknown, showLimit, statusClass } from './dom.js';
 import { openJob, refreshDrawer } from './job-drawer.js';
 import { scoreNode, travelSummary, visibleJobs } from './score.js';
 import { defaultFilters, ensureJob, peekJob, save, store } from './store.js';
@@ -172,18 +172,6 @@ export const renderListShell = () => {
       renderResults();
     }},
   });
-  const mode = el('select', { id: 'score-mode' });
-  SCORE_MODES.forEach(([key, label]) => {
-    const option = el('option', { value: key, text: label });
-    if (key === store.state.scoreMode) option.selected = true;
-    mode.append(option);
-  });
-  mode.addEventListener('change', () => {
-    store.state.scoreMode = mode.value;
-    save();
-    renderResults();
-    if (store.openJobId) refreshDrawer();
-  });
   const filterBox = el('div', { class: 'filters', id: 'filters' }, [
     el('div', { class: 'row' }, [
       el('h2', { text: 'סינון' }),
@@ -242,7 +230,6 @@ export const renderListShell = () => {
         el('p', { id: 'result-count', class: 'grow', 'aria-live': 'polite', text: '' }),
         el('label', { class: 'field', style: null }, [el('span', { class: 'field-label', text: 'מיון' }), sort]),
         dirButton,
-        el('label', { class: 'field' }, [el('span', { class: 'field-label', text: 'ציון המרחק לפי' }), mode]),
       ]),
       el('p', { id: 'home-hint', class: 'hint', hidden: Boolean(store.state.home), text: 'כדי לראות מרחק, הגדירו כתובת בית בהגדרות.' }),
       el('p', { id: 'limit-alert', class: 'alert', role: 'alert', hidden: true }),
