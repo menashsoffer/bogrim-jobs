@@ -25,6 +25,23 @@ export const trapFocus = (event) => {
     first.focus();
   }
 };
+const chooseStar = (jobId, criterionId, star, focusId) => {
+  ensureJob(jobId).ratings[criterionId] = star;
+  save();
+  refreshDrawer(focusId);
+  renderResults();
+};
+const moveStar = (event, jobId, criterionId) => {
+  if (event.target.getAttribute('role') !== 'radio') return;
+  const step = { ArrowLeft: 1, ArrowDown: 1, ArrowRight: -1, ArrowUp: -1 }[event.key];
+  if (!step) return;
+  const radios = [...event.currentTarget.querySelectorAll('[role="radio"]')];
+  const index = radios.indexOf(event.target);
+  if (index < 0) return;
+  event.preventDefault();
+  const next = radios[(index + step + radios.length) % radios.length];
+  chooseStar(jobId, criterionId, Number(next.dataset.star), next.id);
+};
 export const paintDrawer = () => {
   const job = store.jobsById.get(store.openJobId);
   const root = document.getElementById('drawer-root');
@@ -99,23 +116,26 @@ export const paintDrawer = () => {
     const raw = user.ratings[criterion.id];
     let control = null;
     if (criterion.type === 'rating') {
-      const group = el('div', { class: 'stars', role: 'radiogroup', 'aria-label': criterion.name });
+      const group = el('div', {
+        class: 'stars',
+        role: 'radiogroup',
+        'aria-label': criterion.name,
+        on: { keydown: (event) => moveStar(event, job.id, criterion.id) },
+      });
       for (let star = 1; star <= 5; star += 1) {
         const id = `star-${criterion.id}-${star}`;
+        const selected = raw === star;
         group.append(el('button', {
           type: 'button',
           class: `star${typeof raw === 'number' && raw >= star ? ' is-on' : ''}`,
           id,
           role: 'radio',
-          'aria-checked': raw === star ? 'true' : 'false',
+          tabindex: (selected || (typeof raw !== 'number' && star === 1)) ? '0' : '-1',
+          'aria-checked': selected ? 'true' : 'false',
           'aria-label': `${star} מתוך 5`,
+          data: { star },
           text: '★',
-          on: { click: () => {
-            ensureJob(job.id).ratings[criterion.id] = star;
-            save();
-            refreshDrawer(id);
-            renderResults();
-          }},
+          on: { click: () => chooseStar(job.id, criterion.id, star, id) },
         }));
       }
       group.append(el('button', {
