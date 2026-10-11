@@ -2,8 +2,10 @@
 
 Used by the build (to refuse a public bundle that contains contacts) and by tests.
 Patterns are intentionally strict enough to ignore the Web Mercator constant that
-ships inside Leaflet (a decimal, not a phone).
+ships inside Leaflet (a decimal, not a phone). vendor/ is unmodified upstream and
+is excluded from the repository scan entirely.
 """
+import os
 import re
 
 EMAIL_RE = re.compile(
@@ -28,3 +30,9 @@ def find_personal_data(text):
     if not isinstance(text, str):
         return [], []
     return EMAIL_RE.findall(text), PHONE_RE.findall(text)
+
+
+def skip_personal_scan(path):
+    """True for unmodified upstream files under any vendor/ directory."""
+    parts = os.path.normpath(str(path)).split(os.sep)
+    return "vendor" in parts

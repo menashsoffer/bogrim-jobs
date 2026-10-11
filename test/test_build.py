@@ -19,9 +19,12 @@ SKIP_DIR_NAMES = {".git", "dist-contacts", "__pycache__", "node_modules", ".pyte
 def text_files(root):
     found = []
     for dirpath, dirnames, filenames in os.walk(root):
-        dirnames[:] = [name for name in dirnames if name not in SKIP_DIR_NAMES]
+        dirnames[:] = [name for name in dirnames if name not in SKIP_DIR_NAMES and not privacy_scan.skip_personal_scan(os.path.join(dirpath, name))]
         if os.path.basename(dirpath) == "data":
             dirnames[:] = [name for name in dirnames if name != "raw"]
+        if privacy_scan.skip_personal_scan(dirpath):
+            dirnames[:] = []
+            continue
         rel_dir = os.path.relpath(dirpath, root)
         parts = rel_dir.split(os.sep)
         if "dist-contacts" in parts or (len(parts) >= 2 and parts[0] == "data" and "raw" in parts):
