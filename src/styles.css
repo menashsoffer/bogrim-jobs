@@ -383,6 +383,17 @@ th { background: #f7f4ef; }
     overflow: auto;
   }
 }
+@media (max-width: 720px) {
+  .header-inner { flex-wrap: nowrap; gap: 4px; padding: 2px 8px; }
+  .brand { gap: 6px; min-width: 0; }
+  .brand-mark { width: 28px; height: 28px; font-size: 15px; border-radius: 8px; }
+  .brand h1 { font-size: 0.95rem; white-space: nowrap; }
+  .brand-count { font-size: 0.75rem; line-height: 1.1; }
+  .nav { width: auto; flex: 1; flex-wrap: nowrap; overflow-x: auto; gap: 2px; padding: 0; }
+  .nav button { padding: 4px 8px; }
+  .source-banner { font-size: 0.75rem; line-height: 1.25; padding: 3px 8px; }
+  .site-header.is-compact .source-banner { display: none; }
+}
 @media (prefers-reduced-motion: reduce) {
   * { scroll-behavior: auto !important; transition: none !important; }
 }
