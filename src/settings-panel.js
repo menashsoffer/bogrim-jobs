@@ -11,8 +11,15 @@ export const renderCriteriaEditor = (host) => {
   store.state.criteria.forEach((criterion, index) => {
     const name = el('input', { type: 'text', value: criterion.name, 'data-crit-name': criterion.id, 'aria-label': `שם הקריטריון ${criterion.name}` });
     name.addEventListener('input', () => {
-      criterion.name = name.value;
+      const next = name.value.trim();
+      if (!next) return;
+      criterion.name = next;
       save();
+    });
+    name.addEventListener('change', () => {
+      if (name.value.trim()) return;
+      name.value = criterion.name;
+      toast('שם הקריטריון לא יכול להיות ריק');
     });
     const type = el('select', { 'aria-label': `סוג הקריטריון ${criterion.name}` });
     CRIT_TYPES.forEach(([key, label]) => {

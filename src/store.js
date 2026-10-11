@@ -96,6 +96,7 @@ export const validCriterion = (criterion) => Boolean(criterion)
   && criterion.id.length > 0
   && criterion.id.length < 80
   && typeof criterion.name === 'string'
+  && criterion.name.trim().length > 0
   && CRIT_TYPES.some(([type]) => type === criterion.type)
   && Number.isFinite(Number(criterion.weight));
 export const sanitizeState = (saved) => {
