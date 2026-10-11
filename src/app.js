@@ -86,6 +86,12 @@ export const boot = async () => {
   renderListShell();
   renderResults();
   updateCompareCount();
+  const named = viewFromHash();
+  if (named) showView(named);
+  if (filtersFromHash()) {
+    const sheet = document.getElementById('filters');
+    if (sheet) sheet.classList.add('is-open');
+  }
   const hashed = jobIdFromHash();
   if (hashed && store.jobsById.has(hashed)) openJob(hashed, null);
   if (new URLSearchParams(location.search).get('test') === '1') {

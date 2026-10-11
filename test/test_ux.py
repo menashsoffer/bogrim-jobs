@@ -185,6 +185,15 @@ def main():
                 arg={"remote": remote_id, "other": other_id},
             )
             context.close()
+            fresh = browser.new_page(locale="he-IL", viewport={"width": 390, "height": 844})
+            fresh.set_default_timeout(20000)
+            fresh.goto(base + "#view=settings")
+            fresh.locator("#home-address").wait_for()
+            check(fresh.evaluate("() => !document.getElementById('view-settings').hidden"), "settings view was not restored")
+            fresh.goto(base + "#view=map")
+            fresh.locator("#view-map").wait_for()
+            check(fresh.evaluate("() => !document.getElementById('view-map').hidden"), "map view was not restored")
+            fresh.close()
             browser.close()
     finally:
         server.shutdown()
