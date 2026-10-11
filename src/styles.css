@@ -333,11 +333,20 @@ textarea { min-height: 88px; resize: vertical; }
 .muted { color: var(--muted); }
 .criterion-editor { display: grid; gap: 8px; padding: 10px 0; border-bottom: 1px solid var(--line); }
 .table-scroll { overflow-x: auto; max-width: 100%; min-width: 0; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
-#view-compare { min-width: 0; }
+#view-compare { position: relative; z-index: 1; min-width: 0; }
 table { border-collapse: collapse; width: 100%; min-width: 520px; }
 th, td { border-bottom: 1px solid var(--line); padding: 8px; text-align: start; vertical-align: top; }
 th { background: #f7f4ef; }
-#map { height: min(70vh, 720px); min-height: 320px; border-radius: var(--radius); border: 1px solid var(--line); background: #e7efe9; }
+#map {
+  position: relative;
+  z-index: 0;
+  isolation: isolate;
+  height: min(70vh, 720px);
+  min-height: 320px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: #e7efe9;
+}
 .home-pin {
   background: #1d4ed8;
   border: 3px solid #fff;
