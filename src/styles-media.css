@@ -27,7 +27,6 @@
   .nav { width: auto; flex: 1; flex-wrap: nowrap; overflow-x: auto; gap: 2px; padding: 0; }
   .nav button { padding: 4px 8px; }
   .source-banner { font-size: 0.75rem; line-height: 1.25; padding: 3px 8px; }
-  .site-header.is-compact .source-banner { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   * { scroll-behavior: auto !important; transition: none !important; }

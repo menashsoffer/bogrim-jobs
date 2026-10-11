@@ -78,6 +78,23 @@ def parse_csv(text):
     return rows
 
 
+def stepped_scroll_stuck(page, width, height):
+    page.set_viewport_size({"width": width, "height": height})
+    return page.evaluate(
+        """async () => {
+          window.scrollTo(0, 0);
+          let last = 0;
+          for (const step of [10, 12, 15, 18, 20, 24, 28, 30]) {
+            window.scrollBy(0, step);
+            await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+            if (window.scrollY <= last) return { step, last, y: window.scrollY };
+            last = window.scrollY;
+          }
+          return null;
+        }"""
+    )
+
+
 def shown_count(page):
     text = page.locator("#result-count").inner_text()
     return int(text.replace("מוצגות", "").replace("משרות", "").strip())

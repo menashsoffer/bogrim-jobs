@@ -4,7 +4,7 @@ import json
 
 from playwright.sync_api import sync_playwright
 
-from site_harness import DIST, ROOT, TINY_PNG, chrome_path, parse_csv, search_count, serve, shown_count, wait_count
+from site_harness import DIST, ROOT, TINY_PNG, chrome_path, parse_csv, search_count, serve, shown_count, stepped_scroll_stuck, wait_count
 
 
 def main():
@@ -77,6 +77,11 @@ def main():
             wait_count(page, 211)
             check(external == [], f"third-party requests on load: {external[:5]}")
             check(tiles == [], "map tiles loaded before the map was opened")
+            for width, height in ((390, 844), (360, 780)):
+                stuck = stepped_scroll_stuck(page, width, height)
+                check(stuck is None, f"scroll snapped back at {width}x{height}: {stuck}")
+            page.set_viewport_size({"width": 1280, "height": 800})
+            page.evaluate("() => window.scrollTo(0, 0)")
 
             html_lang = page.evaluate("() => ({ lang: document.documentElement.lang, dir: document.documentElement.dir })")
             check(html_lang["lang"] == "he" and html_lang["dir"] == "rtl", "page is not Hebrew RTL")

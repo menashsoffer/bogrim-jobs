@@ -56,10 +56,6 @@ export const boot = async () => {
     else if (!id && store.openJobId) closeJob();
   });
   window.addEventListener('pagehide', () => saveNow());
-  const header = document.querySelector('.site-header');
-  window.addEventListener('scroll', () => {
-    if (header) header.classList.toggle('is-compact', window.scrollY > 8);
-  }, { passive: true });
   renderListShell();
   renderResults();
   updateCompareCount();
