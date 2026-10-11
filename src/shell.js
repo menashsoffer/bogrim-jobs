@@ -1,4 +1,5 @@
 import { toast } from './dom.js';
+import { pushView } from './history.js';
 import { renderCompare } from './job-compare.js';
 import { closeJob } from './job-drawer.js';
 import { renderListShell, renderResults, updateCompareCount } from './job-list.js';
@@ -31,6 +32,9 @@ export const clearData = () => {
   toast('הנתונים נמחקו');
 };
 export const showView = (name) => {
+  const sheet = document.getElementById('filters');
+  if (sheet && sheet.classList.contains('is-open') && !store.ignoreHistory) sheet.classList.remove('is-open');
+  pushView(name);
   ['list', 'compare', 'map', 'settings', 'privacy', 'help'].forEach((view) => {
     const section = document.getElementById(`view-${view}`);
     if (section) section.hidden = view !== name;

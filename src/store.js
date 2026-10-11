@@ -51,6 +51,8 @@ export const store = {
   mapLayer: null,
   leafletLoading: null,
   saveTimer: 0,
+  ignoreHistory: false,
+  sawPop: false,
 };
 export const homeKey = (home) => (home ? `${home.lat.toFixed(5)},${home.lon.toFixed(5)}` : '');
 export const normName = (value) => String(value || '').replace(/[\s\-–־'"״׳"().,]/g, '').toLowerCase();

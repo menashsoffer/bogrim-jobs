@@ -1,4 +1,5 @@
 import { STATUSES, UNKNOWN, el, labelOrUnknown, showLimit, statusClass } from './dom.js';
+import { backIf, filtersFromHash, pushFilters } from './history.js';
 import { DOMAIN_ICON, STATUS_ICON, TYPE_ICON, icon } from './icons.js';
 import { openJob, refreshDrawer } from './job-drawer.js';
 import { scoreNode, travelSummary, visibleJobs } from './score.js';
@@ -105,6 +106,16 @@ export const renderResults = () => {
   });
 };
 export const uniqueValues = (values) => [...new Set(values.filter(Boolean))].sort((a, b) => a.localeCompare(b, 'he'));
+export const closeFilterSheet = () => {
+  const filterBox = document.getElementById('filters');
+  if (!filterBox || !filterBox.classList.contains('is-open')) return;
+  filterBox.classList.remove('is-open');
+  if (!backIf('filters') && filtersFromHash()) {
+    history.replaceState({ bogrim: 'list' }, '', `${location.pathname}${location.search}`);
+  }
+  const toggle = document.getElementById('filter-toggle');
+  if (toggle) toggle.focus();
+};
 export const renderListShell = () => {
   const view = document.getElementById('view-list');
   if (!view || view.dataset.ready === '1') return;
@@ -213,11 +224,7 @@ export const renderListShell = () => {
         type: 'button',
         class: 'btn close-filters',
         id: 'close-filters',
-        on: { click: () => {
-          filterBox.classList.remove('is-open');
-          const toggle = document.getElementById('filter-toggle');
-          if (toggle) toggle.focus();
-        }},
+        on: { click: () => closeFilterSheet() },
       }, [icon('x', 'sm'), 'סגירה']),
     ]),
     el('label', { class: 'field' }, [el('span', { class: 'field-label' }, [icon('search', 'sm'), 'חיפוש']), search]),
@@ -294,6 +301,7 @@ export const renderListShell = () => {
           id: 'filter-toggle',
           on: { click: () => {
             filterBox.classList.add('is-open');
+            pushFilters();
             search.focus();
           }},
         }, [icon('sliders-horizontal', 'sm'), 'סינון']),

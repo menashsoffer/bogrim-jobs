@@ -1,4 +1,5 @@
 import { STATUSES, el, formatScore, formatStamp, labelOrUnknown, safeHttps, scoreBand, toast } from './dom.js';
+import { backIf, pushJob } from './history.js';
 import { icon } from './icons.js';
 import { contactsSection, factsSection, travelSection } from './drawer-sections.js';
 import { renderResults } from './job-list.js';
@@ -293,7 +294,7 @@ export const openJob = (id, opener) => {
   if (!store.jobsById.has(id)) return;
   store.returnFocus = opener instanceof HTMLElement ? opener : null;
   store.openJobId = id;
-  if (location.hash !== `#job=${id}`) history.replaceState(null, '', `#job=${id}`);
+  pushJob(id);
   paintDrawer();
   setBackgroundInert(true);
   const close = document.getElementById('drawer-close');
@@ -307,7 +308,9 @@ export const closeJob = () => {
   store.returnFocus = null;
   document.getElementById('drawer-root').replaceChildren();
   setBackgroundInert(false);
-  if (location.hash.startsWith('#job=')) history.replaceState(null, '', `${location.pathname}${location.search}`);
+  if (!backIf('job') && location.hash.startsWith('#job=')) {
+    history.replaceState({ bogrim: 'list' }, '', `${location.pathname}${location.search}`);
+  }
   if (focus && document.contains(focus)) focus.focus();
   else if (jobId) {
     const button = document.querySelector(`button.card-open[data-job="${CSS.escape(jobId)}"]`);

@@ -1,15 +1,28 @@
 import { importText } from './backup.js';
+import { filtersFromHash, jobIdFromHash, viewFromHash } from './history.js';
 import { closeJob, openJob, trapFocus } from './job-drawer.js';
-import { renderListShell, renderResults, updateCompareCount } from './job-list.js';
+import { closeFilterSheet, renderListShell, renderResults, updateCompareCount } from './job-list.js';
 import { formatDuration } from './dom.js';
 import { moovitAppUrl, moovitWebUrl } from './moovit.js';
 import { airKm, scoreJob, travelMinutes, travelSummary } from './score.js';
 import { showView } from './shell.js';
 import { loadState, saveNow, store } from './store.js';
 
-export const jobIdFromHash = () => {
-  const match = /^#job=([A-Za-z0-9-]+)$/.exec(location.hash);
-  return match ? match[1] : '';
+const syncFromLocation = () => {
+  store.ignoreHistory = true;
+  try {
+    const job = jobIdFromHash();
+    if (job && store.jobsById.has(job)) {
+      if (store.openJobId !== job) openJob(job, document.activeElement);
+    } else if (store.openJobId) closeJob();
+    const sheet = document.getElementById('filters');
+    if (sheet) sheet.classList.toggle('is-open', filtersFromHash());
+    const named = viewFromHash();
+    if (named) showView(named);
+    else if (!job) showView('list');
+  } finally {
+    store.ignoreHistory = false;
+  }
 };
 export const boot = async () => {
   const response = await fetch(new URL('./data.json', import.meta.url));
@@ -44,18 +57,23 @@ export const boot = async () => {
         closeJob();
         return;
       }
-      const filters = document.getElementById('filters');
-      if (filters && filters.classList.contains('is-open')) {
-        filters.classList.remove('is-open');
-        const toggle = document.getElementById('filter-toggle');
-        if (toggle) toggle.focus();
-      }
+      closeFilterSheet();
     } else if (event.key === 'Tab' && store.openJobId) trapFocus(event);
   });
+  window.addEventListener('popstate', () => {
+    store.sawPop = true;
+    if (store.ignoreHistory) {
+      store.ignoreHistory = false;
+      return;
+    }
+    syncFromLocation();
+  });
   window.addEventListener('hashchange', () => {
-    const id = jobIdFromHash();
-    if (id && store.jobsById.has(id)) openJob(id, document.activeElement);
-    else if (!id && store.openJobId) closeJob();
+    if (store.sawPop) {
+      store.sawPop = false;
+      return;
+    }
+    syncFromLocation();
   });
   window.addEventListener('pagehide', () => saveNow());
   renderListShell();
