@@ -106,6 +106,16 @@ def main():
             page.locator('#nav [data-view="compare"]').click()
             page.locator("#compare-back").click()
             page.wait_for_function("() => !document.getElementById('view-list').hidden")
+            page.locator('#nav [data-view="settings"]').click()
+            page.locator("#weight-hint").wait_for()
+            check("המשקלים יחסיים, האחוז הוא החלק בציון" in page.locator("#weight-hint").inner_text(), "weight hint")
+            weight = page.locator("#criteria-editor input[type='number']").first
+            weight.fill("50")
+            weight.press("Enter")
+            check(
+                page.evaluate("() => document.activeElement && document.activeElement.getAttribute('aria-label') === 'משקל התפקיד והאנשים'"),
+                "weight editor lost focus",
+            )
 
             context = browser.new_context(locale="he-IL", viewport={"width": 390, "height": 844})
             first = context.new_page()

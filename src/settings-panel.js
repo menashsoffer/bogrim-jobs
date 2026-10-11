@@ -6,7 +6,20 @@ import { clearData } from './shell.js';
 import { defaultCriteria, save, store, uid } from './store.js';
 import { computeRoutes, onGeocode, onGps } from './travel.js';
 
-export const renderCriteriaEditor = (host) => {
+const restoreCriteriaFocus = (host, label) => {
+  if (!label) return;
+  const nodes = [...host.querySelectorAll('[aria-label]')];
+  const next = nodes.find((node) => node.getAttribute('aria-label') === label && !node.disabled);
+  if (next) {
+    next.focus();
+    return;
+  }
+  const name = label.replace(/^הזזה ל(?:מעלה|מטה)\s+/, '');
+  const other = label.includes('למעלה') ? `הזזה למטה ${name}` : `הזזה למעלה ${name}`;
+  const fallback = nodes.find((node) => node.getAttribute('aria-label') === other && !node.disabled);
+  if (fallback) fallback.focus();
+};
+export const renderCriteriaEditor = (host, focusLabel) => {
   host.replaceChildren();
   const weightSum = store.state.criteria.reduce((sum, criterion) => sum + (criterion.type === 'text' ? 0 : Number(criterion.weight) || 0), 0) || 1;
   store.state.criteria.forEach((criterion, index) => {
@@ -36,7 +49,7 @@ export const renderCriteriaEditor = (host) => {
       }
       criterion.type = type.value;
       save();
-      renderCriteriaEditor(host);
+      renderCriteriaEditor(host, type.getAttribute('aria-label'));
       renderResults();
     });
     const weight = el('input', { type: 'number', min: '0', max: '100', value: String(criterion.weight), 'aria-label': `משקל ${criterion.name}` });
@@ -44,7 +57,7 @@ export const renderCriteriaEditor = (host) => {
     weight.addEventListener('change', () => {
       criterion.weight = Math.max(0, Math.min(100, Number(weight.value) || 0));
       save();
-      renderCriteriaEditor(host);
+      renderCriteriaEditor(host, weight.getAttribute('aria-label'));
       renderResults();
     });
     const move = (direction) => {
@@ -53,7 +66,8 @@ export const renderCriteriaEditor = (host) => {
       const [item] = store.state.criteria.splice(index, 1);
       store.state.criteria.splice(target, 0, item);
       save();
-      renderCriteriaEditor(host);
+      const active = document.activeElement;
+      renderCriteriaEditor(host, active ? active.getAttribute('aria-label') : '');
     };
     host.append(el('div', { class: 'criterion-editor' }, [
       el('label', { class: 'field' }, [el('span', { class: 'field-label', text: 'שם' }), name]),
@@ -78,6 +92,7 @@ export const renderCriteriaEditor = (host) => {
       ]),
     ]));
   });
+  restoreCriteriaFocus(host, focusLabel);
 };
 export const renderSettings = () => {
   const view = document.getElementById('view-settings');
@@ -116,6 +131,7 @@ export const renderSettings = () => {
     el('section', { class: 'panel' }, [
       el('h2', { class: 'panel-title' }, [icon('scale'), 'קריטריונים']),
       el('p', { class: 'hint', text: 'קריטריון בלי דירוג לא נספר כאפס. הציון הוא ממוצע משוקלל של הקריטריונים שדורגו.' }),
+      el('p', { class: 'hint', id: 'weight-hint', text: 'המשקלים יחסיים, האחוז הוא החלק בציון' }),
       editor,
       el('div', { class: 'row' }, [
         el('button', {
