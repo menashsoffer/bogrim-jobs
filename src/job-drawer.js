@@ -1,4 +1,4 @@
-import { STATUSES, el, formatStamp, labelOrUnknown, safeHttps, toast } from './dom.js';
+import { STATUSES, el, formatStamp, labelOrUnknown, safeHttps, toast, toastUndo } from './dom.js';
 import { backIf, pushJob } from './history.js';
 import { icon } from './icons.js';
 import { contactsSection, factsSection, travelSection } from './drawer-sections.js';
@@ -27,6 +27,20 @@ export const trapFocus = (event) => {
     event.preventDefault();
     first.focus();
   }
+};
+const clearRating = (jobId, criterionId) => {
+  const record = ensureJob(jobId);
+  const previous = record.ratings[criterionId];
+  delete record.ratings[criterionId];
+  save();
+  refreshDrawer();
+  noteListDirty();
+  toastUndo('הדירוג נוקה', () => {
+    if (previous !== undefined) ensureJob(jobId).ratings[criterionId] = previous;
+    save();
+    noteListDirty();
+    if (store.openJobId === jobId) refreshDrawer();
+  });
 };
 const chooseStar = (jobId, criterionId, star, focusId) => {
   ensureJob(jobId).ratings[criterionId] = star;
@@ -151,12 +165,7 @@ export const paintDrawer = () => {
         class: 'btn',
         text: 'ניקוי דירוג',
         'aria-label': `ניקוי דירוג ${criterion.name}`,
-        on: { click: () => {
-          delete ensureJob(job.id).ratings[criterion.id];
-          save();
-          refreshDrawer();
-          noteListDirty();
-        }},
+        on: { click: () => clearRating(job.id, criterion.id) },
       }));
       control = group;
     } else if (criterion.type === 'yesno') {
@@ -179,12 +188,7 @@ export const paintDrawer = () => {
         type: 'button',
         class: 'btn',
         text: 'ניקוי דירוג',
-        on: { click: () => {
-          delete ensureJob(job.id).ratings[criterion.id];
-          save();
-          refreshDrawer();
-          noteListDirty();
-        }},
+        on: { click: () => clearRating(job.id, criterion.id) },
       }));
       control = group;
     } else if (criterion.type === 'travel') {
@@ -238,9 +242,16 @@ export const paintDrawer = () => {
         'aria-label': `מחיקת רשומה ${entry.contactName || ''}`.trim(),
         on: { click: () => {
           const record = ensureJob(job.id);
+          const removed = record.callLog.find((item) => item.id === entry.id);
           record.callLog = record.callLog.filter((item) => item.id !== entry.id);
           save();
           refreshDrawer();
+          toastUndo('הרשומה נמחקה', () => {
+            if (!removed) return;
+            ensureJob(job.id).callLog.push({ ...removed });
+            save();
+            if (store.openJobId === job.id) refreshDrawer();
+          });
         }},
       }),
     ]));

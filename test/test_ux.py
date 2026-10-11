@@ -116,6 +116,20 @@ def main():
                 page.evaluate("() => document.activeElement && document.activeElement.getAttribute('aria-label') === 'משקל התפקיד והאנשים'"),
                 "weight editor lost focus",
             )
+            page.locator('#nav [data-view="list"]').click()
+            page.locator("button.card-open").first.click()
+            page.locator("#star-role-5").click()
+            page.locator("#drawer button[aria-label='ניקוי דירוג התפקיד והאנשים']").click()
+            page.locator("#toast.is-on").wait_for()
+            check("הדירוג נוקה" in page.locator("#toast").inner_text(), "rating undo toast")
+            page.locator("#toast .btn", has_text="ביטול").click()
+            check(page.locator("#star-role-5").get_attribute("aria-checked") == "true", "rating was not restored")
+            page.fill("#call-name", "בדיקה")
+            page.fill("#call-text", "שיחה")
+            page.click("#call-add")
+            page.locator("#call-log button").click()
+            page.locator("#toast .btn", has_text="ביטול").click()
+            check(page.locator("#call-log article").count() == 1, "call log was not restored")
 
             context = browser.new_context(locale="he-IL", viewport={"width": 390, "height": 844})
             first = context.new_page()

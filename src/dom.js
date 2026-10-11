@@ -109,6 +109,9 @@ export const toast = (message, action) => {
   clearTimeout(node._timer);
   node._timer = setTimeout(() => node.classList.remove('is-on'), action ? 5000 : 3200);
 };
+export const toastUndo = (message, onUndo) => {
+  toast(message, { label: 'ביטול', run: onUndo });
+};
 export const showLimit = (message) => {
   const alert = document.getElementById('limit-alert');
   if (alert) {
