@@ -231,6 +231,17 @@ def main():
             check(fresh.evaluate("() => document.activeElement && document.activeElement.id === 'home-address'"), "change home did not focus the address")
             fresh.unroute("**/nominatim.openstreetmap.org/**")
             fresh.close()
+            limit = browser.new_page(locale="he-IL", viewport={"width": 390, "height": 844})
+            limit.set_default_timeout(20000)
+            limit.goto(base)
+            limit.wait_for_function("() => window.__app && window.__app.jobs.length === 211")
+            for index in range(4):
+                limit.locator("#results input[type=checkbox]").nth(index).check()
+            limit.locator("#results input[type=checkbox]").nth(4).click()
+            limit.locator("#toast.is-on").wait_for()
+            check("אפשר להשוות עד 4 משרות" in limit.locator("#toast").inner_text(), "compare limit toast")
+            check(limit.evaluate("() => !document.getElementById('limit-alert').hidden"), "compare limit alert")
+            limit.close()
             browser.close()
     finally:
         server.shutdown()

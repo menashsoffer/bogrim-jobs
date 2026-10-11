@@ -117,6 +117,7 @@ export const showLimit = (message) => {
   if (alert) {
     alert.hidden = false;
     alert.textContent = message;
+    alert.scrollIntoView({ block: 'nearest' });
   }
   toast(message);
 };
