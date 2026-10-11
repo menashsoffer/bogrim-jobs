@@ -1,4 +1,4 @@
-import { AIR_LABEL, UNKNOWN, el, formatKm, formatScore, labelOrUnknown, scoreBand } from './dom.js';
+import { AIR_LABEL, UNKNOWN, el, formatDuration, formatKm, formatScore, labelOrUnknown, scoreBand } from './dom.js';
 import { homeKey, peekJob, store } from './store.js';
 
 export const haversineKm = (from, to) => {
@@ -87,7 +87,7 @@ export const travelSummary = (job) => {
   const hit = routeFor(job);
   if (hit) {
     const distance = hit.km == null ? '' : ` · ${formatKm(hit.km)}`;
-    return `רכב: ${hit.min} דק׳${distance}`;
+    return `רכב: ${formatDuration(hit.min)}${distance}`;
   }
   return `${AIR_LABEL}: ${formatKm(airKm(job))}`;
 };

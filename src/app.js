@@ -1,7 +1,8 @@
 import { importText } from './backup.js';
 import { closeJob, openJob, trapFocus } from './job-drawer.js';
 import { renderListShell, renderResults, updateCompareCount } from './job-list.js';
-import { airKm, scoreJob, travelMinutes } from './score.js';
+import { formatDuration } from './dom.js';
+import { airKm, scoreJob, travelMinutes, travelSummary } from './score.js';
 import { showView } from './shell.js';
 import { loadState, saveNow, store } from './store.js';
 
@@ -67,6 +68,8 @@ export const boot = async () => {
       jobs: store.jobs,
       scoreJob,
       travelMinutes,
+      travelSummary,
+      formatDuration,
       airKm,
     };
   }

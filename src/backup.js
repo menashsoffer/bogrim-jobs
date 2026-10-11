@@ -1,4 +1,4 @@
-import { el, formatScore, labelOrUnknown, toast } from './dom.js';
+import { el, formatDuration, formatScore, labelOrUnknown, toast } from './dom.js';
 import { airKm, criterionValue, scoreJob, travelMinutes } from './score.js';
 import { rebuildShells } from './shell.js';
 import { peekJob, sanitizeState, saveNow, store, validCriterion } from './store.js';
@@ -25,7 +25,7 @@ export const exportCsv = () => {
     headers.push(criterion.name);
     if (criterion.type !== 'text') headers.push(`${criterion.name} – הערות`);
   });
-  headers.push('דקות נסיעה', 'ק"מ קו אווירי', 'קישור');
+  headers.push('דקות נסיעה', 'זמן נסיעה', 'ק"מ קו אווירי', 'קישור');
   const lines = [headers.map(csvCell).join(',')];
   store.jobs.forEach((job) => {
     const user = peekJob(job.id);
@@ -49,7 +49,12 @@ export const exportCsv = () => {
       }
     });
     const minutes = travelMinutes(job);
-    cells.push(minutes == null ? '' : String(minutes), airKm(job) == null ? '' : String(Math.round(airKm(job) * 10) / 10), job.url);
+    cells.push(
+      minutes == null ? '' : String(minutes),
+      minutes == null ? '' : formatDuration(minutes),
+      airKm(job) == null ? '' : String(Math.round(airKm(job) * 10) / 10),
+      job.url,
+    );
     lines.push(cells.map(csvCell).join(','));
   });
   download('bogrim-jobs.csv', `\ufeff${lines.join('\r\n')}`, 'text/csv;charset=utf-8');

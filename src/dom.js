@@ -30,6 +30,15 @@ export const el = (tag, attrs = {}, kids = []) => {
 };
 export const labelOrUnknown = (value) => (value == null || value === '' ? UNKNOWN : String(value));
 export const formatScore = (score) => (Math.round(score * 10) / 10).toFixed(1);
+export const formatDuration = (minutes) => {
+  const total = Math.round(Number(minutes));
+  if (!Number.isFinite(total) || total < 0) return '';
+  if (total < 60) return `${total} דק׳`;
+  const hours = Math.floor(total / 60);
+  const rest = total % 60;
+  const hourLabel = hours === 1 ? 'שעה' : hours === 2 ? 'שעתיים' : `${hours} שעות`;
+  return rest > 0 ? `${hourLabel} ו-${rest} דק׳` : hourLabel;
+};
 export const formatKm = (km) => {
   if (km == null || Number.isNaN(km)) return UNKNOWN;
   const rounded = km < 10 ? (Math.round(km * 10) / 10).toFixed(1) : String(Math.round(km));

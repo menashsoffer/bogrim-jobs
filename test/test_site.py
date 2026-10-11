@@ -298,6 +298,8 @@ def main():
             check("\r\n" in csv_text, "CSV line endings")
             rows = parse_csv(csv_text)
             check(len(rows) == 212, f"CSV rows {len(rows)}")
+            minutes_at = rows[0].index("דקות נסיעה")
+            check(any(row[minutes_at] == "30" and row[minutes_at + 1] == "30 דק׳" for row in rows[1:]), "CSV keeps sortable minutes and a formatted time")
             check("ציון" in rows[0] and "סטטוס" in rows[0], rows[0])
             check(any(cell == "'=1+1" for row in rows for cell in row), "formula injection guard")
             check("managerEmail" not in rows[0] and "טלפון" not in rows[0], "contact column in CSV")
