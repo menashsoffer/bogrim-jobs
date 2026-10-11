@@ -43,7 +43,8 @@ export const travelSection = (job) => {
   const origin = `${store.state.home.lat},${store.state.home.lon}`;
   const destination = `${job.lat},${job.lon}`;
   const google = (mode) => `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&travelmode=${mode}`;
-  const moovit = `https://moovit.com/?from=${encodeURIComponent(store.state.home.label || 'הבית')}&fll=${store.state.home.lat}_${store.state.home.lon}&to=${encodeURIComponent(job.authority)}&tll=${job.lat}_${job.lon}&lang=he`;
+  const fromLabel = (store.state.home.label || 'הבית').replace(/\s+/g, ' ').trim();
+  const moovit = `https://moovit.com/?from=${encodeURIComponent(fromLabel)}&fll=${store.state.home.lat}_${store.state.home.lon}&to=${encodeURIComponent(job.authority)}&tll=${job.lat}_${job.lon}&lang=he`;
   const waze = `https://www.waze.com/ul?ll=${destination}&navigate=yes&from=${origin}`;
   section.append(el('div', { class: 'row' }, [
     externalLink(google('transit'), 'Google Maps'),
