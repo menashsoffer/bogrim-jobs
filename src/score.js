@@ -70,15 +70,24 @@ export const scoreJob = (job) => {
     partial: rated > 0 && rated < total,
   };
 };
-export const completionText = (scored) => (
-  scored.total ? `דורג ${scored.rated}/${scored.total}` : 'אין ציון: כל המשקלים הם 0'
-);
+export const completionText = (scored) => {
+  if (!scored.total) return 'אין ציון: כל המשקלים הם 0';
+  if (!scored.rated) return 'טרם דורג';
+  return `${scored.rated} מתוך ${scored.total} קריטריונים`;
+};
+const scoreMeaning = 'ממוצע משוקלל של הקריטריונים שדירגת, 1–5';
 export const scoreNode = (job) => {
   const scored = scoreJob(job);
-  return el('p', { class: `score ${scoreBand(scored.score)}${scored.partial ? ' is-partial' : ''}` }, [
-    el('strong', { text: scored.score == null ? '—' : formatScore(scored.score) }),
-    el('span', { text: completionText(scored) }),
-    scored.partial ? el('span', { text: 'חלקי' }) : null,
+  const headline = scored.score == null ? (scored.total ? 'טרם דורג' : '—') : formatScore(scored.score);
+  const showDetail = scored.rated > 0 || !scored.total;
+  return el('p', {
+    class: `score ${scoreBand(scored.score)}${scored.partial ? ' is-partial' : ''}`,
+    'aria-label': scoreMeaning,
+    title: scoreMeaning,
+  }, [
+    el('strong', { text: headline }),
+    showDetail ? el('span', { text: completionText(scored) }) : null,
+    scored.partial ? el('span', { text: 'חלקי', title: 'חסרים דירוגים' }) : null,
   ]);
 };
 export const travelSummary = (job) => {

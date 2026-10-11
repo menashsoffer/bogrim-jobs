@@ -44,12 +44,12 @@ export const renderCompare = () => {
   const body = el('tbody');
   body.append(row('ציון', chosen.map((job) => {
     const scored = scoreJob(job);
-    return el('td', { text: scored.score == null ? '—' : formatScore(scored.score) });
+    return el('td', { text: scored.score == null ? (scored.total ? 'טרם דורג' : '—') : formatScore(scored.score) });
   })));
   body.append(row('השלמה', chosen.map((job) => {
     const scored = scoreJob(job);
-    const text = scored.total ? `${completionText(scored)}${scored.partial ? ' חלקי' : ''}` : completionText(scored);
-    return el('td', { text });
+    const text = scored.partial ? `${completionText(scored)} חלקי` : completionText(scored);
+    return el('td', { text, title: scored.partial ? 'חסרים דירוגים' : null });
   })));
   store.state.criteria.forEach((criterion) => {
     body.append(row(criterion.name, chosen.map((job) => {

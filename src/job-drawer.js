@@ -1,9 +1,9 @@
-import { STATUSES, el, formatScore, formatStamp, labelOrUnknown, safeHttps, scoreBand, toast } from './dom.js';
+import { STATUSES, el, formatStamp, labelOrUnknown, safeHttps, toast } from './dom.js';
 import { backIf, pushJob } from './history.js';
 import { icon } from './icons.js';
 import { contactsSection, factsSection, travelSection } from './drawer-sections.js';
 import { jobPlace, noteListDirty, renderResults } from './job-list.js';
-import { completionText, criterionValue, scoreJob } from './score.js';
+import { criterionValue, scoreNode } from './score.js';
 import { ensureJob, peekJob, save, store, uid } from './store.js';
 
 export const setBackgroundInert = (on) => {
@@ -49,7 +49,6 @@ export const paintDrawer = () => {
   const root = document.getElementById('drawer-root');
   if (!job || !root) return;
   const user = peekJob(job.id);
-  const scored = scoreJob(job);
   const url = safeHttps(job.url);
   const backdrop = el('button', {
     type: 'button',
@@ -83,11 +82,7 @@ export const paintDrawer = () => {
     ]),
     el('h2', { id: 'drawer-title', text: job.title || job.role }),
     el('p', { class: 'muted', text: `${job.authority} · ${labelOrUnknown(job.district)} · ${labelOrUnknown(job.authorityType)}` }),
-    el('p', { class: `score ${scoreBand(scored.score)}${scored.partial ? ' is-partial' : ''}` }, [
-      el('strong', { text: scored.score == null ? '—' : formatScore(scored.score) }),
-      el('span', { text: completionText(scored) }),
-      scored.partial ? el('span', { text: 'חלקי' }) : null,
-    ]),
+    scoreNode(job),
     url ? el('a', {
       class: 'btn primary',
       id: 'source-link',

@@ -162,7 +162,9 @@ def main():
                 }"""
             )
             score_text = page.locator("#drawer .score").inner_text()
-            check("4.4" in score_text and "דורג 2/5" in score_text and "חלקי" in score_text, score_text)
+            check("4.4" in score_text and "2 מתוך 5 קריטריונים" in score_text and "חלקי" in score_text, score_text)
+            check(page.locator("#drawer .score").get_attribute("aria-label") == "ממוצע משוקלל של הקריטריונים שדירגת, 1–5", "score label")
+            check(page.locator("#drawer .score span", has_text="חלקי").get_attribute("title") == "חסרים דירוגים", "partial title")
             page.locator("#drawer-favorite").click()
             page.select_option("#job-status", "מעניין")
             page.fill("#notes-role", "הערה על התפקיד")
