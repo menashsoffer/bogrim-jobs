@@ -271,7 +271,7 @@ export const paintDrawer = () => {
   });
   if (store.data.meta && store.data.meta.includeContacts) body.append(contactsSection(job));
 
-  const drawer = el('aside', {
+  const drawer = el('div', {
     class: 'drawer',
     id: 'drawer',
     role: 'dialog',
