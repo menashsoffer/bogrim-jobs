@@ -1,6 +1,6 @@
 import { el, formatDuration, formatScore, labelOrUnknown, toast } from './dom.js';
 import { airKm, criterionValue, scoreJob, travelMinutes } from './score.js';
-import { rebuildShells } from './shell.js';
+import { reloadOpenViews } from './shell.js';
 import { peekJob, sanitizeState, saveNow, store, validCriterion } from './store.js';
 
 export const download = (filename, text, type) => {
@@ -64,7 +64,8 @@ export const exportJson = () => {
   const state = { ...store.state };
   delete state.routingKey;
   const payload = { app: 'bogrim-jobs', version: 1, exportedAt: new Date().toISOString(), state };
-  download('bogrim-jobs-backup.json', JSON.stringify(payload, null, 2), 'application/json');
+  const day = new Date().toISOString().slice(0, 10);
+  download(`bogrim-jobs-${day}.json`, JSON.stringify(payload, null, 2), 'application/json');
   toast('קובץ ה-JSON ירד');
 };
 export const validImport = (value) => {
@@ -73,6 +74,9 @@ export const validImport = (value) => {
   if (!Array.isArray(value.criteria) || !value.criteria.every(validCriterion)) return false;
   return true;
 };
+const ratedJobCount = (jobs) => Object.values(jobs || {}).filter((job) => (
+  job && job.ratings && typeof job.ratings === 'object' && Object.keys(job.ratings).length > 0
+)).length;
 export const importText = (text) => {
   let parsed;
   try {
@@ -86,10 +90,14 @@ export const importText = (text) => {
     toast('הקובץ אינו גיבוי תקין. הנתונים הקיימים נשמרו.');
     return;
   }
-  if (!window.confirm('ייבוא יחליף את הנתונים השמורים בדפדפן. להמשיך?')) return;
+  const stamp = parsed && typeof parsed.exportedAt === 'string' ? parsed.exportedAt : 'ללא תאריך';
+  const incomingRated = ratedJobCount(incoming.jobs);
+  const currentRated = ratedJobCount(store.state.jobs);
+  const question = `גיבוי מ-${stamp}, ${incomingRated} משרות מדורגות. להחליף את הנתונים הנוכחיים (${currentRated} משרות מדורגות)?`;
+  if (!window.confirm(question)) return;
   store.state = sanitizeState(incoming);
   store.state.compareIds = store.state.compareIds.filter((id) => store.jobsById.has(id));
   saveNow({ replace: true });
-  rebuildShells();
-  toast('הנתונים יובאו');
+  reloadOpenViews();
+  toast(`יובאו ${incomingRated} דירוגים`);
 };

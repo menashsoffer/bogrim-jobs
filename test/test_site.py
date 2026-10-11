@@ -290,6 +290,7 @@ def main():
             json_path = ROOT / "test-results" / "backup.json"
             json_path.parent.mkdir(exist_ok=True)
             json_download.value.save_as(str(json_path))
+            check(json_download.value.suggested_filename.startswith("bogrim-jobs-") and json_download.value.suggested_filename.endswith(".json"), json_download.value.suggested_filename)
             backup = json.loads(json_path.read_text(encoding="utf-8"))
             check(backup["state"]["jobs"], "export was empty")
             check("routingKey" not in backup["state"], "export included the routing key")
@@ -322,6 +323,8 @@ def main():
             other_page.locator('#nav [data-view="settings"]').click()
             other_page.locator("#import-file").set_input_files(str(json_path))
             other_page.wait_for_function("() => (localStorage.getItem('bogrim-jobs.v1') || '').includes('=1+1')")
+            check("יובאו" in other_page.locator("#toast").inner_text(), "import summary toast")
+            check(other_page.evaluate("() => !document.getElementById('view-settings').hidden"), "import left the settings tab")
             bad_path = ROOT / "test-results" / "bad.json"
             bad_path.write_text("{", encoding="utf-8")
             before = other_page.evaluate("() => localStorage.getItem('bogrim-jobs.v1')")

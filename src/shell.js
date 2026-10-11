@@ -7,6 +7,28 @@ import { ensureMap } from './job-map.js';
 import { renderSettings } from './settings-panel.js';
 import { STORAGE_KEY, defaultState, store } from './store.js';
 
+export const reloadOpenViews = () => {
+  if (store.openJobId) closeJob();
+  const list = document.getElementById('view-list');
+  list.replaceChildren();
+  delete list.dataset.ready;
+  document.getElementById('view-settings').replaceChildren();
+  document.getElementById('view-compare').replaceChildren();
+  if (store.map) {
+    store.map.remove();
+    store.map = null;
+    store.mapLayer = null;
+  }
+  renderListShell();
+  updateCompareCount();
+  renderResults();
+  const settings = document.getElementById('view-settings');
+  if (settings && !settings.hidden) renderSettings();
+  const compare = document.getElementById('view-compare');
+  if (compare && !compare.hidden) renderCompare();
+  const map = document.getElementById('view-map');
+  if (map && !map.hidden) ensureMap();
+};
 export const rebuildShells = () => {
   if (store.openJobId) closeJob();
   const list = document.getElementById('view-list');
