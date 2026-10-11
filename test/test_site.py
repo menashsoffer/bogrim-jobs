@@ -17,7 +17,8 @@ def main():
         raise SystemExit(f"unexpected energy search count {energy}")
 
     server = serve()
-    base = f"http://127.0.0.1:{server.server_address[1]}/"
+    origin = f"http://127.0.0.1:{server.server_address[1]}/"
+    base = origin + "?test=1"
     phase = {"nominatim": "abort", "osrm": "abort"}
     external = []
     tiles = []
@@ -26,7 +27,7 @@ def main():
 
     def handle_route(route):
         url = route.request.url
-        if url.startswith(base) or url.startswith("blob:") or url.startswith("data:"):
+        if url.startswith(origin) or url.startswith("blob:") or url.startswith("data:"):
             route.continue_()
             return
         external.append(url)

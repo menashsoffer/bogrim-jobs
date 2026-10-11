@@ -61,13 +61,15 @@ export const boot = async () => {
   updateCompareCount();
   const hashed = jobIdFromHash();
   if (hashed && store.jobsById.has(hashed)) openJob(hashed, null);
-  window.__app = {
-    get state() { return store.state; },
-    jobs: store.jobs,
-    scoreJob,
-    travelMinutes,
-    airKm,
-  };
+  if (new URLSearchParams(location.search).get('test') === '1') {
+    window.__app = {
+      get state() { return store.state; },
+      jobs: store.jobs,
+      scoreJob,
+      travelMinutes,
+      airKm,
+    };
+  }
 };
 
 boot().catch(() => {
