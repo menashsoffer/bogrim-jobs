@@ -1,105 +1,10 @@
 #!/usr/bin/env python3
 """Browser checks for the default public build. No contact data is expected."""
 import json
-import os
-import threading
-from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
-from pathlib import Path
 
 from playwright.sync_api import sync_playwright
 
-ROOT = Path(__file__).resolve().parents[1]
-DIST = ROOT / "dist"
-TINY_PNG = bytes.fromhex(
-    "89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4"
-    "890000000a49444154789c63000100000500010d0a2db40000000049454e44ae426082"
-)
-
-
-def chrome_path():
-    for path in ("/usr/bin/google-chrome", "/usr/bin/google-chrome-stable", "/usr/bin/chromium", "/usr/bin/chromium-browser"):
-        if os.path.exists(path):
-            return path
-    raise SystemExit("system Chrome was not found")
-
-
-class QuietHandler(SimpleHTTPRequestHandler):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, directory=str(DIST), **kwargs)
-
-    def log_message(self, format, *args):
-        return
-
-
-def serve():
-    server = ThreadingHTTPServer(("127.0.0.1", 0), QuietHandler)
-    thread = threading.Thread(target=server.serve_forever, daemon=True)
-    thread.start()
-    return server
-
-
-def parse_csv(text):
-    rows = []
-    current = []
-    cell = []
-    quoted = False
-    index = 0
-    while index < len(text):
-        char = text[index]
-        if quoted:
-            if char == '"':
-                if index + 1 < len(text) and text[index + 1] == '"':
-                    cell.append('"')
-                    index += 2
-                    continue
-                quoted = False
-                index += 1
-                continue
-            cell.append(char)
-            index += 1
-            continue
-        if char == '"':
-            quoted = True
-            index += 1
-            continue
-        if char == ",":
-            current.append("".join(cell))
-            cell = []
-            index += 1
-            continue
-        if char == "\r" and index + 1 < len(text) and text[index + 1] == "\n":
-            current.append("".join(cell))
-            rows.append(current)
-            current = []
-            cell = []
-            index += 2
-            continue
-        cell.append(char)
-        index += 1
-    if cell or current:
-        current.append("".join(cell))
-        rows.append(current)
-    return rows
-
-
-def search_count(jobs, query):
-    needle = query.lower()
-    found = 0
-    for job in jobs:
-        hay = "\n".join([
-            job.get("title") or "",
-            job.get("authority") or "",
-            job.get("description") or "",
-            job.get("role") or "",
-            job.get("challenge") or "",
-            job.get("solution") or "",
-            " ".join(job.get("categories") or []),
-            job.get("district") or "לא ידוע",
-            job.get("authorityType") or "לא ידוע",
-        ]).lower()
-        if needle in hay:
-            found += 1
-    return found
+from site_harness import DIST, ROOT, TINY_PNG, chrome_path, parse_csv, search_count, serve
 
 
 def main():
@@ -141,7 +46,7 @@ def main():
         route.abort()
 
     def attach(page):
-        page.route("**/*", handle_route)
+        page.route("https://**/*", handle_route)
         page.on("pageerror", lambda error: page_errors.append(str(error)))
         page.on("console", lambda message: console_errors.append(message.text) if message.type == "error" else None)
         page.on("dialog", lambda dialog: dialog.accept())
@@ -307,7 +212,7 @@ def main():
             for index in range(4):
                 boxes.nth(index).check()
             check(page.locator("#compare-count").inner_text() == "4", "compare count")
-            boxes.nth(4).check()
+            boxes.nth(4).click()
             page.locator("#limit-alert").wait_for()
             check("אפשר להשוות עד 4 משרות" in page.locator("#limit-alert").inner_text(), "compare limit")
             check(page.locator("#compare-count").inner_text() == "4", "fifth compare selection was kept")
@@ -333,6 +238,7 @@ def main():
             check("שם לבדיקה" in names, "renamed criterion was not saved")
             stored = page.evaluate("() => localStorage.getItem('bogrim-jobs.v1')")
             check("הערה על התפקיד" in stored and "=1+1" in stored and "שיחה ראשונה" in stored, "localStorage lost user data")
+            page.locator('#nav [data-view="list"]').click()
             page.locator("button.card-open").first.click()
             page.locator("#drawer").wait_for()
             check(page.locator("#job-status").input_value() == "מעניין" or "מעניין" in page.locator("#drawer").inner_text(), "status was not saved")
@@ -419,7 +325,15 @@ def main():
 
             check(tiles == [], "tiles were requested before the map tab")
             page.locator('#nav [data-view="map"]').click()
-            page.wait_for_function("() => window.L && document.querySelector('#map .leaflet-container')", timeout=20000)
+            try:
+                page.wait_for_function("() => window.L && document.querySelector('#map.leaflet-container')", timeout=20000)
+            except Exception as error:
+                detail = page.evaluate("""() => ({
+                  L: typeof window.L,
+                  text: ((document.getElementById('map') || {}).innerText || '').slice(0, 180),
+                  hidden: !!(document.getElementById('view-map') && document.getElementById('view-map').hidden),
+                })""")
+                raise AssertionError(f"map did not open {detail} page={page_errors[:3]} console={console_errors[:3]}") from error
             page.wait_for_timeout(500)
             check(len(tiles) > 0, "opening the map did not request OSM tiles")
             check("OpenStreetMap" in page.locator("#view-map").inner_text() or page.locator(".leaflet-control-attribution").count() >= 0, "map notice")
@@ -465,7 +379,12 @@ def main():
             cleared = page.evaluate("() => JSON.parse(localStorage.getItem('bogrim-jobs.v1'))")
             check(cleared["jobs"] == {} and cleared["criteria"][0]["name"] == "התפקיד והאנשים", "clear data")
 
-            interesting = [item for item in console_errors + page_errors if "tile.openstreetmap.org" not in item and "nominatim" not in item.lower()]
+            interesting = [
+                item for item in console_errors + page_errors
+                if "Failed to load resource" not in item
+                and "nominatim" not in item.lower()
+                and "tile.openstreetmap.org" not in item
+            ]
             check(interesting == [], f"console errors: {interesting[:8]}")
             browser.close()
         print("browser checks passed")

@@ -1,4 +1,5 @@
 data/raw/
+dist/
 dist-contacts/
 geo/nominatim_cache.json
 __pycache__/

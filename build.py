@@ -275,8 +275,9 @@ def write_site(dest, jobs, localities, include_contacts):
             raise SystemExit("refusing to write data.json that contains emails or phones")
     with open(os.path.join(dest, "data.json"), "w", encoding="utf-8") as handle:
         handle.write(blob)
-    for name in ("index.html", "app.js", "styles.css", "favicon.svg", "og-image.png"):
-        shutil.copy(os.path.join(SRC, name), os.path.join(dest, name))
+    for name in sorted(os.listdir(SRC)):
+        if os.path.splitext(name)[1] in {".html", ".js", ".css", ".svg", ".png"}:
+            shutil.copy(os.path.join(SRC, name), os.path.join(dest, name))
     leaflet_dest = os.path.join(dest, "vendor", "leaflet")
     if os.path.isdir(leaflet_dest):
         shutil.rmtree(leaflet_dest)

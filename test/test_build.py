@@ -95,7 +95,8 @@ class BuildTests(unittest.TestCase):
             with open(raw_path, "w", encoding="utf-8") as handle:
                 json.dump(raw, handle, ensure_ascii=False)
             build.main(["--raw", raw_path, "--dest", public_dest])
-            public = json.load(open(os.path.join(public_dest, "data.json"), encoding="utf-8"))
+            with open(os.path.join(public_dest, "data.json"), encoding="utf-8") as handle:
+                public = json.load(handle)
             job = public["jobs"][0]
             self.assertFalse(public["meta"]["includeContacts"])
             self.assertEqual(job["categories"], ["פיתוח ארגוני", "תכנון אסטרטגי"])
@@ -110,7 +111,8 @@ class BuildTests(unittest.TestCase):
             self.assertEqual(phones, [])
 
             build.main(["--include-contacts", "--raw", raw_path, "--dest", contact_dest])
-            private = json.load(open(os.path.join(contact_dest, "data.json"), encoding="utf-8"))
+            with open(os.path.join(contact_dest, "data.json"), encoding="utf-8") as handle:
+                private = json.load(handle)
             hidden = private["jobs"][0]
             self.assertTrue(private["meta"]["includeContacts"])
             self.assertEqual(hidden["contactEmail"], "ori@" + "wegalil.org" + ".il")
@@ -126,8 +128,10 @@ class BuildTests(unittest.TestCase):
         build.main([])
         data_path = os.path.join(ROOT, "data", "jobs.json")
         dist_path = os.path.join(ROOT, "dist", "data.json")
-        filtered = json.load(open(data_path, encoding="utf-8"))
-        bundled = json.load(open(dist_path, encoding="utf-8"))
+        with open(data_path, encoding="utf-8") as handle:
+            filtered = json.load(handle)
+        with open(dist_path, encoding="utf-8") as handle:
+            bundled = json.load(handle)
         self.assertEqual(len(filtered["jobs"]), 211)
         self.assertEqual(bundled["meta"]["includeContacts"], False)
         self.assertEqual(bundled["meta"]["count"], 211)
@@ -173,18 +177,28 @@ class BuildTests(unittest.TestCase):
             with tempfile.TemporaryDirectory() as tmp:
                 dest = os.path.join(tmp, "dist-contacts")
                 build.main(["--include-contacts", "--raw", raw_path, "--dest", dest])
-                private = json.load(open(os.path.join(dest, "data.json"), encoding="utf-8"))
-                western = next(job for job in private["jobs"] if job["authority"] == "אשכול גליל מערבי")
+                with open(os.path.join(dest, "data.json"), encoding="utf-8") as handle:
+                    private = json.load(handle)
+                with open(raw_path, encoding="utf-8") as handle:
+                    raw_jobs = json.load(handle)
+                by_id = {job["id"]: job for job in private["jobs"]}
+
+                def built_for(predicate):
+                    raw_job = next(job for job in raw_jobs if predicate(job))
+                    return by_id[raw_job["_id"]]
+
+                western = built_for(lambda job: job.get("authority") == "אשכול גליל מערבי" and str(job.get("contactEmail") or "").lower().endswith("orgli"))
                 self.assertTrue(western["contactEmail"])
                 self.assertTrue(western["contactEmail"].endswith("org.il"))
                 self.assertFalse(western["contactEmail"].lower().endswith("orgli"))
-                yesod = next(job for job in private["jobs"] if job["authority"] == "יסוד המעלה")
+                yesod = built_for(lambda job: job.get("authority") == "יסוד המעלה" and "@" not in str(job.get("managerEmail") or ""))
                 self.assertIsNone(yesod["managerEmail"])
                 self.assertTrue(yesod["managerPhone"])
-                nahariya = next(job for job in private["jobs"] if job["authority"] == "נהריה")
+                nahariya = built_for(lambda job: job.get("authority") == "נהריה" and "@" not in str(job.get("managerEmail") or "") and job.get("managerPhone"))
                 self.assertIsNone(nahariya["managerEmail"])
                 self.assertTrue(nahariya["managerPhone"])
-                public_again = json.load(open(dist_path, encoding="utf-8"))
+                with open(dist_path, encoding="utf-8") as handle:
+                    public_again = json.load(handle)
                 self.assertFalse(public_again["meta"]["includeContacts"])
                 emails, phones = privacy_scan.find_personal_data(json.dumps(public_again, ensure_ascii=False))
                 self.assertEqual(emails, [])
