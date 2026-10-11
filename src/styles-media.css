@@ -19,13 +19,19 @@
   }
 }
 @media (max-width: 720px) {
-  .header-inner { flex-wrap: nowrap; gap: 4px; padding: 2px 8px; }
-  .brand { gap: 6px; min-width: 0; }
+  .header-inner { gap: 2px 8px; padding: 4px 8px 0; }
+  .brand { gap: 6px; }
   .brand-mark { width: 28px; height: 28px; font-size: 15px; border-radius: 8px; }
   .brand h1 { font-size: 0.95rem; white-space: nowrap; }
   .brand-count { font-size: 0.75rem; line-height: 1.1; }
-  .nav { width: auto; flex: 1; flex-wrap: nowrap; overflow-x: auto; gap: 2px; padding: 0; }
-  .nav button { padding: 4px 8px; }
+  .nav { flex-wrap: wrap; overflow: visible; gap: 2px; padding: 0 0 4px; }
+  .nav button {
+    flex: 1 1 30%;
+    padding: 4px 6px;
+    white-space: nowrap;
+    font-size: 0.8rem;
+    line-height: 1.15;
+  }
   .source-banner { font-size: 0.75rem; line-height: 1.25; padding: 3px 8px; }
 }
 @media (prefers-reduced-motion: reduce) {
