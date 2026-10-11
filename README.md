@@ -48,7 +48,7 @@ python3 -m http.server -d dist 8000
 
 ## פריסה
 
-דחיפה ל-`main`, או הרצה ידנית מ-Actions, מפעילה את `.github/workflows/pages.yml`. הוא מריץ `python3 build.py` בלי `--include-contacts`, בודק שאין דוא״ל או טלפון ב-`dist/`, ומעלה רק את `dist/` ל-GitHub Pages. הפריסה משתמשת בקטלוג שכבר שמור במאגר, בלי סריקה מתוזמנת של אתר המקור.
+דחיפה ל-`main`, או הרצה ידנית מ-Actions, מפעילה את `.github/workflows/pages.yml`. הוא מריץ `python3 build.py` בלי `--include-contacts`, בודק שאין דוא״ל או טלפון ב-`dist/`, ומעלה רק את `dist/` ל-GitHub Pages. הפריסה משתמשת בקטלוג שכבר שמור במאגר, בלי סריקה מתוזמנת של אתר המקור. אין להוסיף `--include-contacts` ל-CI.
 
 הכתובת הציבורית היא `https://menashsoffer.github.io/bogrim-jobs/`, כמו `PUBLIC_BASE_URL`. הקישורים לקבצים יחסיים, ולכן הם נטענים תחת `/bogrim-jobs/`.
 

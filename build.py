@@ -252,7 +252,7 @@ def build_jobs(records, coords, include_contacts):
         blob = json.dumps(jobs, ensure_ascii=False)
         emails, phones = find_personal_data(blob)
         if emails or phones:
-            raise SystemExit(f"public build contains personal data emails={emails[:5]} phones={phones[:5]}")
+            raise SystemExit(f"data.json: {len(emails)} emails, {len(phones)} phones")
         for job in jobs:
             for key in CONTACT_KEYS:
                 if key in job:
@@ -274,7 +274,8 @@ def write_site(dest, jobs, localities, include_contacts):
     if not include_contacts:
         emails, phones = find_personal_data(blob)
         if emails or phones:
-            raise SystemExit("refusing to write data.json that contains emails or phones")
+            data_path = os.path.join(dest, "data.json")
+            raise SystemExit(f"{data_path}: {len(emails)} emails, {len(phones)} phones")
     with open(os.path.join(dest, "data.json"), "w", encoding="utf-8") as handle:
         handle.write(blob)
     base = PUBLIC_BASE_URL if PUBLIC_BASE_URL.endswith("/") else PUBLIC_BASE_URL + "/"

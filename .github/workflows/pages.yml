@@ -5,27 +5,22 @@ on:
     branches: [main]
   workflow_dispatch:
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
+permissions: {}
 
 concurrency:
   group: pages
   cancel-in-progress: false
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - name: Configure Pages
-        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+        with:
+          persist-credentials: false
 
       - name: Build public site
         run: python3 build.py
@@ -47,7 +42,7 @@ jobs:
                   with open(path, encoding="utf-8", errors="replace") as handle:
                       emails, phones = find_personal_data(handle.read())
                   if emails or phones:
-                      leaked.append(f"{path} emails={emails[:3]} phones={phones[:3]}")
+                      leaked.append(f"{path}: {len(emails)} emails, {len(phones)} phones")
           if leaked:
               print("\n".join(leaked), file=sys.stderr)
               sys.exit(1)
@@ -59,6 +54,16 @@ jobs:
         with:
           path: dist
 
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
