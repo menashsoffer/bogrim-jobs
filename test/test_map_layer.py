@@ -66,6 +66,20 @@ def run_viewport(page, base, width, height):
     page.goto(base)
     page.wait_for_function("() => window.__app && window.__app.jobs.length === 211")
     open_map(page)
+    check("מוצגות 211 משרות לפי הסינון" in page.locator("#map-count").inner_text(), "map count")
+    check(page.locator(".map-legend .score-none").count() == 1 and page.locator(".map-legend .score-5").count() == 1, "map legend")
+    page.evaluate(
+        """() => {
+          let opened = false;
+          window.__map.eachLayer((layer) => {
+            if (opened || !layer.getTooltip || !layer.getTooltip()) return;
+            layer.openPopup();
+            opened = true;
+          });
+        }"""
+    )
+    page.locator(".leaflet-popup").wait_for()
+    check(page.locator("#drawer").count() == 0, "marker opened the drawer without a popup choice")
     map_on_top = page.evaluate(
         """() => {
           const zoom = document.querySelector('.leaflet-control-zoom');

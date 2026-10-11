@@ -322,6 +322,26 @@ body.drawer-open { overflow: hidden; }
 table { border-collapse: collapse; width: 100%; min-width: 520px; }
 th, td { border-bottom: var(--line-w) solid var(--line); padding: var(--space-4); text-align: start; vertical-align: top; }
 th { background: var(--table-head); }
+.map-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  list-style: none;
+  padding: 0;
+  margin: var(--space-3) 0;
+}
+.map-legend li { display: inline-flex; align-items: center; gap: var(--space-2); }
+.swatch {
+  width: var(--icon-sm);
+  height: var(--icon-sm);
+  border-radius: var(--radius-pill);
+  background: var(--score-none);
+}
+.swatch.score-1 { background: var(--score-1); }
+.swatch.score-2 { background: var(--score-2); }
+.swatch.score-3 { background: var(--score-3); }
+.swatch.score-4 { background: var(--score-4); }
+.swatch.score-5 { background: var(--score-5); }
 #map {
   position: relative;
   z-index: 0;

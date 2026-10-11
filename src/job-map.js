@@ -15,7 +15,37 @@ export const loadLeaflet = () => {
   });
   return store.leafletLoading;
 };
+const markerPopup = (group) => {
+  const popup = el('div');
+  if (group.length === 1) {
+    const job = group[0];
+    popup.append(el('strong', { text: job.title || job.role }));
+    popup.append(el('p', { text: job.authority }));
+    popup.append(el('button', {
+      type: 'button',
+      class: 'btn',
+      text: 'פרטים',
+      on: { click: () => openJob(job.id, null) },
+    }));
+    return popup;
+  }
+  popup.append(el('strong', { text: group[0].authority }));
+  group.forEach((job) => {
+    popup.append(el('button', {
+      type: 'button',
+      class: 'btn',
+      text: job.role || job.title,
+      on: { click: () => openJob(job.id, null) },
+    }));
+  });
+  return popup;
+};
+const paintMapCount = () => {
+  const count = document.getElementById('map-count');
+  if (count) count.textContent = `מוצגות ${visibleJobs().length} משרות לפי הסינון`;
+};
 export const drawMarkers = (leaflet) => {
+  paintMapCount();
   if (!store.map) return;
   if (store.mapLayer) store.mapLayer.remove();
   store.mapLayer = leaflet.layerGroup().addTo(store.map);
@@ -37,22 +67,8 @@ export const drawMarkers = (leaflet) => {
       fillColor: theme.getPropertyValue(`--score-${band}`).trim(),
       fillOpacity: 0.95,
     });
-    marker.on('click', () => {
-      if (group.length === 1) openJob(group[0].id, null);
-    });
-    if (group.length > 1) {
-      const popup = el('div');
-      popup.append(el('strong', { text: group[0].authority }));
-      group.forEach((job) => {
-        popup.append(el('button', {
-          type: 'button',
-          class: 'btn',
-          text: job.role || job.title,
-          on: { click: () => openJob(job.id, null) },
-        }));
-      });
-      marker.bindPopup(popup);
-    }
+    marker.bindPopup(markerPopup(group));
+    marker.bindTooltip(group.length === 1 ? (group[0].title || group[0].role) : group[0].authority);
     marker.addTo(store.mapLayer);
     bounds.push([group[0].lat, group[0].lon]);
   });
@@ -81,6 +97,7 @@ export const ensureMap = async () => {
     }
     setTimeout(() => { if (store.map) store.map.invalidateSize(); }, 60);
     drawMarkers(leaflet);
+    if (new URLSearchParams(location.search).get('test') === '1') window.__map = store.map;
   } catch (error) {
     host.replaceChildren(el('p', { class: 'empty', text: 'המפה לא נטענה. שאר האתר זמין בלי מפה.' }));
   }
