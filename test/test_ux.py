@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Behavior added for the round-2 UX list."""
+import json
 import sys
 from pathlib import Path
 
@@ -193,6 +194,19 @@ def main():
             fresh.goto(base + "#view=map")
             fresh.locator("#view-map").wait_for()
             check(fresh.evaluate("() => !document.getElementById('view-map').hidden"), "map view was not restored")
+            blank = Path(__file__).resolve().parent / "test-results" / "blank-criterion.json"
+            blank.parent.mkdir(exist_ok=True)
+            blank.write_text(json.dumps({
+                "app": "bogrim-jobs",
+                "exportedAt": "2026-10-11T00:00:00.000Z",
+                "state": {
+                    "criteria": [{"id": "blank", "name": "  ", "type": "rating", "weight": 10}],
+                    "jobs": {},
+                },
+            }), encoding="utf-8")
+            fresh.on("dialog", lambda dialog: dialog.accept())
+            fresh.locator("#import-file").set_input_files(str(blank))
+            fresh.wait_for_function("() => window.__app.state.criteria.some((item) => item.name === 'קריטריון ללא שם')")
             fresh.close()
             browser.close()
     finally:

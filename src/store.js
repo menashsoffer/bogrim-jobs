@@ -112,7 +112,7 @@ export const validCriterion = (criterion) => Boolean(criterion)
   && criterion.id.length > 0
   && criterion.id.length < 80
   && typeof criterion.name === 'string'
-  && criterion.name.trim().length > 0
+  && criterion.name.length < 80
   && CRIT_TYPES.some(([type]) => type === criterion.type)
   && Number.isFinite(Number(criterion.weight));
 export const sanitizeState = (saved) => {
@@ -121,7 +121,7 @@ export const sanitizeState = (saved) => {
   if (Array.isArray(saved.criteria) && saved.criteria.length && saved.criteria.every(validCriterion)) {
     next.criteria = saved.criteria.map((criterion) => ({
       id: criterion.id,
-      name: String(criterion.name).slice(0, 80),
+      name: String(criterion.name).trim().slice(0, 80) || 'קריטריון ללא שם',
       type: criterion.type,
       weight: Math.max(0, Math.min(100, Number(criterion.weight) || 0)),
     }));
