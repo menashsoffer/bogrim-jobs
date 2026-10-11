@@ -66,7 +66,12 @@ export const nominatimSearch = async (query) => {
     lon: Number(row.lon),
   })).filter((row) => Number.isFinite(row.lat) && Number.isFinite(row.lon));
 };
+const clearHomeResults = () => {
+  const host = document.getElementById('home-results');
+  if (host) host.replaceChildren();
+};
 export const onGeocode = async () => {
+  clearHomeResults();
   const input = document.getElementById('home-address');
   const query = input ? input.value.trim() : '';
   if (!query) {
@@ -96,6 +101,7 @@ export const onGeocode = async () => {
     const local = localityHits(query, false);
     const choices = found.concat(local).slice(0, 8);
     if (!choices.length) {
+      clearHomeResults();
       setHomeStatus('לא הצלחנו לאתר את הכתובת. נסו שם יישוב מהרשימה, או בדקו את החיבור לאינטרנט.');
       return;
     }
@@ -108,6 +114,7 @@ export const onGeocode = async () => {
       showHomeChoices(local);
       return;
     }
+    clearHomeResults();
     setHomeStatus('לא הצלחנו לאתר את הכתובת. נסו שם יישוב מהרשימה, או בדקו את החיבור לאינטרנט.');
   }
 };

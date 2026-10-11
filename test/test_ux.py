@@ -69,6 +69,20 @@ def main():
             page.locator("#home-hint").click()
             page.locator("#home-address").wait_for()
             check(page.evaluate("() => document.activeElement && document.activeElement.id === 'home-address'"), "home address was not focused")
+            page.evaluate(
+                """() => {
+                  const host = document.getElementById('home-results');
+                  const button = document.createElement('button');
+                  button.id = 'stale-geocode';
+                  button.textContent = 'תוצאה ישנה';
+                  host.append(button);
+                }"""
+            )
+            page.route("**/nominatim.openstreetmap.org/**", lambda route: route.abort())
+            page.fill("#home-address", "zzzz-not-a-place")
+            page.click("#geocode-home")
+            page.wait_for_function("() => !document.getElementById('stale-geocode')")
+            page.unroute("**/nominatim.openstreetmap.org/**")
 
             context = browser.new_context(locale="he-IL", viewport={"width": 390, "height": 844})
             first = context.new_page()
