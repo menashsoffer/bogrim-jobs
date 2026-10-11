@@ -36,17 +36,48 @@ export const toggleCompare = (id, on) => {
   updateCompareCount();
   return true;
 };
+const activeFilterCount = () => {
+  const current = store.state.filters;
+  const defaults = defaultFilters();
+  return Object.keys(defaults).filter((key) => String(current[key] ?? '') !== String(defaults[key] ?? '')).length;
+};
+const paintFilterToggle = () => {
+  const toggle = document.getElementById('filter-toggle');
+  const label = toggle && toggle.querySelector('span');
+  if (!label) return;
+  const count = activeFilterCount();
+  label.textContent = count ? `סינון (${count})` : 'סינון';
+};
+export const clearFilters = () => {
+  clearTimeout(store.searchTimer);
+  store.state.filters = defaultFilters();
+  save();
+  const view = document.getElementById('view-list');
+  if (view) view.dataset.ready = '';
+  renderListShell();
+  renderResults();
+};
 export const renderResults = () => {
   const host = document.getElementById('results');
   const count = document.getElementById('result-count');
   if (!host) return;
   const list = visibleJobs();
   if (count) count.textContent = `מוצגות ${list.length} משרות`;
+  paintFilterToggle();
   host.replaceChildren();
   if (!list.length) {
+    const minScore = store.state.filters.minScore;
     host.append(el('div', { class: 'empty-state' }, [
       el('div', { class: 'art-slot', 'data-art': 'empty-results', 'aria-hidden': 'true' }),
-      el('p', { class: 'empty', text: 'לא נמצאו משרות' }),
+      el('p', { class: 'empty', text: 'אין משרות שמתאימות לסינון' }),
+      minScore !== '' && minScore != null ? el('p', { class: 'hint', text: 'רק משרות שדירגת מקבלות ציון' }) : null,
+      el('button', {
+        type: 'button',
+        class: 'btn',
+        id: 'empty-clear-filters',
+        text: 'נקה סינון',
+        on: { click: () => clearFilters() },
+      }),
     ]));
     return;
   }
@@ -247,14 +278,7 @@ export const renderListShell = () => {
       class: 'btn',
       id: 'clear-filters',
       text: 'נקה סינון',
-      on: { click: () => {
-        clearTimeout(store.searchTimer);
-        store.state.filters = defaultFilters();
-        save();
-        view.dataset.ready = '';
-        renderListShell();
-        renderResults();
-      }},
+      on: { click: () => clearFilters() },
     }),
   ]);
   const welcome = store.state.welcomeSeen ? null : el('section', { class: 'panel welcome', id: 'welcome' }, [
@@ -308,7 +332,7 @@ export const renderListShell = () => {
             pushFilters();
             search.focus();
           }},
-        }, [icon('sliders-horizontal', 'sm'), 'סינון']),
+        }, [icon('sliders-horizontal', 'sm'), el('span', { text: 'סינון' })]),
         el('p', { id: 'result-count', class: 'grow', 'aria-live': 'polite', text: '' }),
         el('label', { class: 'field', style: null }, [el('span', { class: 'field-label', text: 'מיון' }), sort]),
         dirButton,

@@ -126,6 +126,7 @@ def main():
 
             page.select_option("#filter-district", "דרום")
             wait_count(page, 51)
+            check(page.locator("#filter-toggle").inner_text() == "סינון (1)", "filter count")
             check(page.locator("#job-count").inner_text() == "211 משרות", "header count changed while filtering")
             page.select_option("#filter-district", "לא ידוע")
             wait_count(page, 16)
@@ -140,8 +141,11 @@ def main():
             check(shown_count(page) == energy, "energy search count")
             page.fill("#search", "zzzz-no-such-job")
             page.wait_for_selector(".empty")
-            check(page.locator(".empty").inner_text() == "לא נמצאו משרות", "empty state")
-            page.click("#clear-filters")
+            check(page.locator(".empty").inner_text() == "אין משרות שמתאימות לסינון", "empty state")
+            page.fill("#filter-min-score", "5")
+            page.locator("#filter-min-score").blur()
+            check("רק משרות שדירגת מקבלות ציון" in page.locator("#results").inner_text(), "min score note")
+            page.click("#empty-clear-filters")
             wait_count(page, 211)
 
             page.select_option("#sort-key", "name")
