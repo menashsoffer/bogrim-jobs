@@ -125,8 +125,13 @@ class BuildTests(unittest.TestCase):
                 build.main(["--include-contacts", "--raw", raw_path, "--dest", os.path.join(tmp, "dist")])
 
     def test_default_build_is_public_and_repo_has_no_contacts(self):
-        build.main([])
         data_path = os.path.join(ROOT, "data", "jobs.json")
+        with open(data_path, encoding="utf-8") as handle:
+            catalog_before = handle.read()
+        build.main([])
+        with open(data_path, encoding="utf-8") as handle:
+            catalog_after = handle.read()
+        self.assertEqual(catalog_after, catalog_before)
         dist_path = os.path.join(ROOT, "dist", "data.json")
         with open(data_path, encoding="utf-8") as handle:
             filtered = json.load(handle)

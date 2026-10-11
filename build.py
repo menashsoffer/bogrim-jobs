@@ -2,8 +2,9 @@
 """Build the static site in dist/.
 
   python3 build.py
-      Public build. Personal contact fields are dropped. Writes dist/ and, when
-      the gitignored raw file is present, refreshes data/jobs.json.
+      Public build. Personal contact fields are dropped. Writes dist/. When the
+      gitignored raw scrape is the input and its jobs differ from data/jobs.json,
+      that catalog is refreshed. A build from data/jobs.json leaves the file as-is.
 
   python3 build.py --include-contacts
       Local only. Reads data/raw/bogrim_jobs.json and writes dist-contacts/
@@ -302,6 +303,32 @@ def parse_args(argv):
     return parser.parse_args(argv)
 
 
+def catalog_jobs(path):
+    if not os.path.exists(path):
+        return None
+    data = load_json(path)
+    if isinstance(data, dict) and isinstance(data.get("jobs"), list):
+        return data["jobs"]
+    if isinstance(data, list):
+        return data
+    return None
+
+
+def refresh_filtered_catalog(path, jobs, meta):
+    """Rewrite data/jobs.json only when a raw scrape produced different jobs."""
+    if catalog_jobs(path) == jobs:
+        return False
+    filtered = {
+        "meta": {key: meta[key] for key in ("source", "sourceLabel", "count", "includeContacts", "generated")},
+        "jobs": jobs,
+    }
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", encoding="utf-8") as handle:
+        json.dump(filtered, handle, ensure_ascii=False, indent=1)
+        handle.write("\n")
+    return True
+
+
 def main(argv=None):
     args = parse_args(argv if argv is not None else sys.argv[1:])
     include_contacts = args.include_contacts
@@ -336,12 +363,10 @@ def main(argv=None):
     jobs = build_jobs(records, coords, include_contacts)
     meta = write_site(dest, jobs, localities, include_contacts)
 
-    if not include_contacts and not args.dest:
-        filtered = {"meta": {k: meta[k] for k in ("source", "sourceLabel", "count", "includeContacts", "generated")}, "jobs": jobs}
-        os.makedirs(os.path.dirname(filtered_default), exist_ok=True)
-        with open(filtered_default, "w", encoding="utf-8") as handle:
-            json.dump(filtered, handle, ensure_ascii=False, indent=1)
-            handle.write("\n")
+    # A public build from the committed catalog must not touch that file.
+    # Refresh it only from the default raw scrape, and only when the jobs changed.
+    if not include_contacts and not args.dest and os.path.abspath(source) == os.path.abspath(raw_default):
+        refresh_filtered_catalog(filtered_default, jobs, meta)
 
     print(f"wrote {dest} ({len(jobs)} jobs, contacts={'on' if include_contacts else 'off'})")
     return 0
