@@ -18,6 +18,8 @@ def check(condition, message):
 def main():
     if not (DIST / "index.html").exists():
         raise SystemExit("dist/ is missing; run python3 build.py first")
+    html = (DIST / "index.html").read_text(encoding="utf-8")
+    check('rel="preload" href="data.json" as="fetch" crossorigin' in html, "data.json is not preloaded")
     server = serve()
     origin = f"http://127.0.0.1:{server.server_address[1]}/"
     base = origin + "?test=1"
