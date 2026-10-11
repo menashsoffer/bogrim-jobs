@@ -12,12 +12,14 @@ EMAIL_RE = re.compile(
     r"(?<![A-Za-z0-9._%+\-])[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}(?![A-Za-z0-9.\-])"
 )
 
-# +972…, dashed landlines (0X-XXXXXXX), and 10-digit mobiles (05XXXXXXXX).
+# +972, landlines, and mobiles. A space or dash may split digit groups
+# (more than once). The lookbehind keeps Leaflet's decimal constants out.
 PHONE_RE = re.compile(
     r"(?<![\d.])(?:"
-    r"\+972[\-\s]?\d{1,2}[\-\s]?\d{7}"
-    r"|0\d{1,2}-\d{7}"
-    r"|05\d-?\d{7}"
+    r"\+972(?:[\-\s]?\d){8,9}"
+    r"|05\d(?:[\-\s]?\d){7}"
+    r"|0\d{1,2}[\-\s]\d{7}"
+    r"|0\d{1,2}(?:-\d{3}-\d{4}| \d{3} \d{4})"
     r")(?!\d)"
 )
 

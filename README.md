@@ -46,6 +46,14 @@ python3 -m http.server -d dist 8000
 
 `python3 geo/geocode_authorities.py` בונה מחדש את קואורדינטות הרשויות. הוא לא רץ בלי שלושה קלטים מקומיים, וכולם ב-`.gitignore`: הסריקה הגולמית (`python3 scrape.py`), `geo/loc.json` (הקובץ `src/locations.json` מ-[israel-geolocation](https://github.com/akivaschiff/israel-geolocation)), ו-`geo/cities_il_gist.json` (הקובץ `CitiesIL.json` מ-[gist של יישובים](https://gist.github.com/idomongo/f53331860322b94a8ba8e8a92ce401ec)). אלה רשימות יישובים ציבוריות, בלי פרטים אישיים. הדוח `geo/geocode_report.txt` נכתב מקומית ואינו נשמר במאגר. הקואורדינטות המוכנות כן במאגר (`authority_coords.json`, `localities_clean.json`), ולכן בנייה רגילה לא צריכה את הקלטים האלה.
 
+## פריסה
+
+דחיפה ל-`main`, או הרצה ידנית מ-Actions, מפעילה את `.github/workflows/pages.yml`. הוא מריץ `python3 build.py` בלי `--include-contacts`, בודק שאין דוא״ל או טלפון ב-`dist/`, ומעלה רק את `dist/` ל-GitHub Pages. הפריסה משתמשת בקטלוג שכבר שמור במאגר, בלי סריקה מתוזמנת של אתר המקור. אין להוסיף `--include-contacts` ל-CI.
+
+הכתובת הציבורית היא `https://menashsoffer.github.io/bogrim-jobs/`, כמו `PUBLIC_BASE_URL`. הקישורים לקבצים יחסיים, ולכן הם נטענים תחת `/bogrim-jobs/`.
+
+בפעם הראשונה: בהגדרות המאגר, Pages, Source: GitHub Actions.
+
 ## בדיקות
 
 ```bash
@@ -96,7 +104,7 @@ python3 build.py --include-contacts
 - [x] `lang="he"`, `dir="rtl"`, מטרות מגע, תגיות שיתוף
 - [ ] אנשי קשר `tel:` / `mailto:` במגירה הציבורית — בכוונה לא מוצגים. רשימת הקבלה ביקשה אותם; הם מאחורי `--include-contacts`
 - [x] Lighthouse למובייל: נגישות 100, ביצועים 96, שיטות עבודה מומלצות 100. SEO 63 רק בגלל `noindex`
-- [x] `og:url` ו-`og:image` נבנים מ-`PUBLIC_BASE_URL` ב-`build.py` (`https://menashsoffer.github.io/bogrim-jobs/`). אין workflow של פריסה
+- [x] `og:url` ו-`og:image` נבנים מ-`PUBLIC_BASE_URL` ב-`build.py` (`https://menashsoffer.github.io/bogrim-jobs/`). הפריסה ב-`.github/workflows/pages.yml`
 
 ## אבטחה
 
@@ -105,4 +113,4 @@ python3 build.py --include-contacts
 - [x] רשימת שדות מותרת. ברירת המחדל בלי דוא״ל, טלפון, שם אדם או `_owner`
 - [x] טקסט רגיל בלבד, בלי `innerHTML`
 - [x] `noindex` ו-`Disallow: /`
-- [x] Leaflet מקומי. אין `npm` ואין workflow של Pages
+- [x] Leaflet מקומי. אין `npm`. פריסת Pages רצה מ-Actions, בלי רענון מתוזמן

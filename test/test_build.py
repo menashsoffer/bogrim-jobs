@@ -88,6 +88,61 @@ class BuildTests(unittest.TestCase):
         self.assertIsNone(email)
         self.assertEqual(phone, plain)
 
+    def test_phone_pattern_matches_grouped_numbers(self):
+        def found(text):
+            return privacy_scan.find_personal_data(text)[1]
+
+        numbers = [
+            " ".join(["052", "123", "4567"]),
+            "-".join(["052", "123", "4567"]),
+            "052" + "-" + "5853562",
+            "054" + "7773807",
+            "-".join(["04", "6937511"]),
+            "-".join(["04", "693", "7511"]),
+            " ".join(["04", "693", "7511"]),
+            "+972" + "-" + "52" + "-" + "123" + "-" + "4567",
+        ]
+        for number in numbers:
+            self.assertEqual(found("see " + number + " now"), [number])
+        self.assertEqual(found("20037508.342789244"), [])
+        for name in ("leaflet.js", "leaflet.css"):
+            path = os.path.join(ROOT, "vendor", "leaflet", name)
+            with open(path, encoding="utf-8", errors="replace") as handle:
+                self.assertEqual(found(handle.read()), [])
+
+    def test_public_scan_counts_findings_without_values(self):
+        phone = " ".join(["052", "123", "4567"])
+        email = "person@" + "example.com"
+        job = {
+            "id": "job-1",
+            "title": "תפקיד",
+            "role": "תפקיד",
+            "authority": "רשות",
+            "authorityType": "עירייה",
+            "district": "מרכז",
+            "population": 1000,
+            "socioEconomic": 5,
+            "peripherality": 3,
+            "categories": ["פיתוח ארגוני"],
+            "challenge": "אתגר",
+            "description": " ".join([phone, email]),
+            "solution": "פתרון",
+            "managerTitle": "מנכ\"ל",
+            "url": "https://www.bogrim-muni.com/jobs/example",
+            "lat": 32.0,
+            "lon": 34.8,
+            "locationPrecision": "authority",
+            "locationNote": "",
+        }
+        with self.assertRaises(SystemExit) as caught:
+            build.build_jobs([job], {}, False)
+        message = str(caught.exception.code)
+        self.assertIn("data.json:", message)
+        self.assertIn("1 emails", message)
+        self.assertIn("1 phones", message)
+        self.assertNotIn(phone, message)
+        self.assertNotIn(email, message)
+
     def test_category_typo_and_allowlist_on_fixture(self):
         raw = [{
             "_id": "job-1",
