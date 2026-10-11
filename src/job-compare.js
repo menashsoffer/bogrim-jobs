@@ -12,7 +12,7 @@ export const renderCompare = () => {
     el('p', { class: 'hint', text: chosen.length < 2 ? 'בחרו לפחות 2 משרות להשוואה, ועד 4.' : 'עד 4 משרות זו לצד זו.' }),
   ]));
   if (!chosen.length) {
-    view.append(el('p', { class: 'empty', text: 'לא נמצאו משרות' }));
+    view.append(el('p', { class: 'empty', text: 'בחרו 2-4 משרות להשוואה' }));
     return;
   }
   const table = el('table');
