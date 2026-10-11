@@ -1,7 +1,7 @@
 import { STATUSES, el, formatScore, formatStamp, labelOrUnknown, safeHttps, scoreBand, toast } from './dom.js';
 import { contactsSection, factsSection, travelSection } from './drawer-sections.js';
 import { renderResults } from './job-list.js';
-import { criterionValue, scoreJob } from './score.js';
+import { completionText, criterionValue, scoreJob } from './score.js';
 import { ensureJob, peekJob, save, store, uid } from './store.js';
 
 export const setBackgroundInert = (on) => {
@@ -68,7 +68,7 @@ export const paintDrawer = () => {
     el('p', { class: 'muted', text: `${job.authority} · ${labelOrUnknown(job.district)} · ${labelOrUnknown(job.authorityType)}` }),
     el('p', { class: `score ${scoreBand(scored.score)}${scored.partial ? ' is-partial' : ''}` }, [
       el('strong', { text: scored.score == null ? '—' : formatScore(scored.score) }),
-      el('span', { text: `דורג ${scored.rated}/${scored.total}` }),
+      el('span', { text: completionText(scored) }),
       scored.partial ? el('span', { text: 'חלקי' }) : null,
     ]),
     url ? el('a', {

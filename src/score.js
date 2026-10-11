@@ -74,11 +74,14 @@ export const scoreJob = (job) => {
     partial: rated > 0 && rated < total,
   };
 };
+export const completionText = (scored) => (
+  scored.total ? `דורג ${scored.rated}/${scored.total}` : 'אין ציון: כל המשקלים הם 0'
+);
 export const scoreNode = (job) => {
   const scored = scoreJob(job);
   return el('p', { class: `score ${scoreBand(scored.score)}${scored.partial ? ' is-partial' : ''}` }, [
     el('strong', { text: scored.score == null ? '—' : formatScore(scored.score) }),
-    el('span', { text: `דורג ${scored.rated}/${scored.total}` }),
+    el('span', { text: completionText(scored) }),
     scored.partial ? el('span', { text: 'חלקי' }) : null,
   ]);
 };

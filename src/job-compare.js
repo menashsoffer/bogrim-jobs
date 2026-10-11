@@ -1,7 +1,7 @@
 import { el, formatScore } from './dom.js';
 import { openJob } from './job-drawer.js';
 import { renderResults, toggleCompare } from './job-list.js';
-import { criterionValue, scoreJob, travelSummary } from './score.js';
+import { completionText, criterionValue, scoreJob, travelSummary } from './score.js';
 import { peekJob, store } from './store.js';
 
 export const renderCompare = () => {
@@ -44,7 +44,8 @@ export const renderCompare = () => {
   })));
   body.append(row('השלמה', chosen.map((job) => {
     const scored = scoreJob(job);
-    return el('td', { text: `דורג ${scored.rated}/${scored.total}${scored.partial ? ' חלקי' : ''}` });
+    const text = scored.total ? `${completionText(scored)}${scored.partial ? ' חלקי' : ''}` : completionText(scored);
+    return el('td', { text });
   })));
   store.state.criteria.forEach((criterion) => {
     body.append(row(criterion.name, chosen.map((job) => {
