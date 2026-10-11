@@ -256,7 +256,7 @@ def main():
             page.locator("button.card-open").first.click()
             hrefs = page.locator("#drawer a.btn").evaluate_all("nodes => nodes.map((node) => node.getAttribute('href') || '')")
             check("קו אווירי" in page.locator("#drawer").inner_text() and page.locator("#score-mode, #transit-minutes").count() == 0, "car-only travel section")
-            check(all(any(part in href for href in hrefs) for part in ("travelmode=driving", "travelmode=transit", "waze.com", "moovit.com")), hrefs)
+            check(all(any(part in href for href in hrefs) for part in ("travelmode=driving", "travelmode=transit", "waze.com", "moovitapp.com")), hrefs)
             page.keyboard.press("Escape")
 
             page.locator('#nav [data-view="settings"]').click()

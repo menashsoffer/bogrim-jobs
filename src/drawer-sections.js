@@ -1,7 +1,12 @@
-import { UNKNOWN, el, externalLink, labelOrUnknown, safeMail, safeTel } from './dom.js';
+import { UNKNOWN, el, externalLink, labelOrUnknown, safeMail, safeTel, safeTravelUrl } from './dom.js';
+import { moovitLink } from './moovit.js';
 import { travelSummary } from './score.js';
 import { store } from './store.js';
 
+const travelLink = (href, text) => {
+  const safe = safeTravelUrl(href);
+  return safe ? externalLink(safe, text) : null;
+};
 const travelLinks = (job) => {
   const destination = `${job.lat},${job.lon}`;
   const origin = store.state.home ? `${store.state.home.lat},${store.state.home.lon}` : '';
@@ -12,20 +17,12 @@ const travelLinks = (job) => {
   const waze = origin
     ? `https://www.waze.com/ul?ll=${destination}&navigate=yes&from=${origin}`
     : `https://www.waze.com/ul?ll=${destination}&navigate=yes`;
-  const moovit = new URLSearchParams();
-  moovit.set('to', job.authority || '');
-  moovit.set('tll', `${job.lat}_${job.lon}`);
-  moovit.set('lang', 'he');
-  if (store.state.home) {
-    moovit.set('from', (store.state.home.label || 'הבית').replace(/\s+/g, ' ').trim());
-    moovit.set('fll', `${store.state.home.lat}_${store.state.home.lon}`);
-  }
   return [
-    externalLink(google('driving'), 'Google Maps · רכב'),
-    externalLink(waze, 'Waze'),
-    externalLink(google('transit'), 'Google Maps · תחבורה ציבורית'),
-    externalLink(`https://moovit.com/?${moovit}`, 'Moovit'),
-  ];
+    travelLink(google('driving'), 'Google Maps · רכב'),
+    travelLink(waze, 'Waze'),
+    travelLink(google('transit'), 'Google Maps · תחבורה ציבורית'),
+    moovitLink(store.state.home, { name: job.authority || '', lat: job.lat, lon: job.lon }),
+  ].filter(Boolean);
 };
 export const travelSection = (job) => {
   const section = el('section', { class: 'block' }, [el('h3', { text: 'נסיעה' })]);

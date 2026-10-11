@@ -2,6 +2,7 @@ import { importText } from './backup.js';
 import { closeJob, openJob, trapFocus } from './job-drawer.js';
 import { renderListShell, renderResults, updateCompareCount } from './job-list.js';
 import { formatDuration } from './dom.js';
+import { moovitAppUrl, moovitWebUrl } from './moovit.js';
 import { airKm, scoreJob, travelMinutes, travelSummary } from './score.js';
 import { showView } from './shell.js';
 import { loadState, saveNow, store } from './store.js';
@@ -70,6 +71,8 @@ export const boot = async () => {
       travelMinutes,
       travelSummary,
       formatDuration,
+      moovitWebUrl,
+      moovitAppUrl,
       airKm,
     };
   }

@@ -59,12 +59,24 @@ export const statusClass = (status) => {
   if (status === 'פסול') return 'status status-no';
   return 'status';
 };
+const allowedHost = (hostname, names) => names.includes(hostname);
 export const safeHttps = (url) => {
   try {
     const parsed = new URL(url);
     if (parsed.protocol !== 'https:') return '';
-    if (parsed.hostname !== 'www.bogrim-muni.com' && parsed.hostname !== 'bogrim-muni.com') return '';
+    if (!allowedHost(parsed.hostname, ['www.bogrim-muni.com', 'bogrim-muni.com'])) return '';
     return parsed.href;
+  } catch (error) {
+    return '';
+  }
+};
+export const safeTravelUrl = (url) => {
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== 'https:') return '';
+    const names = ['www.google.com', 'maps.google.com', 'www.waze.com', 'waze.com', 'moovit.com', 'www.moovit.com', 'moovitapp.com', 'www.moovitapp.com'];
+    if (!allowedHost(parsed.hostname, names)) return '';
+    return url;
   } catch (error) {
     return '';
   }

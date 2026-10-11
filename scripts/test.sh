@@ -9,3 +9,4 @@ python3 test/test_site.py
 python3 test/test_map_layer.py
 python3 test/test_travel.py
 python3 test/test_duration.py
+python3 test/test_moovit.py

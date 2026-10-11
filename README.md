@@ -86,7 +86,7 @@ python3 build.py --include-contacts
 
 `default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: https://tile.openstreetmap.org; connect-src 'self' https://nominatim.openstreetmap.org https://routing.openstreetmap.de https://api.openrouteservice.org; object-src 'none'; base-uri 'self'; form-action 'none'`
 
-בטעינה אין בקשה לצד שלישי. Nominatim רק אחרי «אתר כתובת», ואם היישוב ברשימה המקומית אין רשת. זמן נסיעה ברכב נשלח ל-OSRM רק אחרי «חשב זמני נסיעה» ואישור. אופניים, הליכה ודקות תחבורה ציבורית לא מחושבים. גיבוי ישן עם השדות האלה נטען בלי שגיאה: הם נזרקים, וזמני הרכב והדירוגים נשמרים. אריחי OpenStreetMap רק אחרי «מפה». «נקה נתונים» מוחק את מה שנשמר בדפדפן.
+בטעינה אין בקשה לצד שלישי. Nominatim רק אחרי «אתר כתובת», ואם היישוב ברשימה המקומית אין רשת. זמן נסיעה ברכב נשלח ל-OSRM רק אחרי «חשב זמני נסיעה» ואישור. אופניים, הליכה ודקות תחבורה ציבורית לא מחושבים. גיבוי ישן עם השדות האלה נטען בלי שגיאה: הם נזרקים, וזמני הרכב והדירוגים נשמרים. קישור Moovit נפתח ב-`moovitapp.com` עם `metroId=1`, כי `moovit.com/?…` מגיע לאתר השיווקי ולא למתכנן המסלול. אריחי OpenStreetMap רק אחרי «מפה». «נקה נתונים» מוחק את מה שנשמר בדפדפן.
 
 ## מצב מול רשימת הקבלה
 
