@@ -7,9 +7,7 @@ export const loadLeaflet = () => {
   if (window.L) return Promise.resolve(window.L);
   if (store.leafletLoading) return store.leafletLoading;
   store.leafletLoading = new Promise((resolve, reject) => {
-    ['vendor/leaflet/leaflet-map.css', 'vendor/leaflet/leaflet-controls.css'].forEach((href) => {
-      document.head.append(el('link', { rel: 'stylesheet', href }));
-    });
+    document.head.append(el('link', { rel: 'stylesheet', href: 'vendor/leaflet/leaflet.css' }));
     const script = el('script', { src: 'vendor/leaflet/leaflet.js' });
     script.addEventListener('load', () => resolve(window.L));
     script.addEventListener('error', () => reject(new Error('leaflet')));
