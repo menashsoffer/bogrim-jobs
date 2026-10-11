@@ -3,6 +3,12 @@ import { openJob, refreshDrawer } from './job-drawer.js';
 import { scoreNode, travelSummary, visibleJobs } from './score.js';
 import { defaultFilters, ensureJob, peekJob, save, store } from './store.js';
 
+const sortDirectionText = (direction) => (direction === 'asc' ? 'עולה' : 'יורד');
+const paintSortDirection = (button, direction) => {
+  const label = sortDirectionText(direction);
+  button.textContent = label;
+  button.setAttribute('aria-label', `כיוון מיון: ${label}`);
+};
 export const updateCompareCount = () => {
   const badge = document.getElementById('compare-count');
   if (badge) badge.textContent = String(store.state.compareIds.length);
@@ -145,23 +151,23 @@ export const renderListShell = () => {
     else store.state.sortDir = 'desc';
     save();
     const dir = document.getElementById('sort-dir');
-    if (dir) dir.textContent = store.state.sortDir === 'asc' ? 'עולה' : 'יורד';
+    if (dir) paintSortDirection(dir, store.state.sortDir);
     renderResults();
   });
   const dirButton = el('button', {
     type: 'button',
     class: 'btn',
     id: 'sort-dir',
-    'aria-label': 'כיוון מיון',
-    text: store.state.sortDir === 'asc' ? 'עולה' : 'יורד',
+    'aria-label': `כיוון מיון: ${sortDirectionText(store.state.sortDir)}`,
+    text: sortDirectionText(store.state.sortDir),
     on: { click: () => {
       store.state.sortDir = store.state.sortDir === 'asc' ? 'desc' : 'asc';
-      dirButton.textContent = store.state.sortDir === 'asc' ? 'עולה' : 'יורד';
+      paintSortDirection(dirButton, store.state.sortDir);
       save();
       renderResults();
     }},
   });
-  const mode = el('select', { id: 'score-mode', 'aria-label': 'ציון המרחק לפי' });
+  const mode = el('select', { id: 'score-mode' });
   SCORE_MODES.forEach(([key, label]) => {
     const option = el('option', { value: key, text: label });
     if (key === store.state.scoreMode) option.selected = true;
