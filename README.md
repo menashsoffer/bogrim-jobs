@@ -52,6 +52,8 @@ python3 -m http.server -d dist 8000
 bash scripts/test.sh
 ```
 
+בפייתון שחוסם התקנה גלובלית (PEP 668): `python3 -m venv .venv && . .venv/bin/activate && bash scripts/test.sh`.
+
 הפקודה מתקינה את Playwright `1.55.0`, בונה את `dist/`, מריצה את בדיקות הניקוי, ואז בדיקות דפדפן. סריקת הדוא״ל והטלפון רצה על הבנייה הציבורית.
 
 ## דגל אנשי קשר
