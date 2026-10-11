@@ -30,7 +30,7 @@
 | `data/raw/` | סריקה גולמית. לא במאגר |
 | `dist/` | אתר בנוי. לא במאגר, נוצר בבנייה |
 | `dist-contacts/` | בנייה מקומית עם אנשי קשר. לא במאגר |
-| `geo/` | קואורדינטות הרשויות ורשימת היישובים |
+| `geo/` | קואורדינטות הרשויות ורשימת היישובים. `loc.json` ו-`cities_il_gist.json` לא במאגר |
 | `vendor/leaflet/` | Leaflet 1.9.4, בלי CDN. ה-CSS מחולק לשני קבצים |
 
 ## בנייה והרצה
@@ -43,6 +43,8 @@ python3 -m http.server -d dist 8000
 לפתוח `http://127.0.0.1:8000/`. צריך שרת מקומי: המודולים לא רצים מ-`file://`.
 
 אם `data/raw/bogrim_jobs.json` קיים במחשב, הבנייה קוראת אותו. את `data/jobs.json` היא מעדכנת רק אם רשימת המשרות השתנתה. בנייה מהקטלוג עצמו לא כותבת אותו מחדש.
+
+`python3 geo/geocode_authorities.py` בונה מחדש את קואורדינטות הרשויות. הוא לא רץ בלי שלושה קלטים מקומיים, וכולם ב-`.gitignore`: הסריקה הגולמית (`python3 scrape.py`), `geo/loc.json` (הקובץ `src/locations.json` מ-[israel-geolocation](https://github.com/akivaschiff/israel-geolocation)), ו-`geo/cities_il_gist.json` (הקובץ `CitiesIL.json` מ-[gist של יישובים](https://gist.github.com/idomongo/f53331860322b94a8ba8e8a92ce401ec)). אלה רשימות יישובים ציבוריות, בלי פרטים אישיים. הדוח `geo/geocode_report.txt` נכתב מקומית ואינו נשמר במאגר. הקואורדינטות המוכנות כן במאגר (`authority_coords.json`, `localities_clean.json`), ולכן בנייה רגילה לא צריכה את הקלטים האלה.
 
 ## בדיקות
 

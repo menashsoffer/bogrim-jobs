@@ -3,11 +3,12 @@
 
 Sources (in order):
   1. MANUAL: authority -> HQ locality (regional councils / clusters / name variants) or explicit coords
-  2. loc.json: public Israeli localities dataset (github.com/akivaschiff/israel-geolocation, CBS list + OSM/Google coords)
-  3. Nominatim (OpenStreetMap), cached in nominatim_cache.json, polite 1.2 s rate-limit.
+  2. geo/loc.json: public Israeli localities (github.com/akivaschiff/israel-geolocation, src/locations.json). Not committed.
+  3. geo/cities_il_gist.json: public CBS points (gist.github.com/idomongo/f53331860322b94a8ba8e8a92ce401ec, CitiesIL.json). Not committed.
+  4. Nominatim (OpenStreetMap), cached in nominatim_cache.json, polite 1.2 s rate-limit.
 Cross-check: exact-name matches are compared with Nominatim's place result; if they disagree by >8 km
 the Nominatim coordinate wins (loc.json has a few bad rows) and it's reported.
-Outputs: authority_coords.json, geocode_report.txt, localities_clean.json (deduped list for the home picker).
+Outputs: authority_coords.json, localities_clean.json, and geocode_report.txt (gitignored).
 """
 import json, math, os, re, sys, time, urllib.parse, urllib.request
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -64,7 +65,7 @@ FIX = {
   'עמנואל': (32.1606, 35.1376),
   'קרית ארבע': (31.5325, 35.1197),
 }
-# council/cluster offices found in OpenStreetMap (townhall / government office / council-named bus stop), via poi.py
+# council/cluster offices found in OpenStreetMap (townhall / government office / council-named bus stop)
 HQ = {
   'אשכול': (31.3028, 34.4314, 'משרדי המועצה (OSM)'),
   'בקעת הירדן': (32.1007, 35.4935, 'משרדי המועצה (OSM)'),
@@ -135,7 +136,23 @@ def build_localities(online):
             out.append(dict(name=name, lat=lat, lon=lon)); names.add(name)
     return out
 
+LOC_SOURCE = "https://github.com/akivaschiff/israel-geolocation"
+CITIES_SOURCE = "https://gist.github.com/idomongo/f53331860322b94a8ba8e8a92ce401ec"
+
+def require_inputs():
+    missing = []
+    raw = os.path.join(HERE, "..", "data", "raw", "bogrim_jobs.json")
+    if not os.path.exists(raw):
+        missing.append(f"missing {raw} — run python3 scrape.py (output stays gitignored)")
+    if not os.path.exists(P("loc.json")):
+        missing.append(f"missing geo/loc.json — save src/locations.json from {LOC_SOURCE} as geo/loc.json")
+    if not os.path.exists(P("cities_il_gist.json")):
+        missing.append(f"missing geo/cities_il_gist.json — save CitiesIL.json from {CITIES_SOURCE} as geo/cities_il_gist.json")
+    if missing:
+        raise SystemExit("geocode inputs are not in the repo:\n" + "\n".join(missing))
+
 def main(online='--offline' not in sys.argv):
+    require_inputs()
     jobs = json.load(open(os.path.join(HERE, '..', 'data', 'raw', 'bogrim_jobs.json')))
     L = build_localities(online)
     idx = {}

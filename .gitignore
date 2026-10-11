@@ -2,6 +2,9 @@ data/raw/
 dist/
 dist-contacts/
 geo/nominatim_cache.json
+geo/geocode_report.txt
+geo/loc.json
+geo/cities_il_gist.json
 __pycache__/
 *.pyc
 .pytest_cache/
