@@ -32,6 +32,8 @@ def main():
             page.wait_for_function("() => window.__app && window.__app.jobs.length === 211")
             page.locator("button.card-open").first.click()
             page.locator("#drawer").wait_for()
+            check(page.evaluate("() => document.body.classList.contains('drawer-open')"), "page scroll was not locked")
+            check(page.evaluate("() => getComputedStyle(document.querySelector('.drawer-body')).overscrollBehavior === 'contain'"), "drawer overscroll")
             check(page.evaluate("() => location.hash.startsWith('#job=')"), "job hash was not pushed")
             page.go_back()
             page.wait_for_function("() => !document.getElementById('drawer')")

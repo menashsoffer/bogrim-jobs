@@ -7,6 +7,7 @@ import { criterionValue, scoreNode } from './score.js';
 import { ensureJob, peekJob, save, store, uid } from './store.js';
 
 export const setBackgroundInert = (on) => {
+  document.body.classList.toggle('drawer-open', on);
   document.querySelectorAll('body > *:not(#drawer-root):not(#toast)').forEach((node) => {
     node.inert = on;
   });

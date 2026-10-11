@@ -279,7 +279,8 @@ textarea { min-height: var(--textarea-min); resize: vertical; }
 }
 .drawer-head, .drawer-body { padding: var(--space-7) var(--space-8); }
 .drawer-head { border-bottom: var(--line-w) solid var(--line); display: grid; gap: var(--space-4); }
-.drawer-body { overflow: auto; }
+.drawer-body { overflow: auto; overscroll-behavior: contain; }
+body.drawer-open { overflow: hidden; }
 .drawer h2 { font-size: var(--fs-xl); font-weight: var(--fw-bold); overflow-wrap: anywhere; }
 .facts { display: grid; grid-template-columns: auto 1fr; gap: var(--space-2) var(--space-6); }
 .facts dt { display: flex; align-items: center; gap: var(--space-2); color: var(--muted); font-weight: var(--fw-bold); }
