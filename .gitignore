@@ -1,0 +1,10 @@
+data/raw/
+dist-contacts/
+geo/nominatim_cache.json
+__pycache__/
+*.pyc
+.pytest_cache/
+node_modules/
+.DS_Store
+test-results/
+playwright-report/
