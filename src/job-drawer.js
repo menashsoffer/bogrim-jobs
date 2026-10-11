@@ -46,7 +46,8 @@ export const paintDrawer = () => {
         type: 'button',
         class: 'btn',
         id: 'drawer-close',
-        text: 'סגירה',
+        'aria-label': 'סגירה',
+        text: '×',
         on: { click: () => closeJob() },
       }),
       el('button', {
