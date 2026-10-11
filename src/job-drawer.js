@@ -54,7 +54,7 @@ export const paintDrawer = () => {
         class: `btn fav${user.favorite ? ' is-on' : ''}`,
         id: 'drawer-favorite',
         'aria-pressed': user.favorite ? 'true' : 'false',
-        'aria-label': 'מועדף',
+        'aria-label': `${user.favorite ? '★ מועדף' : '☆ מועדף'}: ${job.role} – ${job.authority}`,
         text: user.favorite ? '★ מועדף' : '☆ מועדף',
         on: { click: () => {
           ensureJob(job.id).favorite = !ensureJob(job.id).favorite;
