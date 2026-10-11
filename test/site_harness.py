@@ -95,6 +95,18 @@ def stepped_scroll_stuck(page, width, height):
     )
 
 
+def control_names_unique(page):
+    return page.evaluate(
+        """() => {
+          const take = (selector) => [...document.querySelectorAll(selector)].map((node) => node.getAttribute('aria-label'));
+          const compare = take('article.card input[type=checkbox]');
+          const fav = take('article.card button.fav');
+          return compare.length === 211 && new Set(compare).size === 211
+            && fav.length === 211 && new Set(fav).size === 211;
+        }"""
+    )
+
+
 def shown_count(page):
     text = page.locator("#result-count").inner_text()
     return int(text.replace("מוצגות", "").replace("משרות", "").strip())

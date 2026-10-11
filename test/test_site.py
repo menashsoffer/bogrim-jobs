@@ -4,7 +4,7 @@ import json
 
 from playwright.sync_api import sync_playwright
 
-from site_harness import DIST, ROOT, TINY_PNG, chrome_path, parse_csv, search_count, serve, shown_count, stepped_scroll_stuck, wait_count
+from site_harness import DIST, ROOT, TINY_PNG, chrome_path, control_names_unique, parse_csv, search_count, serve, shown_count, stepped_scroll_stuck, wait_count
 
 
 def main():
@@ -82,6 +82,7 @@ def main():
                 check(stuck is None, f"scroll snapped back at {width}x{height}: {stuck}")
             page.set_viewport_size({"width": 1280, "height": 800})
             page.evaluate("() => window.scrollTo(0, 0)")
+            check(control_names_unique(page), "compare and favorite names are not unique")
 
             html_lang = page.evaluate("() => ({ lang: document.documentElement.lang, dir: document.documentElement.dir })")
             check(html_lang["lang"] == "he" and html_lang["dir"] == "rtl", "page is not Hebrew RTL")

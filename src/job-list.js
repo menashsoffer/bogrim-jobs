@@ -52,11 +52,12 @@ export const renderResults = () => {
       el('span', { class: 'card-meta', text: `${job.authority} · ${labelOrUnknown(job.district)} · ${labelOrUnknown(job.authorityType)}` }),
     ]);
     const favLabel = user.favorite ? '★ מועדף' : '☆ מועדף';
+    const jobName = `${job.title || job.role} – ${job.authority}`;
     const fav = el('button', {
       type: 'button',
       class: `btn fav${user.favorite ? ' is-on' : ''}`,
       'aria-pressed': user.favorite ? 'true' : 'false',
-      'aria-label': `${favLabel}: ${job.role} – ${job.authority}`,
+      'aria-label': `${favLabel}: ${jobName}`,
       text: favLabel,
       on: { click: () => {
         const record = ensureJob(job.id);
@@ -68,7 +69,7 @@ export const renderResults = () => {
     });
     const compare = el('input', {
       type: 'checkbox',
-      'aria-label': `הוספה להשוואה: ${job.role} – ${job.authority}`,
+      'aria-label': `הוספה להשוואה: ${jobName}`,
     });
     compare.checked = store.state.compareIds.includes(job.id);
     compare.addEventListener('change', () => {
