@@ -376,9 +376,8 @@ def main():
 
             page.locator('#nav [data-view="settings"]').click()
             page.click("#clear-data")
-            page.wait_for_function("() => window.__app.state.home === null && Object.keys(window.__app.state.jobs).length === 0")
-            cleared = page.evaluate("() => JSON.parse(localStorage.getItem('bogrim-jobs.v1'))")
-            check(cleared["jobs"] == {} and cleared["criteria"][0]["name"] == "התפקיד והאנשים", "clear data")
+            page.wait_for_function("() => window.__app.state.home === null && Object.keys(window.__app.state.jobs).length === 0 && localStorage.getItem('bogrim-jobs.v1') === null")
+            check(page.evaluate("() => localStorage.getItem('bogrim-jobs.v1')") is None, "clear data left the storage key")
 
             interesting = [
                 item for item in console_errors + page_errors

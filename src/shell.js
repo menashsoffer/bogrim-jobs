@@ -4,7 +4,7 @@ import { closeJob } from './job-drawer.js';
 import { renderListShell, renderResults, updateCompareCount } from './job-list.js';
 import { ensureMap } from './job-map.js';
 import { renderSettings } from './settings-panel.js';
-import { defaultState, saveNow, store } from './store.js';
+import { STORAGE_KEY, defaultState, store } from './store.js';
 
 export const rebuildShells = () => {
   if (store.openJobId) closeJob();
@@ -24,8 +24,9 @@ export const rebuildShells = () => {
 };
 export const clearData = () => {
   if (!window.confirm('למחוק את כל הנתונים השמורים בדפדפן הזה?')) return;
+  clearTimeout(store.saveTimer);
+  localStorage.removeItem(STORAGE_KEY);
   store.state = defaultState();
-  saveNow();
   rebuildShells();
   toast('הנתונים נמחקו');
 };
