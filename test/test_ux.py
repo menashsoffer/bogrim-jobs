@@ -207,6 +207,29 @@ def main():
             fresh.on("dialog", lambda dialog: dialog.accept())
             fresh.locator("#import-file").set_input_files(str(blank))
             fresh.wait_for_function("() => window.__app.state.criteria.some((item) => item.name === 'קריטריון ללא שם')")
+            fresh.locator('#nav [data-view="settings"]').click()
+            fresh.locator("#home-address").wait_for()
+
+            def geocode_choices(route):
+                route.fulfill(
+                    status=200,
+                    content_type="application/json",
+                    body=json.dumps([
+                        {"display_name": "אחר, מקום, ארץ, עוד", "lat": "31.5", "lon": "34.8"},
+                        {"display_name": "  כתובתמיוחדת  ,  עיר  ,  מדינה  , יבשת", "lat": "32.1", "lon": "34.8"},
+                    ]),
+                )
+
+            fresh.route("**/nominatim.openstreetmap.org/**", geocode_choices)
+            fresh.fill("#home-address", "כתובתמיוחדת")
+            fresh.click("#geocode-home")
+            fresh.locator("#home-results button").first.wait_for()
+            check(fresh.locator("#home-results button").first.inner_text() == "כתובתמיוחדת, עיר, מדינה", "address label was not shortened")
+            fresh.locator("#home-results button").first.click()
+            check(fresh.locator("#home-status").inner_text() == "הבית: כתובתמיוחדת, עיר, מדינה · שינוי", "home status")
+            fresh.locator("#home-status button").click()
+            check(fresh.evaluate("() => document.activeElement && document.activeElement.id === 'home-address'"), "change home did not focus the address")
+            fresh.unroute("**/nominatim.openstreetmap.org/**")
             fresh.close()
             browser.close()
     finally:

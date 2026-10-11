@@ -23,14 +23,45 @@ export const setHomeStatus = (message) => {
   const node = document.getElementById('home-status');
   if (node) node.textContent = message;
 };
+export const shortAddress = (label) => String(label || '')
+  .split(',')
+  .map((part) => part.trim())
+  .filter(Boolean)
+  .slice(0, 3)
+  .join(', ');
+const choiceRank = (choice, words) => {
+  const label = normName(choice.label);
+  if (!words.length) return 0;
+  const last = normName(words[words.length - 1]);
+  if (last && label.includes(last)) return 2;
+  if (words.some((word) => label.includes(normName(word)))) return 1;
+  return 0;
+};
+export const paintHomeStatus = (focus) => {
+  const node = document.getElementById('home-status');
+  if (!node || !store.state.home) return;
+  node.replaceChildren(
+    document.createTextNode(`הבית: ${store.state.home.label} · `),
+    el('button', {
+      type: 'button',
+      class: 'btn',
+      text: 'שינוי',
+      on: { click: () => {
+        const address = document.getElementById('home-address');
+        if (address) address.focus();
+      }},
+    }),
+  );
+  if (focus) node.focus();
+};
 export const setHome = (place) => {
   store.state.home = {
-    label: String(place.label).split(',').slice(0, 3).join(', ').trim(),
+    label: shortAddress(place.label),
     lat: Math.round(Number(place.lat) * 1e5) / 1e5,
     lon: Math.round(Number(place.lon) * 1e5) / 1e5,
   };
   saveNow();
-  setHomeStatus(`הבית הוגדר: ${store.state.home.label}`);
+  paintHomeStatus(true);
   const results = document.getElementById('home-results');
   if (results) results.replaceChildren();
   const hint = document.getElementById('home-hint');
@@ -41,10 +72,13 @@ export const setHome = (place) => {
 export const showHomeChoices = (choices) => {
   const host = document.getElementById('home-results');
   if (!host) return;
-  host.replaceChildren(...choices.map((choice) => el('button', {
+  const input = document.getElementById('home-address');
+  const words = input ? input.value.trim().split(/\s+/).filter(Boolean) : [];
+  const ordered = [...choices].sort((a, b) => choiceRank(b, words) - choiceRank(a, words) || shortAddress(a.label).localeCompare(shortAddress(b.label), 'he'));
+  host.replaceChildren(...ordered.map((choice) => el('button', {
     type: 'button',
     class: 'btn',
-    text: choice.label,
+    text: shortAddress(choice.label),
     on: { click: () => setHome(choice) },
   })));
 };

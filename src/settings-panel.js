@@ -4,7 +4,7 @@ import { icon } from './icons.js';
 import { renderResults } from './job-list.js';
 import { clearData } from './shell.js';
 import { defaultCriteria, save, store, uid } from './store.js';
-import { computeRoutes, onGeocode, onGps } from './travel.js';
+import { computeRoutes, onGeocode, onGps, paintHomeStatus } from './travel.js';
 
 const restoreCriteriaFocus = (host, label) => {
   if (!label) return;
@@ -111,7 +111,12 @@ export const renderSettings = () => {
         el('button', { type: 'button', class: 'btn primary', id: 'geocode-home', text: 'אתר כתובת', on: { click: () => { onGeocode(); } } }),
         el('button', { type: 'button', class: 'btn', id: 'use-my-location', text: 'המיקום שלי', on: { click: () => onGps() } }),
       ]),
-      el('p', { id: 'home-status', text: store.state.home ? `הבית הוגדר: ${store.state.home.label}` : 'עוד לא הוגדרה כתובת.' }),
+      el('p', {
+        id: 'home-status',
+        role: 'status',
+        tabindex: '-1',
+        text: store.state.home ? '' : 'עוד לא הוגדרה כתובת.',
+      }),
       el('div', { id: 'home-results', class: 'row' }),
       el('p', { class: 'hint', text: 'אם היישוב לא ברשימה המקומית, הכתובת נשלחת ל-Nominatim (OpenStreetMap) רק אחרי הלחיצה.' }),
     ]),
@@ -171,4 +176,5 @@ export const renderSettings = () => {
     ]),
   );
   renderCriteriaEditor(editor);
+  paintHomeStatus(false);
 };
