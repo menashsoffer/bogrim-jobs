@@ -101,6 +101,7 @@ def main():
     keys = preferred + sorted({k for r in recs for k in r} - set(preferred))
     keys = [k for k in keys if any(k in r for r in recs)]
     recs = [{k: r.get(k) for k in keys} for r in recs]
+    os.makedirs(OUT, exist_ok=True)
     with open(os.path.join(OUT, "bogrim_jobs.json"), "w", encoding="utf-8") as f:
         json.dump(recs, f, ensure_ascii=False, indent=2)
     with open(os.path.join(OUT, "bogrim_jobs.csv"), "w", encoding="utf-8-sig", newline="") as f:
