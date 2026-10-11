@@ -48,6 +48,8 @@ def main():
 
             page.locator("#filter-toggle").click()
             page.locator("#filters.is-open").wait_for()
+            check(page.evaluate("() => document.activeElement && document.activeElement.id === 'filters-title'"), "filter sheet focused the search")
+            check(page.locator("#filters-done").inner_text() == "הצג 211 משרות", "filter apply count")
             check(page.evaluate("() => location.hash === '#filters'"), "filter sheet was not pushed")
             page.go_back()
             page.wait_for_function("() => !document.getElementById('filters').classList.contains('is-open')")

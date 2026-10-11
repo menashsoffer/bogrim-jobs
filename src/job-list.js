@@ -64,6 +64,8 @@ export const renderResults = () => {
   const list = visibleJobs();
   if (count) count.textContent = `מוצגות ${list.length} משרות`;
   paintFilterToggle();
+  const done = document.getElementById('filters-done');
+  if (done) done.textContent = `הצג ${list.length} משרות`;
   host.replaceChildren();
   if (!list.length) {
     const minScore = store.state.filters.minScore;
@@ -254,7 +256,7 @@ export const renderListShell = () => {
   }, [icon('arrow-up-down', 'sm'), el('span', { text: sortDirectionText(store.state.sortDir) })]);
   const filterBox = el('div', { class: 'filters', id: 'filters' }, [
     el('div', { class: 'row' }, [
-      el('h2', { text: 'סינון' }),
+      el('h2', { id: 'filters-title', tabindex: '-1', text: 'סינון' }),
       el('button', {
         type: 'button',
         class: 'btn close-filters',
@@ -279,6 +281,13 @@ export const renderListShell = () => {
       id: 'clear-filters',
       text: 'נקה סינון',
       on: { click: () => clearFilters() },
+    }),
+    el('button', {
+      type: 'button',
+      class: 'btn primary filters-done',
+      id: 'filters-done',
+      text: 'הצג משרות',
+      on: { click: () => closeFilterSheet() },
     }),
   ]);
   const welcome = store.state.welcomeSeen ? null : el('section', { class: 'panel welcome', id: 'welcome' }, [
@@ -330,7 +339,8 @@ export const renderListShell = () => {
           on: { click: () => {
             filterBox.classList.add('is-open');
             pushFilters();
-            search.focus();
+            const title = document.getElementById('filters-title');
+            if (title) title.focus();
           }},
         }, [icon('sliders-horizontal', 'sm'), el('span', { text: 'סינון' })]),
         el('p', { id: 'result-count', class: 'grow', 'aria-live': 'polite', text: '' }),
