@@ -138,11 +138,29 @@ def main():
             )
             migrated.goto(origin)
             migrated.wait_for_function("() => window.__app && window.__app.jobs.length === 211")
-            check(migrated.evaluate("() => window.__app.state.filters.maxMinutes === 35"), "minutes migration")
+            check(migrated.evaluate("() => window.__app.state.filters.maxMinutes === 50"), "minutes migration")
             check(migrated.evaluate("() => window.__app.state.filters.maxKm === 50"), "distance migration")
             check(migrated.evaluate("() => window.__app.state.filters.minScore === 4"), "score migration")
-            check(migrated.locator("#filter-max-min").get_attribute("aria-valuetext") == "עד 35 דק׳", "migrated time label")
+            check(migrated.locator("#filter-max-min").get_attribute("aria-valuetext") == "עד 50 דק׳", "migrated time label")
             check(migrated.locator("#filter-min-score").get_attribute("aria-valuetext") == "ציון מ-4.0 ומעלה", "migrated score label")
+            minutes = migrated.evaluate(
+                """() => {
+                  const snap = (filters, routes) => window.__app.sanitizeState({ filters, routes }).filters.maxMinutes;
+                  const car = (mins) => ({ car: Object.fromEntries(mins.map((min, index) => ['a' + index, { min, km: 10 }])) });
+                  return {
+                    fits: snap({ maxMinutes: '32' }, { '1,1': car([20, 47]) }),
+                    onlyFar: snap({ maxMinutes: '32' }, { '1,1': car([47]) }),
+                    none: snap({ maxMinutes: '37' }, {}),
+                    under: snap({ maxMinutes: '37' }, { '1,1': car([30]) }),
+                    above: snap({ maxMinutes: '37' }, { '1,1': car([45]) }),
+                  };
+                }"""
+            )
+            check(minutes["fits"] == 35, f"a fitting route stayed {minutes['fits']}")
+            check(minutes["onlyFar"] == 50, f"sparse route widened {minutes['onlyFar']}")
+            check(minutes["none"] == "", f"no routes stayed capped {minutes['none']!r}")
+            check(minutes["under"] == 40, f"shorter route stayed {minutes['under']}")
+            check(minutes["above"] == 45, f"next stop was {minutes['above']}")
             browser.close()
     finally:
         server.shutdown()

@@ -1,5 +1,5 @@
 import { CRIT_TYPES, STATUSES, toast } from './dom.js';
-import { distanceStops, maxSample, snapScore, snapUp, timeStops } from './filter-scale.js';
+import { distanceStops, maxSample, snapCovering, snapScore, snapUp, timeStops } from './filter-scale.js';
 import { STORAGE_KEY } from './storage-key.js';
 
 export { STORAGE_KEY };
@@ -193,22 +193,26 @@ export const sanitizeState = (saved) => {
   }
   if (typeof saved.routingKey === 'string') next.routingKey = saved.routingKey.slice(0, 200);
   next.routes = sanitizeRoutes(saved.routes);
-  const routePeak = (field) => {
-    const samples = [];
-    Object.values(next.routes).forEach((bucket) => {
-      Object.values(bucket.car || {}).forEach((value) => {
-        if (typeof value[field] === 'number') samples.push(value[field]);
-      });
+  const minuteSamples = [];
+  const kmSamples = [];
+  Object.values(next.routes).forEach((bucket) => {
+    Object.values(bucket.car || {}).forEach((value) => {
+      if (typeof value.min === 'number') minuteSamples.push(value.min);
+      if (typeof value.km === 'number') kmSamples.push(value.km);
     });
-    return maxSample(samples);
-  };
-  const scalePeak = (observed, saved) => {
-    const number = Number(saved);
+  });
+  const scalePeak = (observed, savedValue) => {
+    const number = Number(savedValue);
     if (observed > 0) return observed;
     return Number.isFinite(number) && number > 0 ? number : 0;
   };
-  next.filters.maxMinutes = snapUp(timeStops(scalePeak(routePeak('min'), next.filters.maxMinutes)), next.filters.maxMinutes);
-  next.filters.maxKm = snapUp(distanceStops(scalePeak(routePeak('km'), next.filters.maxKm)), next.filters.maxKm);
+  const minutePeak = maxSample(minuteSamples);
+  next.filters.maxMinutes = snapCovering(
+    timeStops(Math.max(minutePeak, Number(next.filters.maxMinutes) || 0)),
+    next.filters.maxMinutes,
+    minuteSamples,
+  );
+  next.filters.maxKm = snapUp(distanceStops(scalePeak(maxSample(kmSamples), next.filters.maxKm)), next.filters.maxKm);
   next.filters.minScore = snapScore(next.filters.minScore);
   if (saved.geocodeCache && typeof saved.geocodeCache === 'object') next.geocodeCache = saved.geocodeCache;
   if (Array.isArray(saved.compareIds)) next.compareIds = saved.compareIds.filter((id) => typeof id === 'string').slice(0, 4);

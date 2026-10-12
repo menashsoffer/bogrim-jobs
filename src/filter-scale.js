@@ -33,6 +33,14 @@ export const snapUp = (stops, saved) => {
   const next = stops.find((stop) => stop != null && stop + 1e-9 >= number);
   return next == null ? '' : next;
 };
+export const snapCovering = (stops, saved, samples) => {
+  const snapped = snapUp(stops, saved);
+  if (snapped === '' || snapped == null) return '';
+  const nums = (samples || []).filter((value) => typeof value === 'number' && Number.isFinite(value));
+  if (!nums.length) return '';
+  if (nums.some((value) => value <= snapped)) return snapped;
+  return snapUp(stops, Math.min(...nums));
+};
 
 export const snapScore = (saved) => {
   const snapped = snapUp(scoreStops(), saved);
