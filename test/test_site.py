@@ -1,17 +1,22 @@
 #!/usr/bin/env python3
 """Browser checks for the default public build. No contact data is expected."""
 import json
+import sys
+from pathlib import Path
 
 from playwright.sync_api import sync_playwright
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from build_hash import published_data  # noqa: E402
 from site_harness import DIST, TINY_PNG, chrome_path, control_names_unique, search_count, serve, shown_count, stepped_scroll_stuck, wait_count
 from site_late import check_home_export_and_layout
 
 
 def main():
-    if not (DIST / "index.html").exists() or not (DIST / "data.json").exists():
+    data_file = Path(published_data(DIST))
+    if not (DIST / "index.html").exists() or not data_file.is_file():
         raise SystemExit("dist/ is missing; run python3 build.py first")
-    catalog = json.loads((DIST / "data.json").read_text(encoding="utf-8"))
+    catalog = json.loads(data_file.read_text(encoding="utf-8"))
     jobs = catalog["jobs"]
     energy = search_count(jobs, "אנרגיה")
     if energy <= 0 or energy >= 211:
@@ -95,7 +100,7 @@ def main():
             check(page.locator('meta[property="og:locale"]').get_attribute("content") == "he_IL", "og:locale")
             robots_txt = page.evaluate("async () => (await fetch('robots.txt')).text()")
             check("Disallow: /" in robots_txt, "robots.txt")
-            bundled = page.evaluate("async () => await (await fetch('data.json')).text()")
+            bundled = page.evaluate("(name) => fetch(name).then((response) => response.text())", data_file.name)
             check("includeContacts" in bundled and '"includeContacts":false' in bundled.replace(" ", ""), "bundle contacts flag")
             check("mailto:" not in bundled and "tel:" not in bundled, "contact links in data")
             check(page.locator('a[href^="tel:"], a[href^="mailto:"]').count() == 0, "contact links rendered")

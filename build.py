@@ -22,6 +22,7 @@ import shutil
 import sys
 
 from build_assets import copy_fonts_and_images, copy_licenses
+from build_hash import stamp_assets
 from privacy_scan import find_personal_data
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -301,6 +302,7 @@ def write_site(dest, jobs, localities, include_contacts):
         shutil.rmtree(leaflet_dest)
     shutil.copytree(VENDOR, leaflet_dest)
     shutil.copy(os.path.join(ROOT, "robots.txt"), os.path.join(dest, "robots.txt"))
+    stamp_assets(dest)
     return meta
 
 

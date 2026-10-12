@@ -11,6 +11,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
 import build  # noqa: E402
+from build_hash import published_data  # noqa: E402
 import privacy_scan  # noqa: E402
 
 SKIP_DIR_NAMES = {
@@ -181,7 +182,7 @@ class BuildTests(unittest.TestCase):
             with open(raw_path, "w", encoding="utf-8") as handle:
                 json.dump(raw, handle, ensure_ascii=False)
             build.main(["--raw", raw_path, "--dest", public_dest])
-            with open(os.path.join(public_dest, "data.json"), encoding="utf-8") as handle:
+            with open(published_data(public_dest), encoding="utf-8") as handle:
                 public = json.load(handle)
             job = public["jobs"][0]
             self.assertFalse(public["meta"]["includeContacts"])
@@ -197,7 +198,7 @@ class BuildTests(unittest.TestCase):
             self.assertEqual(phones, [])
 
             build.main(["--include-contacts", "--raw", raw_path, "--dest", contact_dest])
-            with open(os.path.join(contact_dest, "data.json"), encoding="utf-8") as handle:
+            with open(published_data(contact_dest), encoding="utf-8") as handle:
                 private = json.load(handle)
             hidden = private["jobs"][0]
             self.assertTrue(private["meta"]["includeContacts"])
@@ -227,7 +228,7 @@ class BuildTests(unittest.TestCase):
             self.assertIn("SIL Open Font License", handle.read())
         with open(lucide_license, encoding="utf-8") as handle:
             self.assertIn("ISC License", handle.read())
-        dist_path = os.path.join(dist_dir, "data.json")
+        dist_path = published_data(dist_dir)
         with open(data_path, encoding="utf-8") as handle:
             filtered = json.load(handle)
         with open(dist_path, encoding="utf-8") as handle:
@@ -277,7 +278,7 @@ class BuildTests(unittest.TestCase):
             with tempfile.TemporaryDirectory() as tmp:
                 dest = os.path.join(tmp, "dist-contacts")
                 build.main(["--include-contacts", "--raw", raw_path, "--dest", dest])
-                with open(os.path.join(dest, "data.json"), encoding="utf-8") as handle:
+                with open(published_data(dest), encoding="utf-8") as handle:
                     private = json.load(handle)
                 with open(raw_path, encoding="utf-8") as handle:
                     raw_jobs = json.load(handle)
