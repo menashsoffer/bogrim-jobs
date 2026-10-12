@@ -18,7 +18,7 @@ export const jobCard = (job) => {
   const scored = scoreJob(job);
   const travel = travelCard(job);
   const jobName = `${job.title || job.role} – ${job.authority}`;
-  const favLabel = user.favorite ? '★ מועדף' : '☆ מועדף';
+  const favLabel = 'מועדף';
   const open = el('button', {
     type: 'button',
     class: 'card-open job-hit',
