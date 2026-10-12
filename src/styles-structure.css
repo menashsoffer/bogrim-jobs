@@ -84,6 +84,12 @@ body.drawer-open { overflow: hidden; }
   border-radius: var(--r-sm);
 }
 .star.is-on { color: var(--accent); }
+.seg-ctl { display: flex; flex-wrap: wrap; gap: 2px; padding: 3px; background: var(--surface-2); border-radius: var(--r-md); }
+.seg-opt { flex: 1 1 auto; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding-inline: var(--s-2); border-radius: 11px; font-size: var(--fs-12); color: var(--text-2); }
+.seg-opt.is-on { background: var(--surface-3); color: var(--text); box-shadow: 0 0 0 1px var(--line-strong); font-weight: var(--fw-medium); }
+.seg-opt .dot { width: 6px; height: 6px; border-radius: 50%; border: 1px solid var(--text-3); }
+.seg-opt.status-yes .dot { background: var(--accent); border-color: var(--accent); box-shadow: var(--glow-status); }
+.seg-opt.status-talk .dot { background: var(--text); border-color: var(--text); }
 .call { border-bottom: var(--hairline); padding: var(--s-3) 0; }
 .criterion-editor { display: grid; gap: var(--s-3); padding: var(--s-3) 0; border-bottom: var(--hairline); }
 .table-scroll {

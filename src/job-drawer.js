@@ -4,6 +4,7 @@ import { icon } from './icons.js';
 import { contactsSection, factsSection, travelSection } from './drawer-sections.js';
 import { jobPlace, noteListDirty, renderResults, toggleCompare } from './job-list.js';
 import { criterionValue, scoreNode } from './score.js';
+import { statusControl } from './status-control.js';
 import { ensureJob, peekJob, save, store, uid } from './store.js';
 
 export const setBackgroundInert = (on) => {
@@ -125,18 +126,14 @@ export const paintDrawer = () => {
     }, [icon('external-link', 'sm'), 'למודעה המקורית']) : el('p', { text: 'אין קישור למודעה' }),
   ]);
 
-  const status = el('select', { id: 'job-status' });
-  STATUSES.forEach((name) => {
-    const option = el('option', { value: name, text: name });
-    if (name === user.status) option.selected = true;
-    status.append(option);
-  });
-  status.addEventListener('change', () => {
-    ensureJob(job.id).status = status.value;
-    save();
-    noteListDirty();
-  });
-  body.append(el('label', { class: 'field' }, [el('span', { class: 'field-label', text: 'סטטוס' }), status]));
+  body.append(el('div', { class: 'field' }, [
+    el('span', { class: 'field-label', text: 'סטטוס' }),
+    statusControl(user.status, (name) => {
+      ensureJob(job.id).status = name;
+      save();
+      noteListDirty();
+    }),
+  ]));
 
   store.state.criteria.forEach((criterion) => {
     const result = criterionValue(job, criterion);
