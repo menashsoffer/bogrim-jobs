@@ -159,6 +159,11 @@ th { background: var(--surface-2); font-weight: var(--fw-medium); }
   box-shadow: var(--lift);
 }
 .leaflet-container a { color: var(--accent); }
+.leaflet-container .leaflet-control-zoom a {
+  width: var(--tap) !important;
+  height: var(--tap) !important;
+  line-height: var(--tap) !important;
+}
 .toast {
   position: fixed;
   inset-inline-start: 50%;
