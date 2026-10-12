@@ -318,7 +318,7 @@ export const renderListShell = () => {
     el('div', {}, [
       el('div', { class: 'list-head' }, [
         el('div', {}, [
-          el('h2', { class: 'list-title', id: 'list-t', text: 'המשרות' }),
+          el('h2', { class: 'list-title', id: 'list-t', tabindex: '-1', text: 'המשרות' }),
           el('p', { id: 'result-count', class: 'list-count', 'aria-live': 'polite', text: '' }),
         ]),
         mountSort(),

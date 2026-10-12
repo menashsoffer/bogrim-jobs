@@ -249,7 +249,7 @@ a.btn.btn-quiet { background: none; color: var(--text-2); border-color: var(--li
   padding: var(--s-6) var(--s-5) var(--s-4);
   min-width: 0;
   content-visibility: auto;
-  contain-intrinsic-size: auto 280px;
+  contain-intrinsic-size: auto 322px;
 }
 .card::before {
   content: "";

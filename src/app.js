@@ -2,6 +2,7 @@ import { importText } from './backup.js';
 import { distanceStops, distanceText, scoreStops, scoreText, timeStops, timeText } from './filter-scale.js';
 import { filtersFromHash, jobIdFromHash, viewFromHash } from './history.js';
 import { closeJob, openJob, trapFocus } from './job-drawer.js';
+import { cardDrift, centerCard, parkAndOpen, restoredAnchor, scrollRestoreDone, whenLayoutSettles } from './scroll-anchor.js';
 import { closeFilterSheet, jobPlace, renderListShell, renderResults, updateCompareCount } from './job-list.js';
 import { formatDuration, toast } from './dom.js';
 import { moovitAppUrl, moovitWebUrl } from './moovit.js';
@@ -38,6 +39,7 @@ const applyLocation = () => {
   if (hashed && store.jobsById.has(hashed) && store.openJobId !== hashed) openJob(hashed, null);
 };
 export const boot = async () => {
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
   window.addEventListener('popstate', () => {
     store.sawPop = true;
     if (store.ignoreHistory) {
@@ -130,6 +132,12 @@ export const boot = async () => {
       timeText,
       distanceText,
       scoreText,
+      whenLayoutSettles,
+      scrollRestoreDone,
+      centerCard,
+      cardDrift,
+      parkAndOpen,
+      restoredAnchor,
     };
   }
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));

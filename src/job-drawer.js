@@ -3,6 +3,7 @@ import { backIf, pushJob } from './history.js';
 import { icon } from './icons.js';
 import { contactsSection, factsSection, travelSection } from './drawer-sections.js';
 import { jobPlace, noteListDirty, renderResults, toggleCompare } from './job-list.js';
+import { restoreAnchor } from './scroll-anchor.js';
 import { criterionValue, scoreNode } from './score.js';
 import { statusControl } from './status-control.js';
 import { ensureJob, peekJob, save, store, uid } from './store.js';
@@ -332,13 +333,6 @@ const cardNode = (id, opener) => {
   if (opener instanceof HTMLElement && opener.matches('button.card-open')) return opener;
   return document.querySelector(`button.card-open[data-job="${CSS.escape(id)}"]`);
 };
-const alignCard = (jobId, savedTop) => {
-  const node = jobId ? document.querySelector(`button.card-open[data-job="${CSS.escape(jobId)}"]`) : null;
-  if (!node || savedTop == null) return false;
-  const delta = node.getBoundingClientRect().top - savedTop;
-  if (Math.abs(delta) > 0.5) window.scrollBy({ top: delta, left: 0, behavior: 'instant' });
-  return true;
-};
 export const openJob = (id, opener) => {
   if (!store.jobsById.has(id)) return;
   const card = cardNode(id, opener);
@@ -360,10 +354,11 @@ export const closeJob = () => {
   const focus = store.returnFocus;
   const scroll = store.returnScroll || 0;
   const savedTop = store.returnCardTop;
-  const previousIndex = store.returnIndex;
+  const previousIndex = Number.isInteger(store.returnIndex) ? store.returnIndex : -1;
   store.openJobId = '';
   store.returnFocus = null;
   store.returnCardTop = null;
+  store.returnIndex = -1;
   document.getElementById('drawer-root').replaceChildren();
   setBackgroundInert(false);
   if (store.listDirty) {
@@ -376,14 +371,11 @@ export const closeJob = () => {
   const fresh = jobId ? document.querySelector(`button.card-open[data-job="${CSS.escape(jobId)}"]`) : null;
   const target = focus && document.contains(focus) ? focus : fresh;
   if (target) target.focus({ preventScroll: true });
-  if (!alignCard(jobId, savedTop)) window.scrollTo({ top: scroll, left: 0, behavior: 'instant' });
-  let frames = 4;
-  const settle = () => {
-    alignCard(jobId, savedTop);
-    frames -= 1;
-    if (frames > 0) requestAnimationFrame(settle);
-  };
-  requestAnimationFrame(settle);
+  else {
+    const heading = document.getElementById('list-t');
+    if (heading) heading.focus({ preventScroll: true });
+  }
+  restoreAnchor({ jobId, previousIndex, savedTop, scroll });
   const nextIndex = jobId ? jobPlace(jobId) : -1;
   if (previousIndex >= 0 && nextIndex >= 0 && nextIndex !== previousIndex) {
     const place = nextIndex + 1;

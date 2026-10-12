@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Behavior added for the round-2 UX list."""
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -33,15 +34,20 @@ def main():
             )
             page = browser.new_page(locale="he-IL", viewport={"width": 390, "height": 844})
             page.set_default_timeout(20000)
+            if os.environ.get("UX_CPU"):
+                page.context.new_cdp_session(page).send("Emulation.setCPUThrottlingRate", {"rate": float(os.environ["UX_CPU"])})
             page.goto(base)
-            page.wait_for_function("() => window.__app && window.__app.jobs.length === 211")
-            page.locator("button.card-open").first.click()
+            page.wait_for_function("() => window.__app && document.querySelectorAll('button.card-open').length === 211")
+            back_top = page.evaluate("() => window.__app.centerCard(8)")
+            page.evaluate("() => document.querySelectorAll('button.card-open')[8].click()")
             page.locator("#drawer").wait_for()
             check(page.evaluate("() => document.body.classList.contains('drawer-open')"), "page scroll was not locked")
             check(page.evaluate("() => getComputedStyle(document.querySelector('.drawer-body')).overscrollBehavior === 'contain'"), "drawer overscroll")
             check(page.evaluate("() => location.hash.startsWith('#job=')"), "job hash was not pushed")
             page.go_back()
             page.wait_for_function("() => !document.getElementById('drawer')")
+            back_drift = page.evaluate("(top) => window.__app.cardDrift(8, top)", back_top)
+            check(back_drift <= 1, f"back moved the list by {back_drift}px")
             check(page.url.startswith(origin), "back left the site from the drawer")
 
             page.locator('#nav [data-view="settings"]').click()
@@ -72,18 +78,7 @@ def main():
 
             parked = page.evaluate("() => document.querySelectorAll('button.card-open')[12].dataset.job")
             for index in range(10):
-                before = page.evaluate(
-                    """async (id) => {
-                      await document.fonts.ready;
-                      const card = document.querySelector(`button.card-open[data-job="${CSS.escape(id)}"]`);
-                      card.scrollIntoView({ block: 'center' });
-                      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-                      const top = card.getBoundingClientRect().top;
-                      card.click();
-                      return top;
-                    }""",
-                    parked,
-                )
+                before = page.evaluate("(id) => window.__app.parkAndOpen(id)", parked)
                 page.locator("#drawer").wait_for()
                 if index == 0:
                     page.locator("#star-role-5").click()
@@ -92,16 +87,18 @@ def main():
                 if index == 0:
                     check("הצגה" in page.locator("#toast").inner_text(), "place toast has no show action")
                 after = page.evaluate(
-                    """async (id) => {
-                      await document.fonts.ready;
-                      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-                      const card = document.querySelector(`button.card-open[data-job="${CSS.escape(id)}"]`);
-                      return card.getBoundingClientRect().top;
-                    }""",
-                    parked,
+                    "(before) => window.__app.restoredAnchor(before.id, before.index)",
+                    {"id": parked, "index": before["index"]},
                 )
-                check(abs(after - before) < 2, f"card top {before} became {after} on pass {index}")
+                # Stable layout should land within 1px. 2px is the review ceiling.
+                check(
+                    after["anchorTop"] is not None and abs(after["anchorTop"] - before["top"]) <= 1,
+                    f"anchor top {before['top']} became {after['anchorTop']} on pass {index}",
+                )
                 if index == 0:
+                    check(after["cardIndex"] == 0, f"rated job stayed at {after['cardIndex']}")
+                    jumped = abs(after["scrollY"] - before["scrollY"])
+                    check(jumped < 800, f"close jumped {jumped}px to follow the resorted card")
                     page.locator("#toast .btn", has_text="הצגה").click()
                     focused = page.evaluate(
                         "(id) => document.activeElement && document.activeElement.dataset.job === id",
@@ -127,7 +124,24 @@ def main():
             prod.wait_for_function("() => window.__chunks && window.__chunks.includes(211)")
             chunks = prod.evaluate("() => window.__chunks")
             check(any(0 < count < 211 for count in chunks), f"production list was not batched: {chunks[:6]}")
+            early = prod.evaluate("() => { window.scrollTo(0, 900); const cards = [...document.querySelectorAll('button.card-open')]; const card = cards.find((node) => { const top = node.getBoundingClientRect().top; return top > 80 && top < 500; }); const index = cards.indexOf(card); const top = card.getBoundingClientRect().top; card.click(); return { top, index }; }")
+            prod.locator("#drawer-close").click()
+            prod.wait_for_function("() => !document.getElementById('drawer')")
+            prod.wait_for_timeout(700)
+            landed = prod.evaluate("(snap) => Math.abs(document.querySelectorAll('button.card-open')[snap.index].getBoundingClientRect().top - snap.top)", early)
+            check(landed <= 1, f"a tap during the first scroll landed {landed}px off")
             prod.close()
+
+            page.locator("button.card-open").first.click()
+            page.locator("#drawer").wait_for()
+            page.evaluate("() => { const input = document.getElementById('search'); input.value = 'zzzz-no-such-job'; input.dispatchEvent(new Event('input', { bubbles: true })); }")
+            page.wait_for_timeout(500)
+            page.locator("#drawer-close").click()
+            page.wait_for_function("() => !document.getElementById('drawer')")
+            page.evaluate("() => window.__app.scrollRestoreDone()")
+            check(page.evaluate("() => document.activeElement && document.activeElement.id === 'list-t'"), "filtered card left focus on the body")
+            page.locator("#search").fill("")
+            page.wait_for_function("() => document.querySelectorAll('button.card-open').length === 211")
 
             page.locator("button.card-open").first.click()
             page.locator("#drawer").wait_for()
