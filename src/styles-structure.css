@@ -47,6 +47,7 @@
 }
 .drawer-head, .drawer-body, .drawer-actions { padding: var(--s-4) var(--s-5); }
 .drawer-head { border-bottom: var(--hairline); display: grid; gap: var(--s-3); }
+.drawer-body > .drawer-head { margin: calc(-1 * var(--s-4)) calc(-1 * var(--s-5)) var(--s-4); }
 .drawer-body { overflow: auto; overscroll-behavior: contain; flex: 1; min-height: 0; }
 .drawer-actions {
   display: flex;

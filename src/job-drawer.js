@@ -307,14 +307,14 @@ export const paintDrawer = () => {
     ]));
   });
   if (store.data.meta && store.data.meta.includeContacts) body.append(contactsSection(job));
-
+  body.prepend(head);
   const drawer = el('div', {
     class: 'drawer',
     id: 'drawer',
     role: 'dialog',
     'aria-modal': 'true',
     'aria-labelledby': 'drawer-title',
-  }, [head, body, actions]);
+  }, [body, actions]);
   root.replaceChildren(backdrop, drawer);
 };
 export const refreshDrawer = (focusId) => {
