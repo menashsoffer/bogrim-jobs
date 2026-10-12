@@ -360,6 +360,12 @@ export const closeJob = () => {
   const nextIndex = jobId ? jobPlace(jobId) : -1;
   if (previousIndex >= 0 && nextIndex >= 0 && nextIndex !== previousIndex) {
     const place = nextIndex + 1;
-    toast(nextIndex < previousIndex ? `המשרה עלתה למקום ${place}` : `המשרה ירדה למקום ${place}`);
+    toast(nextIndex < previousIndex ? `המשרה עלתה למקום ${place}` : `המשרה ירדה למקום ${place}`, {
+      label: 'הצגה',
+      run: () => {
+        const card = document.querySelector(`button.card-open[data-job="${CSS.escape(jobId)}"]`);
+        if (card) card.scrollIntoView({ block: 'center' });
+      },
+    });
   }
 };

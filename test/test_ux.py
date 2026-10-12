@@ -79,6 +79,7 @@ def main():
             page.wait_for_function("() => !document.getElementById('drawer')")
             kept = page.evaluate("() => window.scrollY")
             check(before > 400 and abs(kept - before) < 48, f"scroll {before} became {kept}")
+            check("הצגה" in page.locator("#toast").inner_text(), "place toast has no show action")
 
             page.locator("button.card-open").first.click()
             page.locator("#drawer").wait_for()
