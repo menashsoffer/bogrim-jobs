@@ -239,12 +239,12 @@ export const computeRoutes = async () => {
     if (status) status.textContent = 'החישוב בוטל. מוצג קו אווירי (הערכה).';
     return;
   }
-  if (status) status.textContent = 'מחשב זמן נסיעה ברכב…';
   let failed = false;
   try {
     const chunks = [];
     for (let start = 0; start < todo.length; start += 80) chunks.push(todo.slice(start, start + 80));
     for (let index = 0; index < chunks.length; index += 1) {
+      if (status) status.textContent = `מחשב זמן נסיעה ברכב… ${index + 1}/${chunks.length}`;
       if (index > 0) await sleep(1200);
       if (store.state.routingKey) await fetchOrs(chunks[index]);
       else await fetchOsrm(chunks[index]);
