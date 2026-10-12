@@ -112,6 +112,21 @@ def check_home_export_and_layout(page, browser, base, phase, external, tiles, pa
         return size["sw"] - size["cw"]
 
     check(page_overflow(page) <= 1, "desktop page scrolls sideways")
+
+    def empty_compare_overflow(width):
+        page.set_viewport_size({"width": width, "height": 800})
+        page.locator('#nav [data-view="compare"]').click()
+        page.locator(".ghost-cols").wait_for()
+        shown = page.evaluate(
+            """() => [...document.querySelectorAll('.ghost-col')]
+              .filter((node) => getComputedStyle(node).display !== 'none').length"""
+        )
+        check(shown == 2, f"empty compare shows {shown} columns at {width}")
+        check(page_overflow(page) <= 1, f"empty compare overflows at {width} by {page_overflow(page)}px")
+
+    empty_compare_overflow(360)
+    empty_compare_overflow(390)
+    page.locator('#nav [data-view="list"]').click()
     page.set_viewport_size({"width": 360, "height": 800})
     page.locator('#nav [data-view="list"]').click()
     page.wait_for_timeout(200)
