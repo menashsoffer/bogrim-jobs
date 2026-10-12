@@ -9,6 +9,7 @@ python3 test/test_tokens.py
 node --test test/test_weights.mjs
 python3 test/test_ratings.py
 python3 test/test_weights_ui.py
+python3 test/test_weight_steps.py
 python3 test/test_site.py
 python3 test/test_ux.py
 python3 test/test_filters.py
