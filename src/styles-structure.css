@@ -10,7 +10,6 @@
 }
 .icon-sm { width: var(--icon-sm); height: var(--icon-sm); }
 .icon-lg { width: var(--icon-lg); height: var(--icon-lg); }
-.art-slot:empty { display: none; }
 .skeleton { padding: var(--s-8) var(--s-5); max-width: var(--container); margin-inline: auto; }
 .skel-grid { display: grid; gap: var(--s-3); }
 .job--skel { pointer-events: none; display: grid; gap: var(--s-4); }
@@ -98,7 +97,6 @@ body.drawer-open { overflow: hidden; }
 .seg-opt.status-yes .dot { background: var(--accent); border-color: var(--accent); box-shadow: var(--glow-status); }
 .seg-opt.status-talk .dot { background: var(--text); border-color: var(--text); }
 .call { border-bottom: var(--hairline); padding: var(--s-3) 0; }
-.criterion-editor { display: grid; gap: var(--s-3); padding: var(--s-3) 0; border-bottom: var(--hairline); }
 .table-scroll {
   overflow-x: auto;
   max-width: 100%;
@@ -190,7 +188,7 @@ th { background: var(--surface-2); font-weight: var(--fw-medium); }
 .score .track { stroke: var(--line-strong); }
 .score .arc { stroke: var(--accent); stroke-linecap: round; filter: var(--glow-arc); }
 .score-none .track { stroke-dasharray: 2 4; }
-.score-num, .score strong { font-size: var(--fs-17); font-weight: var(--fw-medium); font-variant-numeric: tabular-nums; }
+.score strong { font-size: var(--fs-17); font-weight: var(--fw-medium); font-variant-numeric: tabular-nums; }
 .score--sm { width: 40px; height: 40px; }
 .score--sm strong { font-size: var(--fs-13); }
 .score--sm > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
@@ -223,8 +221,8 @@ th { background: var(--surface-2); font-weight: var(--fw-medium); }
 .seg { display: inline-block; width: 10px; height: 2px; border-radius: 1px; background: var(--line-strong); }
 .seg.on { background: var(--text); }
 .job-hit { position: absolute; inset: 0; z-index: 1; border-radius: inherit; }
-.job-actions, .cmp, .icon-btn, .card-actions { position: relative; z-index: 2; }
-.job--no .job-title, .job--no .job-auth strong, .card.is-rejected .card-title { color: var(--text-2); }
+.job-actions, .cmp, .icon-btn { position: relative; z-index: 2; }
+.job--no .job-title, .job--no .job-auth strong { color: var(--text-2); }
 .job--no .score .arc { stroke: var(--text-3); filter: none; }
 .hero { position: relative; overflow: hidden; isolation: isolate; }
 .hero-art { position: relative; z-index: -1; display: block; margin-block-start: -96px; pointer-events: none; }

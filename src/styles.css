@@ -115,7 +115,7 @@ main { margin: 0; padding: 0; min-height: 100dvh; }
 .list-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--s-4); max-width: 100%; }
 .list-title { font-size: var(--fs-32); font-weight: var(--fw-bold); line-height: 1.1; }
 .list-count, #result-count { color: var(--text-2); font-size: var(--fs-13); }
-.toolbar, .row, .sort-pair { display: flex; flex-wrap: wrap; gap: var(--s-2); align-items: center; }
+.toolbar, .row { display: flex; flex-wrap: wrap; gap: var(--s-2); align-items: center; }
 .toolbar { margin-block-start: var(--s-4); }
 .search {
   flex: 1 1 160px;
@@ -269,13 +269,13 @@ a.btn.btn-quiet { background: none; color: var(--text-2); border-color: var(--li
   border-radius: var(--r-md);
   min-height: var(--tap);
 }
-.card-title, .job-title { display: block; font-weight: var(--fw-semibold); font-size: var(--fs-20); line-height: var(--lh-snug); overflow-wrap: anywhere; }
-.card-meta, .job-auth, .job-cat, .travel-line { color: var(--text-2); font-size: var(--fs-13); }
+.job-title { display: block; font-weight: var(--fw-semibold); font-size: var(--fs-20); line-height: var(--lh-snug); overflow-wrap: anywhere; }
+.job-auth, .job-cat, .travel-line { color: var(--text-2); font-size: var(--fs-13); }
 .job-auth strong { color: var(--text); font-weight: var(--fw-medium); }
 .sep { display: inline-block; width: 3px; height: 3px; margin-inline: var(--s-2); border-radius: 50%; background: var(--text-3); vertical-align: middle; }
 .score { color: var(--text); background: var(--clear); }
 .score strong { font-weight: var(--fw-medium); font-variant-numeric: tabular-nums; }
-.card-actions, .job-actions, .job-foot { display: flex; flex-wrap: wrap; gap: var(--s-2); align-items: center; }
+.job-actions, .job-foot { display: flex; flex-wrap: wrap; gap: var(--s-2); align-items: center; }
 .job-foot { justify-content: space-between; }
 .fav.is-on, .icon-btn.fav.is-on, #drawer-compare.is-on { color: var(--accent); }
 #drawer-compare.is-on { background: var(--accent-08); border-color: var(--accent-24); }
