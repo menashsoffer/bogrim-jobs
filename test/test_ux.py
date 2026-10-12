@@ -21,6 +21,7 @@ def main():
     html = (DIST / "index.html").read_text(encoding="utf-8")
     check('rel="preload" href="fonts/heebo-hebrew-wght-normal.woff2" as="font"' in html, "hebrew font is not preloaded")
     check('rel="preload" href="img/hero-relief-m.webp" as="image"' in html, "hero image is not preloaded")
+    check('rel="preload" href="data.json" as="fetch" crossorigin' in html, "data.json is not preloaded")
     server = serve()
     origin = f"http://127.0.0.1:{server.server_address[1]}/"
     base = origin + "?test=1"
