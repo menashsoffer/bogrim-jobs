@@ -135,6 +135,13 @@ def main():
             page.locator("#call-log button").click()
             page.locator("#toast .btn", has_text="ביטול").click()
             check(page.locator("#call-log article").count() == 1, "call log was not restored")
+            page.locator("#drawer button[aria-label='ניקוי דירוג התפקיד והאנשים']").click()
+            page.locator("#toast .btn", has_text="ביטול").wait_for()
+            page.wait_for_function("() => !document.querySelector('#toast button')", timeout=8000)
+            check(
+                page.evaluate("() => { const node = document.getElementById('toast'); return node.inert && !node.querySelector('button'); }"),
+                "expired undo stayed activatable",
+            )
 
             context = browser.new_context(locale="he-IL", viewport={"width": 390, "height": 844})
             first = context.new_page()

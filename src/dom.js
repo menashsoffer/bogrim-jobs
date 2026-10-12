@@ -95,6 +95,12 @@ export const safeMail = (email) => {
 export const toast = (message, action) => {
   const node = document.getElementById('toast');
   if (!node) return;
+  const hide = () => {
+    node.classList.remove('is-on');
+    node.inert = true;
+    node.replaceChildren();
+  };
+  node.inert = false;
   node.replaceChildren(document.createTextNode(message));
   if (action) {
     node.append(el('button', {
@@ -102,14 +108,14 @@ export const toast = (message, action) => {
       class: 'btn',
       text: action.label,
       on: { click: () => {
-        node.classList.remove('is-on');
+        hide();
         action.run();
       }},
     }));
   }
   node.classList.add('is-on');
   clearTimeout(node._timer);
-  node._timer = setTimeout(() => node.classList.remove('is-on'), action ? 5000 : 3200);
+  node._timer = setTimeout(hide, action ? 5000 : 3200);
 };
 export const toastUndo = (message, onUndo) => {
   toast(message, { label: 'ביטול', run: onUndo });
