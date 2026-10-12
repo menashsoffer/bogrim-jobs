@@ -18,8 +18,8 @@
 .job--skel .job-meta div { flex: 1; }
 .sk { display: block; height: 10px; border-radius: 6px; background: var(--surface-2); }
 .sk-xs { width: 26%; height: 8px; }
-.sk-lg { width: 70%; height: 18px; }
-.sk-sm { width: 50%; }
+.sk-lg { width: 70%; height: 18px; margin-block-start: 12px; }
+.sk-sm { width: 50%; margin-block-start: 10px; }
 .sk-ring { width: 56px; height: 56px; border-radius: 50%; border: 1.5px solid var(--surface-2); background: none; }
 .sk-pill { width: 96px; height: 36px; border-radius: var(--r-pill); }
 .panel-title { display: flex; align-items: center; gap: var(--s-2); }
