@@ -1,4 +1,4 @@
-import { STATUSES, el, formatStamp, labelOrUnknown, safeHttps, toast, toastUndo } from './dom.js';
+import { el, formatStamp, labelOrUnknown, safeHttps, toast, toastUndo } from './dom.js';
 import { backIf, pushJob } from './history.js';
 import { icon } from './icons.js';
 import { contactsSection, factsSection, travelSection } from './drawer-sections.js';
@@ -96,17 +96,19 @@ export const paintDrawer = () => {
     }, [icon(user.favorite ? 'heart-fill' : 'heart'), 'מועדף']),
     el('button', {
       type: 'button',
-      class: 'btn',
+      class: `btn${store.state.compareIds.includes(job.id) ? ' is-on' : ''}`,
       id: 'drawer-compare',
       'aria-pressed': store.state.compareIds.includes(job.id) ? 'true' : 'false',
-      text: '＋ להשוואה',
       on: { click: () => {
         const next = !store.state.compareIds.includes(job.id);
         if (!toggleCompare(job.id, next)) return;
         noteListDirty();
         refreshDrawer('drawer-compare');
       }},
-    }),
+    }, [
+      icon(store.state.compareIds.includes(job.id) ? 'check' : 'columns-3', 'sm'),
+      store.state.compareIds.includes(job.id) ? 'בהשוואה' : 'להשוואה',
+    ]),
   ]);
   const head = el('div', { class: 'drawer-head' }, [
     el('h2', { id: 'drawer-title', text: job.title || job.role }),
@@ -135,6 +137,7 @@ export const paintDrawer = () => {
     }),
   ]));
 
+  const weightTotal = store.state.criteria.reduce((sum, item) => sum + (item.type === 'text' ? 0 : Number(item.weight) || 0), 0);
   store.state.criteria.forEach((criterion) => {
     const result = criterionValue(job, criterion);
     const raw = user.ratings[criterion.id];
@@ -210,7 +213,7 @@ export const paintDrawer = () => {
     body.append(el('section', { class: 'criterion' }, [
       el('div', { class: 'criterion-head' }, [
         el('h3', { text: criterion.name }),
-        criterion.type === 'text' ? el('span', { class: 'muted', text: 'לא נכלל בציון' }) : el('span', { class: 'muted', text: `משקל ${criterion.weight}` }),
+        criterion.type === 'text' ? el('span', { class: 'muted', text: 'לא נכלל בציון' }) : el('span', { class: 'muted', text: `משקל ${weightTotal ? Math.round((Number(criterion.weight) / weightTotal) * 100) : 0}%` }),
       ]),
       control,
       el('label', { class: 'field' }, [el('span', { class: 'field-label' }, [icon('notebook-pen', 'sm'), 'הערות']), notes]),

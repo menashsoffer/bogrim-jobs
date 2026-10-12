@@ -273,7 +273,8 @@ textarea { min-height: var(--textarea-min); resize: vertical; }
 .score strong { font-weight: var(--fw-medium); font-variant-numeric: tabular-nums; }
 .card-actions, .job-actions, .job-foot { display: flex; flex-wrap: wrap; gap: var(--s-2); align-items: center; }
 .job-foot { justify-content: space-between; }
-.fav.is-on, .icon-btn.fav.is-on { color: var(--accent); }
+.fav.is-on, .icon-btn.fav.is-on, #drawer-compare.is-on { color: var(--accent); }
+#drawer-compare.is-on { background: var(--accent-08); border-color: var(--accent-24); }
 .fav.is-on .icon { fill: currentColor; stroke: currentColor; }
 .icon-btn {
   width: 44px;
