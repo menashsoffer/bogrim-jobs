@@ -113,7 +113,7 @@ def main():
             page.locator('#nav [data-view="settings"]').click()
             page.locator("#weight-hint").wait_for()
             check("המשקלים יחסיים, האחוז הוא החלק בציון" in page.locator("#weight-hint").inner_text(), "weight hint")
-            weight = page.locator("#criteria-editor input[type='number']").first
+            weight = page.locator("#criteria-editor input[type='range']").first
             weight.fill("50")
             weight.press("Enter")
             check(

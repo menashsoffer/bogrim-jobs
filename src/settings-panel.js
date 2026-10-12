@@ -19,11 +19,37 @@ const restoreCriteriaFocus = (host, label) => {
   const fallback = nodes.find((node) => node.getAttribute('aria-label') === other && !node.disabled);
   if (fallback) fallback.focus();
 };
+const STACK = ['stack-a', 'stack-b', 'stack-c', 'stack-d', 'stack-e'];
+const weightTotal = () => store.state.criteria.reduce((sum, criterion) => sum + (criterion.type === 'text' ? 0 : Number(criterion.weight) || 0), 0) || 1;
+const shareOf = (criterion, total) => (criterion.type === 'text' ? null : Math.round((Number(criterion.weight) || 0) / total * 100));
+const paintShares = (host) => {
+  const total = weightTotal();
+  const stack = host.querySelector('.stack');
+  const legend = host.querySelector('.stack-legend');
+  if (stack) stack.replaceChildren();
+  if (legend) legend.replaceChildren();
+  store.state.criteria.forEach((criterion, index) => {
+    const share = shareOf(criterion, total);
+    const row = host.querySelector(`.ce[data-id="${criterion.id}"] .ce-share`);
+    if (row) row.textContent = share == null ? 'ללא ציון' : `${share}%`;
+    const range = host.querySelector(`.ce[data-id="${criterion.id}"] .weight-range`);
+    if (range) range.style.setProperty('--fill', `${criterion.weight}%`);
+    if (share == null || !stack || !legend) return;
+    const tone = STACK[index % STACK.length];
+    const piece = document.createElement('i');
+    piece.className = tone;
+    piece.style.setProperty('--share', `${share}%`);
+    stack.append(piece);
+    legend.append(el('span', {}, [el('i', { class: tone, 'aria-hidden': 'true' }), `${criterion.name} ${share}%`]));
+  });
+};
 export const renderCriteriaEditor = (host, focusLabel) => {
   host.replaceChildren();
-  const weightSum = store.state.criteria.reduce((sum, criterion) => sum + (criterion.type === 'text' ? 0 : Number(criterion.weight) || 0), 0) || 1;
+  host.append(el('div', { class: 'stack', 'aria-hidden': 'true' }));
+  host.append(el('div', { class: 'stack-legend' }));
   store.state.criteria.forEach((criterion, index) => {
     const name = el('input', { type: 'text', value: criterion.name, 'data-crit-name': criterion.id, 'aria-label': `שם הקריטריון ${criterion.name}` });
+    name.className = 'ce-name';
     name.addEventListener('input', () => {
       const next = name.value.trim();
       if (!next) return;
@@ -35,7 +61,7 @@ export const renderCriteriaEditor = (host, focusLabel) => {
       name.value = criterion.name;
       toast('שם הקריטריון לא יכול להיות ריק');
     });
-    const type = el('select', { 'aria-label': `סוג הקריטריון ${criterion.name}` });
+    const type = el('select', { class: 'ce-type', 'aria-label': `סוג הקריטריון ${criterion.name}` });
     CRIT_TYPES.forEach(([key, label]) => {
       const option = el('option', { value: key, text: label });
       if (key === criterion.type) option.selected = true;
@@ -52,12 +78,23 @@ export const renderCriteriaEditor = (host, focusLabel) => {
       renderCriteriaEditor(host, type.getAttribute('aria-label'));
       renderResults();
     });
-    const weight = el('input', { type: 'number', min: '0', max: '100', value: String(criterion.weight), 'aria-label': `משקל ${criterion.name}` });
-    const percent = el('span', { class: 'muted', text: criterion.type === 'text' ? 'ללא ציון' : `${Math.round((Number(criterion.weight) || 0) / weightSum * 100)}%` });
-    weight.addEventListener('change', () => {
+    const weight = el('input', {
+      type: 'range',
+      class: 'weight-range',
+      min: '0',
+      max: '100',
+      step: '5',
+      value: String(criterion.weight),
+      'aria-label': `משקל ${criterion.name}`,
+    });
+    weight.style.setProperty('--fill', `${criterion.weight}%`);
+    weight.addEventListener('input', () => {
       criterion.weight = Math.max(0, Math.min(100, Number(weight.value) || 0));
+      paintShares(host);
+    });
+    weight.addEventListener('change', () => {
       save();
-      renderCriteriaEditor(host, weight.getAttribute('aria-label'));
+      toast('המשקלים עודכנו · הציונים חושבו מחדש');
       renderResults();
     });
     const move = (direction) => {
@@ -69,29 +106,33 @@ export const renderCriteriaEditor = (host, focusLabel) => {
       const active = document.activeElement;
       renderCriteriaEditor(host, active ? active.getAttribute('aria-label') : '');
     };
-    host.append(el('div', { class: 'criterion-editor' }, [
-      el('label', { class: 'field' }, [el('span', { class: 'field-label', text: 'שם' }), name]),
-      el('label', { class: 'field' }, [el('span', { class: 'field-label', text: 'סוג' }), type]),
-      criterion.type === 'text' ? null : el('label', { class: 'field' }, [el('span', { class: 'field-label', text: 'משקל' }), weight, percent]),
-      el('div', { class: 'row' }, [
-        el('button', { type: 'button', class: 'btn', text: 'הזזה למעלה', disabled: index === 0, 'aria-label': `הזזה למעלה ${criterion.name}`, on: { click: () => move(-1) } }),
-        el('button', { type: 'button', class: 'btn', text: 'הזזה למטה', disabled: index === store.state.criteria.length - 1, 'aria-label': `הזזה למטה ${criterion.name}`, on: { click: () => move(1) } }),
-        el('button', {
-          type: 'button',
-          class: 'btn danger',
-          text: 'מחיקה',
-          'aria-label': `מחיקת קריטריון ${criterion.name}`,
-          on: { click: () => {
-            if (!window.confirm(`למחוק את הקריטריון ${criterion.name}?`)) return;
-            store.state.criteria.splice(index, 1);
-            save();
-            renderCriteriaEditor(host);
-            renderResults();
-          }},
+    const iconButton = (glyph, label, disabled, run) => el('button', {
+      type: 'button',
+      class: 'icon-btn ce-act',
+      disabled,
+      'aria-label': label,
+      on: { click: run },
+    }, [icon(glyph, 'sm')]);
+    host.append(el('div', { class: 'ce', 'data-id': criterion.id }, [
+      el('span', { class: 'ce-grip', 'aria-hidden': 'true' }, [icon('grip-vertical', 'sm')]),
+      name,
+      el('span', { class: 'ce-share', text: '0%' }),
+      type,
+      criterion.type === 'text' ? null : weight,
+      el('div', { class: 'ce-actions' }, [
+        iconButton('chevron-up', `הזזה למעלה ${criterion.name}`, index === 0, () => move(-1)),
+        iconButton('chevron-down', `הזזה למטה ${criterion.name}`, index === store.state.criteria.length - 1, () => move(1)),
+        iconButton('trash-2', `מחיקת קריטריון ${criterion.name}`, false, () => {
+          if (!window.confirm(`למחוק את הקריטריון ${criterion.name}?`)) return;
+          store.state.criteria.splice(index, 1);
+          save();
+          renderCriteriaEditor(host);
+          renderResults();
         }),
       ]),
     ]));
   });
+  paintShares(host);
   restoreCriteriaFocus(host, focusLabel);
 };
 export const renderSettings = () => {

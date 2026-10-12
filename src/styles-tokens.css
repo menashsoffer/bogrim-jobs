@@ -73,6 +73,8 @@
   --glow-status: 0 0 8px rgba(169, 201, 232, .6);
   --glow-arc: drop-shadow(0 0 3px rgba(169, 201, 232, .45));
   --map-canvas: #050506;
+  --stack-muted: #5C6670;
+  --thumb-ring: 0 0 0 4px rgba(0, 0, 0, .55);
   --tap: 44px;
   --icon-sm: 16px;
   --icon: 20px;
