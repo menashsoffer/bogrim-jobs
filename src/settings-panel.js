@@ -2,7 +2,7 @@ import { exportCsv, exportJson } from './backup.js';
 import { CRIT_TYPES, el, toast } from './dom.js';
 import { icon } from './icons.js';
 import { renderResults } from './job-list.js';
-import { clearData } from './shell.js';
+import { clearData, showView } from './shell.js';
 import { defaultCriteria, save, store, uid } from './store.js';
 import { computeRoutes, onGeocode, onGps, paintHomeStatus } from './travel.js';
 
@@ -214,6 +214,10 @@ export const renderSettings = () => {
         el('button', { type: 'button', class: 'btn danger', id: 'clear-data', text: 'נקה נתונים', on: { click: () => clearData() } }),
       ]),
       el('p', { class: 'hint', text: 'הקבצים נשמרים אצלכם. ייבוא מחליף את הנתונים בדפדפן רק אחרי אישור.' }),
+    ]),
+    el('nav', { class: 'settings-links', 'aria-label': 'עוד' }, [
+      el('button', { type: 'button', class: 'text-btn', 'data-view': 'privacy', text: 'פרטיות', on: { click: () => showView('privacy') } }),
+      el('button', { type: 'button', class: 'text-btn', 'data-view': 'help', text: 'עזרה', on: { click: () => showView('help') } }),
     ]),
   ]));
   renderCriteriaEditor(editor);

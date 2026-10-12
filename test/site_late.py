@@ -136,10 +136,12 @@ def check_home_export_and_layout(page, browser, base, phase, external, tiles, pa
     check(page_overflow(page) <= 1, "390px drawer scrolls the page sideways")
     page.keyboard.press("Escape")
 
-    page.locator('#nav [data-view="privacy"]').click()
+    page.locator('#nav [data-view="settings"]').click()
+    page.locator('#view-settings [data-view="privacy"]').click()
     privacy = page.locator("#view-privacy").inner_text()
     check("אין כאן שרת" in privacy and "Nominatim" in privacy and "נקה נתונים" in privacy, "privacy copy")
-    page.locator('#nav [data-view="help"]').click()
+    page.locator('#nav [data-view="settings"]').click()
+    page.locator('#view-settings [data-view="help"]').click()
     check("למודעה המקורית" in page.locator("#view-help").inner_text(), "help points at the source listing")
 
     page.locator('#nav [data-view="settings"]').click()

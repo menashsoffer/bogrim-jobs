@@ -39,8 +39,7 @@
   }
   .nav-tabs .icon-lg { width: 22px; height: 22px; stroke-width: 1.4; }
   #compare-count { position: absolute; inset-block-start: 6px; inset-inline-start: calc(50% + 4px); }
-  .nav-more { width: 100%; justify-content: center; gap: var(--s-2); order: 3; }
-  .nav-more button { color: var(--text-3); font-size: var(--fs-12); min-width: 44px; min-height: 44px; }
+  .nav-more { display: none; }
   .drawer-actions { padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom)); }
   #map { height: calc(100svh - var(--topbar-h) - var(--tabbar-h) - env(safe-area-inset-bottom) - 148px); }
   .toast { bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom) + var(--s-3)); }
