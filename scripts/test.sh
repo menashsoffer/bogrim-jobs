@@ -6,6 +6,7 @@ python3 -m pip install -r requirements.txt
 python3 build.py
 python3 test/test_build.py
 python3 test/test_tokens.py
+python3 test/test_ratings.py
 python3 test/test_site.py
 python3 test/test_ux.py
 python3 test/test_filters.py
