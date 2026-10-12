@@ -176,7 +176,7 @@ def main():
             page.wait_for_function("() => !document.getElementById('view-list').hidden")
             page.locator('#nav [data-view="settings"]').click()
             page.locator("#weight-hint").wait_for()
-            check("המשקלים יחסיים, האחוז הוא החלק בציון" in page.locator("#weight-hint").inner_text(), "weight hint")
+            check("הסכום נשאר 100%" in page.locator("#weight-hint").inner_text(), "weight hint")
             weight = page.locator("#criteria-editor input[type='range']").first
             weight.fill("50")
             weight.press("Enter")
