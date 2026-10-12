@@ -6,7 +6,7 @@ import { cardDrift, centerCard, parkAndOpen, restoredAnchor, scrollRestoreDone, 
 import { closeFilterSheet, jobPlace, renderListShell, renderResults, updateCompareCount } from './job-list.js';
 import { formatDuration, toast } from './dom.js';
 import { moovitAppUrl, moovitWebUrl } from './moovit.js';
-import { airKm, scoreJob, travelMinutes, travelSummary } from './score.js';
+import { airKm, matches, scoreJob, travelMinutes, travelSummary } from './score.js';
 import { refreshAfterStorage, showView } from './shell.js';
 import { paintHomeChip } from './travel.js';
 import { STORAGE_KEY, loadState, sanitizeState, saveNow, store, takeRemoteState } from './store.js';
@@ -119,6 +119,7 @@ export const boot = async () => {
       get state() { return store.state; },
       jobs: store.jobs,
       scoreJob,
+      matches,
       travelMinutes,
       travelSummary,
       formatDuration,

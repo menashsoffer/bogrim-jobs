@@ -1,4 +1,5 @@
 import { AIR_LABEL, UNKNOWN, el, formatDuration, formatKm, formatScore, labelOrUnknown, scoreBand } from './dom.js';
+import { matchesWords, queryWords, searchText } from './search.js';
 import { homeKey, peekJob, store } from './store.js';
 
 export const haversineKm = (from, to) => {
@@ -144,15 +145,24 @@ export const travelSummary = (job) => {
   }
   return `${AIR_LABEL}: ${formatKm(airKm(job))}`;
 };
+const searchTexts = new WeakMap();
+const jobSearchText = (job) => {
+  let text = searchTexts.get(job);
+  if (text === undefined) {
+    text = searchText([
+      job.title, job.authority, job.description, job.role, job.challenge, job.solution,
+      (job.categories || []).join(' '), labelOrUnknown(job.district), labelOrUnknown(job.authorityType),
+    ]);
+    searchTexts.set(job, text);
+  }
+  return text;
+};
 export const matches = (job) => {
   const filters = store.state.filters;
   const user = peekJob(job.id);
   if (filters.q) {
-    const hay = [
-      job.title, job.authority, job.description, job.role, job.challenge, job.solution,
-      (job.categories || []).join(' '), labelOrUnknown(job.district), labelOrUnknown(job.authorityType),
-    ].join('\n').toLowerCase();
-    if (!hay.includes(String(filters.q).toLowerCase())) return false;
+    const words = queryWords(filters.q);
+    if (words.length && !matchesWords(words, jobSearchText(job))) return false;
   }
   if (filters.district && labelOrUnknown(job.district) !== filters.district) return false;
   if (filters.authorityType && labelOrUnknown(job.authorityType) !== filters.authorityType) return false;
