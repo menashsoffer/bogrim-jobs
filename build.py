@@ -21,7 +21,7 @@ import re
 import shutil
 import sys
 
-from build_assets import copy_fonts_and_images
+from build_assets import copy_fonts_and_images, copy_licenses
 from privacy_scan import find_personal_data
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -295,6 +295,7 @@ def write_site(dest, jobs, localities, include_contacts):
             continue
         shutil.copy(source_path, dest_path)
     copy_fonts_and_images(SRC, dest)
+    copy_licenses(ROOT, SRC, dest)
     leaflet_dest = os.path.join(dest, "vendor", "leaflet")
     if os.path.isdir(leaflet_dest):
         shutil.rmtree(leaflet_dest)

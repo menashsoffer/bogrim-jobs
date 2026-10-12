@@ -218,7 +218,16 @@ class BuildTests(unittest.TestCase):
         with open(data_path, encoding="utf-8") as handle:
             catalog_after = handle.read()
         self.assertEqual(catalog_after, catalog_before)
-        dist_path = os.path.join(ROOT, "dist", "data.json")
+        dist_dir = os.path.join(ROOT, "dist")
+        heebo_license = os.path.join(dist_dir, "fonts", "LICENSE-heebo.txt")
+        lucide_license = os.path.join(dist_dir, "vendor", "lucide", "LICENSE")
+        self.assertTrue(os.path.isfile(heebo_license))
+        self.assertTrue(os.path.isfile(lucide_license))
+        with open(heebo_license, encoding="utf-8") as handle:
+            self.assertIn("SIL Open Font License", handle.read())
+        with open(lucide_license, encoding="utf-8") as handle:
+            self.assertIn("ISC License", handle.read())
+        dist_path = os.path.join(dist_dir, "data.json")
         with open(data_path, encoding="utf-8") as handle:
             filtered = json.load(handle)
         with open(dist_path, encoding="utf-8") as handle:
