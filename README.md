@@ -117,7 +117,7 @@ python3 build.py --include-contacts
 - [x] `localStorage`, ייצוא JSON, ייבוא עם אימות, CSV עם BOM
 - [x] `lang="he"`, `dir="rtl"`, מטרות מגע, תגיות שיתוף
 - [ ] אנשי קשר `tel:` / `mailto:` במגירה הציבורית — בכוונה לא מוצגים. רשימת הקבלה ביקשה אותם; הם מאחורי `--include-contacts`
-- [x] Lighthouse למובייל: נגישות 100, ביצועים 96, שיטות עבודה מומלצות 100. SEO 63 רק בגלל `noindex`
+- [x] Lighthouse למובייל: נגישות 100, ביצועים 99, שיטות עבודה מומלצות 100. FCP 1.5s, LCP 2.1s, TBT 0, CLS 0. SEO 63 רק בגלל `noindex`. `data.json` לא נטען מראש: הקובץ מתחרה בתמונת הגיבור ומאריך את ה-LCP, והמודול ממילא מבקש אותו מיד.
 - [x] `og:url` ו-`og:image` נבנים מ-`PUBLIC_BASE_URL` ב-`build.py` (`https://menashsoffer.github.io/bogrim-jobs/`). הפריסה ב-`.github/workflows/pages.yml`
 
 ## אבטחה
