@@ -1,6 +1,6 @@
 # בוחר המשרות
 
-כלי סטטי בעברית, מימין לשמאל, להשוואה ולדירוג של 211 משרות ההשמה מאתר [בוגרים לשלטון המקומי](https://www.bogrim-muni.com/jobs). זהו כלי אישי נפרד: בלי שרת שלנו, בלי הסמל ובלי העיצוב של אתר המקור. הדירוגים, ההערות, יומן השיחות, הכתובת והמסלולים נשמרים רק בדפדפן, במפתח `bogrim-jobs.v1`. קטלוג המשרות לא נשמר שם.
+כלי סטטי בעברית, מימין לשמאל, להשוואה ולדירוג של 211 משרות ההשמה מאתר [בוגרים לשלטון המקומי](https://www.bogrim-muni.com/jobs). זהו כלי אישי נפרד: בלי שרת שלנו, בלי הסמל ובלי העיצוב של אתר המקור. העיצוב כאן הוא «אופק»: רקע כהה, גופן [Heebo](src/fonts/LICENSE-heebo.txt) (OFL), ואייקונים מ-[Lucide](vendor/lucide/LICENSE) (ISC). הדירוגים, ההערות, יומן השיחות, הכתובת והמסלולים נשמרים רק בדפדפן, במפתח `bogrim-jobs.v1`. קטלוג המשרות לא נשמר שם.
 
 ![רשימת המשרות](docs/screenshots/list-desktop.png)
 
@@ -16,22 +16,36 @@
 | --- | --- |
 | `src/app.js` | עלייה: טעינת הנתונים, ניווט, מקלדת |
 | `src/job-list.js` | רשימה, חיפוש, סינון, מיון |
+| `src/job-card.js` | כרטיס משרה ברשימה |
+| `src/filter-controls.js` | סליידרים לזמן, למרחק ולציון |
+| `src/filter-scale.js` | מדרגות הסינון |
 | `src/job-drawer.js` | מגירת המשרה |
 | `src/drawer-sections.js` | נסיעה, עובדות, ואנשי קשר כשהדגל דלוק |
 | `src/job-compare.js` | השוואה |
 | `src/settings-panel.js` | בית, קריטריונים, ייצוא |
 | `src/travel.js` | איתור כתובת וחישוב מסלול |
 | `src/job-map.js` | מפה, נטענת רק בלשונית «מפה» |
+| `src/moovit.js` | קישור Moovit |
+| `src/hero.js` | מסך הפתיחה |
+| `src/welcome.js` | הסתרת מסך הפתיחה למי שכבר נכנס |
+| `src/history.js` | כתובת הדפדפן |
+| `src/icons.js` | אייקונים מתוך הספרייט |
+| `src/icons.svg` | ספרייט Lucide |
+| `src/styles-structure.css` | מבנה: מגירה, מפה, מסך פתיחה |
+| `src/styles-media.css` | מסכים צרים |
 | `src/score.js` | ציון וסינון לוגי |
 | `src/store.js` | מצב ושמירה מקומית |
 | `src/backup.js` | JSON ו-CSV |
 | `src/dom.js` | בניית ממשק בטקסט, בלי HTML מוזרק |
+| `src/fonts/` | Heebo, ברישיון OFL |
+| `src/img/` | תמונות העיצוב |
 | `data/jobs.json` | הקטלוג המסונן שנשמר במאגר. החריג היחיד לאורך |
 | `data/raw/` | סריקה גולמית. לא במאגר |
 | `dist/` | אתר בנוי. לא במאגר, נוצר בבנייה |
 | `dist-contacts/` | בנייה מקומית עם אנשי קשר. לא במאגר |
 | `geo/` | קואורדינטות הרשויות ורשימת היישובים. `loc.json` ו-`cities_il_gist.json` לא במאגר |
 | `vendor/leaflet/` | Leaflet 1.9.4, בלי CDN. `vendor/` פטור מכלל 400 השורות |
+| `vendor/lucide/` | אייקוני Lucide, ברישיון ISC |
 
 ## בנייה והרצה
 
@@ -86,7 +100,7 @@ python3 build.py --include-contacts
 
 `default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: https://tile.openstreetmap.org; connect-src 'self' https://nominatim.openstreetmap.org https://routing.openstreetmap.de https://api.openrouteservice.org; object-src 'none'; base-uri 'self'; form-action 'none'`
 
-בטעינה אין בקשה לצד שלישי. Nominatim רק אחרי «אתר כתובת», ואם היישוב ברשימה המקומית אין רשת. זמן נסיעה ברכב נשלח ל-OSRM רק אחרי «חשב זמני נסיעה» ואישור. אופניים, הליכה ודקות תחבורה ציבורית לא מחושבים. גיבוי ישן עם השדות האלה נטען בלי שגיאה: הם נזרקים, וזמני הרכב והדירוגים נשמרים. קישור Moovit נפתח ב-`moovitapp.com` עם `metroId=1`, כי `moovit.com/?…` מגיע לאתר השיווקי ולא למתכנן המסלול. אריחי OpenStreetMap רק אחרי «מפה». «נקה נתונים» מוחק את מה שנשמר בדפדפן.
+בטעינה אין בקשה לצד שלישי. Nominatim רק אחרי «אתר כתובת», ואם היישוב ברשימה המקומית אין רשת. זמן נסיעה ברכב נשלח ל-OSRM רק אחרי «חשב זמני נסיעה» ואישור. אופניים, הליכה ודקות תחבורה ציבורית לא מחושבים. גיבוי ישן נטען בלי שגיאה: דקות תחבורה ציבורית שנשמרו עוברות פעם אחת להערות המשרה, מוצגת הודעה שהמיקום מחושב לפי נסיעה ברכב, וזמני הרכב והדירוגים נשמרים. קישור Moovit נפתח ב-`moovitapp.com` עם `metroId=1`, כי `moovit.com/?…` מגיע לאתר השיווקי ולא למתכנן המסלול. אריחי OpenStreetMap רק אחרי «מפה». «נקה נתונים» מוחק את מה שנשמר בדפדפן.
 
 ## מצב מול רשימת הקבלה
 
