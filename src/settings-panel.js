@@ -114,9 +114,11 @@ export const renderCriteriaEditor = (host, focusLabel) => {
       on: { click: run },
     }, [icon(glyph, 'sm')]);
     host.append(el('div', { class: 'ce', 'data-id': criterion.id }, [
-      el('span', { class: 'ce-grip', 'aria-hidden': 'true' }, [icon('grip-vertical', 'sm')]),
-      name,
-      el('span', { class: 'ce-share', text: '0%' }),
+      el('div', { class: 'ce-top' }, [
+        el('span', { class: 'ce-grip', 'aria-hidden': 'true' }, [icon('grip-vertical', 'sm')]),
+        name,
+        el('span', { class: 'ce-share', text: '0%' }),
+      ]),
       type,
       criterion.type === 'text' ? null : weight,
       el('div', { class: 'ce-actions' }, [

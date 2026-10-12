@@ -1,4 +1,7 @@
 @media (max-width: 759px) {
+  .ce { grid-template-columns: minmax(0, 1fr); }
+  .ce-top { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); }
+  input.ce-name { flex: 1 0 100%; width: 100%; min-width: 0; }
   html { scroll-padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom)); }
   body { padding-block-end: calc(var(--tabbar-h) + env(safe-area-inset-bottom)); }
   .topbar-in { padding-inline: var(--s-4); }

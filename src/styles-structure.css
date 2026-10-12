@@ -258,6 +258,7 @@ th { background: var(--surface-2); font-weight: var(--fw-medium); }
 .stack-legend { display: flex; flex-wrap: wrap; gap: var(--s-3); margin: var(--s-3) 0 var(--s-4); color: var(--text-2); font-size: var(--fs-12); }
 .stack-legend i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-inline-end: var(--s-1); }
 .ce { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; gap: var(--s-2); align-items: center; padding-block: var(--s-3); border-top: var(--hairline); }
+.ce-top { display: contents; }
 .ce-grip { color: var(--text-3); display: grid; }
 input.ce-name { min-height: 44px; background: var(--clear); border: 0; border-radius: 0; border-bottom: 1px solid var(--clear); padding: 0; box-shadow: none; }
 input.ce-name:hover { border-bottom-color: var(--line); }
