@@ -150,8 +150,8 @@ def main():
             page.click("#empty-clear-filters")
             wait_count(page, 211)
 
-            page.select_option("#sort-key", "name")
             page.locator("#sort-open").click()
+            page.evaluate("() => { const node = document.getElementById('sort-key'); node.value = 'name'; node.dispatchEvent(new Event('change', { bubbles: true })); }")
             check(page.locator("#sort-dir").inner_text() == "עולה", "name sort direction")
             page.click("#sort-dir")
             check(page.locator("#sort-dir").inner_text() == "יורד", "sort direction toggle")

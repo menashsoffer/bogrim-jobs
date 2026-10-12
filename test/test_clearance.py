@@ -41,6 +41,13 @@ def main():
                 page.locator("article.card").last.locator("button.fav").click(trial=True)
                 page.locator("button.card-open").first.click()
                 page.locator("#drawer").wait_for()
+                page.wait_for_function(
+                    """(height) => ['#drawer-close', '#drawer-favorite', '#drawer-compare'].every((id) => {
+                      const box = document.querySelector(id).getBoundingClientRect();
+                      return box.height > 0 && box.y >= 0 && box.bottom <= height + 0.5;
+                    })""",
+                    arg=height,
+                )
                 for action in ("#drawer-close", "#drawer-favorite", "#drawer-compare"):
                     box = page.locator(action).bounding_box()
                     check(box["y"] >= 0 and box["y"] + box["height"] <= height, f"{action} outside the viewport at {width}")

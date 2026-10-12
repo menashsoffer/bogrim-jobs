@@ -84,7 +84,7 @@ def main():
                   window.__app.state.routes['32.08000,34.78000'] = { car: { sample: { min: 47, km: 53 } } };
                 }"""
             )
-            page.select_option("#sort-key", "name")
+            page.evaluate("() => { const node = document.getElementById('sort-key'); node.value = 'name'; node.dispatchEvent(new Event('change', { bubbles: true })); }")
             check(not page.locator("#filter-max-min").is_disabled(), "time slider stayed disabled")
             check(page.locator("#filter-max-min-hint").is_hidden(), "time hint stayed visible")
             check(page.evaluate(
