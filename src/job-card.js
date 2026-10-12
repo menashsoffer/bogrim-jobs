@@ -5,6 +5,12 @@ import { renderResults, toggleCompare } from './job-list.js';
 import { completionCompact, scoreJob, scoreNode, travelCard } from './score.js';
 import { ensureJob, peekJob, save, store } from './store.js';
 
+const completionLabel = (scored) => {
+  const text = completionCompact(scored);
+  const word = 'קריטריונים';
+  if (!text.endsWith(word)) return text;
+  return el('span', {}, [text.slice(0, -word.length), el('span', { class: 'completion-word', text: word })]);
+};
 const segments = (scored) => {
   const total = Math.max(scored.total, 1);
   const row = el('span', { class: 'segs', 'aria-hidden': 'true' });
@@ -74,7 +80,7 @@ export const jobCard = (job) => {
       ]),
       el('div', {}, [
         el('dt', { text: 'דירוג' }),
-        el('dd', { class: 'job-done' }, [segments(scored), completionCompact(scored)]),
+        el('dd', { class: 'job-done' }, [segments(scored), completionLabel(scored)]),
       ]),
     ]),
     el('div', { class: 'job-foot' }, [

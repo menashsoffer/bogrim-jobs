@@ -101,6 +101,12 @@
   #map { flex: 1; min-height: 0; height: auto; border: 0; border-radius: 0; }
   .toast { bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom) + var(--s-3)); }
 }
+@media (max-width: 379px) {
+  .job-meta { gap: var(--s-2); }
+  .job-meta div { min-width: 0; }
+  .job-meta div:first-child { flex: 1 0 auto; min-width: max-content; }
+  .completion-word { display: none; }
+}
 @media (min-width: 760px) {
   body { padding-block-end: 0; }
   .settings-grid { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); align-items: start; }
