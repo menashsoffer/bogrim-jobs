@@ -110,7 +110,12 @@ export const paintDrawer = () => {
   const head = el('div', { class: 'drawer-head' }, [
     el('h2', { id: 'drawer-title', text: job.title || job.role }),
     el('p', { class: 'muted', text: `${job.authority} · ${labelOrUnknown(job.district)} · ${labelOrUnknown(job.authorityType)}` }),
-    scoreNode(job),
+    (() => {
+      const score = scoreNode(job);
+      score.classList.add('score--lg');
+      score.insertBefore(el('span', { class: 'ds-label', text: 'ציון משוקלל' }), score.querySelector('span'));
+      return score;
+    })(),
     url ? el('a', {
       class: 'btn primary',
       id: 'source-link',
