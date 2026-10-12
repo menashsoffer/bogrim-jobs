@@ -272,6 +272,16 @@ a.btn.btn-quiet { background: none; color: var(--text-2); border-color: var(--li
 .job-title { display: block; font-weight: var(--fw-semibold); font-size: var(--fs-20); line-height: var(--lh-snug); overflow-wrap: anywhere; }
 .job-auth, .job-cat, .travel-line { color: var(--text-2); font-size: var(--fs-13); }
 .job-auth strong { color: var(--text); font-weight: var(--fw-medium); }
+.badge-showcase {
+  display: inline-block;
+  margin-block-start: var(--s-2);
+  padding: 2px var(--s-3);
+  border-radius: var(--r-pill);
+  border: 1px solid var(--accent-24);
+  background: var(--accent-08);
+  color: var(--accent);
+  font-size: var(--fs-12);
+}
 .sep { display: inline-block; width: 3px; height: 3px; margin-inline: var(--s-2); border-radius: 50%; background: var(--text-3); vertical-align: middle; }
 .score { color: var(--text); background: var(--clear); }
 .score strong { font-weight: var(--fw-medium); font-variant-numeric: tabular-nums; }

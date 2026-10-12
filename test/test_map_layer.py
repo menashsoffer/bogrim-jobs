@@ -4,6 +4,8 @@ from playwright.sync_api import sync_playwright
 
 from site_harness import DIST, TINY_PNG, chrome_path, serve
 
+SHOWCASE_SAMPLE = {"אשדוד", "ירושלים", "בת ים", "אריאל", "שדרות"}
+NOT_SHOWCASE_SAMPLE = {"שפיר", "אילת", "צפת", "נתניה", "עכו"}
 OVERLAY_HITS = """(selector) => {
   const root = document.querySelector(selector);
   if (!root) return { ok: false, reason: 'missing ' + selector };
@@ -65,6 +67,14 @@ def run_viewport(page, base, width, height):
     page.set_viewport_size({"width": width, "height": height})
     page.goto(base)
     page.wait_for_function("() => window.__app && window.__app.jobs.length === 211")
+    cards = page.evaluate(
+        """() => [...document.querySelectorAll('article.job')].map((card) => ({
+          authority: card.querySelector('.job-auth strong').textContent,
+          badge: Boolean(card.querySelector('.badge-showcase')),
+        }))"""
+    )
+    check(any(c["badge"] for c in cards), "no job card shows the showcase badge")
+    check(all(c["badge"] == (c["authority"] in SHOWCASE_SAMPLE) for c in cards if c["authority"] in SHOWCASE_SAMPLE | NOT_SHOWCASE_SAMPLE), f"showcase badge on cards: {cards[:5]}")
     open_map(page)
     check("מוצגות 211 משרות לפי הסינון" in page.locator("#map-count").inner_text(), "map count")
     check(page.locator(".map-legend .swatch-none").count() == 1 and page.locator(".map-legend .swatch-home").count() == 1, "map legend")
@@ -80,6 +90,19 @@ def run_viewport(page, base, width, height):
     )
     page.locator(".leaflet-popup").wait_for()
     check(page.locator("#drawer").count() == 0, "marker opened the drawer without a popup choice")
+    shown = page.evaluate(
+        """() => {
+          const out = {};
+          window.__map.eachLayer((layer) => {
+            if (!layer.getTooltip || !layer.getTooltip()) return;
+            layer.openPopup();
+            const node = layer.getPopup().getContent();
+            out[layer.getTooltip().getContent()] = Boolean(node.querySelector('.badge-showcase'));
+          });
+          return out;
+        }"""
+    )
+    check(shown.get("אשדוד") is True and shown.get("שפיר") is False, f"showcase badge in popups: {shown}")
     map_on_top = page.evaluate(
         """() => {
           const zoom = document.querySelector('.leaflet-control-zoom');

@@ -3,6 +3,7 @@ import { icon } from './icons.js';
 import { openJob, refreshDrawer } from './job-drawer.js';
 import { renderResults, toggleCompare } from './job-list.js';
 import { completionCompact, scoreJob, scoreNode, travelCard } from './score.js';
+import { showcaseBadge } from './showcase.js';
 import { ensureJob, peekJob, save, store } from './store.js';
 
 const completionLabel = (scored) => {
@@ -70,6 +71,7 @@ export const jobCard = (job) => {
           el('span', { class: 'sep', 'aria-hidden': 'true' }),
           labelOrUnknown(job.district),
         ]),
+        showcaseBadge(job.authority),
       ]),
       scoreNode(job),
     ]),
