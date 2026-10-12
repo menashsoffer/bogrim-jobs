@@ -144,8 +144,8 @@ export const renderSettings = () => {
     save();
   });
   const editor = el('div', { id: 'criteria-editor' });
-  view.replaceChildren(
-    el('section', { class: 'panel' }, [
+  view.replaceChildren(el('div', { class: 'settings-grid' }, [
+    el('section', { class: 'panel settings-home' }, [
       el('h2', { class: 'panel-title' }, [icon('house'), 'כתובת הבית']),
       el('label', { class: 'field' }, [el('span', { class: 'field-label', text: 'כתובת הבית' }), homeInput]),
       el('div', { class: 'row' }, [
@@ -161,20 +161,7 @@ export const renderSettings = () => {
       el('div', { id: 'home-results', class: 'row' }),
       el('p', { class: 'hint', text: 'אם היישוב לא ברשימה המקומית, הכתובת נשלחת ל-Nominatim (OpenStreetMap) רק אחרי הלחיצה.' }),
     ]),
-    el('section', { class: 'panel' }, [
-      el('h2', { class: 'panel-title' }, [icon('car'), 'נסיעה']),
-      el('p', { class: 'notice', id: 'route-notice', text: 'החישוב מחשב זמן נסיעה ברכב ושולח את קואורדינטות הבית ומיקומי הרשויות לשירות חיצוני.' }),
-      el('div', { class: 'row' }, [
-        el('button', { type: 'button', class: 'btn primary', id: 'compute-routes', text: 'חשב זמני נסיעה', on: { click: () => { computeRoutes(); } } }),
-      ]),
-      el('p', { id: 'route-status', text: 'בלי חישוב מוצג קו אווירי (הערכה).' }),
-      el('label', { class: 'field' }, [
-        el('span', { class: 'field-label', text: 'מפתח openrouteservice (לא חובה)' }),
-        keyInput,
-      ]),
-      el('p', { class: 'hint', text: 'המפתח נשמר רק במכשיר. בלי מפתח משתמשים ב-OSRM הציבורי.' }),
-    ]),
-    el('section', { class: 'panel' }, [
+    el('section', { class: 'panel settings-criteria' }, [
       el('h2', { class: 'panel-title' }, [icon('scale'), 'קריטריונים']),
       el('p', { class: 'hint', text: 'קריטריון בלי דירוג לא נספר כאפס. הציון הוא ממוצע משוקלל של הקריטריונים שדורגו.' }),
       el('p', { class: 'hint', id: 'weight-hint', text: 'המשקלים יחסיים, האחוז הוא החלק בציון' }),
@@ -205,7 +192,20 @@ export const renderSettings = () => {
         }, [icon('undo-2', 'sm'), 'איפוס לברירת מחדל']),
       ]),
     ]),
-    el('section', { class: 'panel' }, [
+    el('section', { class: 'panel settings-travel' }, [
+      el('h2', { class: 'panel-title' }, [icon('car'), 'נסיעה']),
+      el('p', { class: 'notice', id: 'route-notice', text: 'החישוב מחשב זמן נסיעה ברכב ושולח את קואורדינטות הבית ומיקומי הרשויות לשירות חיצוני.' }),
+      el('div', { class: 'row' }, [
+        el('button', { type: 'button', class: 'btn primary', id: 'compute-routes', text: 'חשב זמני נסיעה', on: { click: () => { computeRoutes(); } } }),
+      ]),
+      el('p', { id: 'route-status', text: 'בלי חישוב מוצג קו אווירי (הערכה).' }),
+      el('label', { class: 'field' }, [
+        el('span', { class: 'field-label', text: 'מפתח openrouteservice (לא חובה)' }),
+        keyInput,
+      ]),
+      el('p', { class: 'hint', text: 'המפתח נשמר רק במכשיר. בלי מפתח משתמשים ב-OSRM הציבורי.' }),
+    ]),
+    el('section', { class: 'panel settings-data' }, [
       el('h2', { class: 'panel-title' }, [icon('download'), 'שמירה']),
       el('div', { class: 'row' }, [
         el('button', { type: 'button', class: 'btn primary', id: 'export-json', on: { click: () => exportJson() } }, [icon('download', 'sm'), 'ייצוא JSON']),
@@ -215,7 +215,7 @@ export const renderSettings = () => {
       ]),
       el('p', { class: 'hint', text: 'הקבצים נשמרים אצלכם. ייבוא מחליף את הנתונים בדפדפן רק אחרי אישור.' }),
     ]),
-  );
+  ]));
   renderCriteriaEditor(editor);
   paintHomeStatus(false);
 };

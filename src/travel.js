@@ -58,7 +58,7 @@ export const paintHomeStatus = (focus) => {
     document.createTextNode(`הבית: ${store.state.home.label} · `),
     el('button', {
       type: 'button',
-      class: 'btn',
+      class: 'text-btn',
       text: 'שינוי',
       on: { click: () => {
         const address = document.getElementById('home-address');

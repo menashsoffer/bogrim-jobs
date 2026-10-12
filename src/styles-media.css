@@ -47,6 +47,11 @@
 }
 @media (min-width: 760px) {
   body { padding-block-end: 0; }
+  .settings-grid { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); align-items: start; }
+  .settings-criteria { grid-column: 1; grid-row: 1 / span 3; }
+  .settings-home { grid-column: 2; grid-row: 1; }
+  .settings-travel { grid-column: 2; grid-row: 2; }
+  .settings-data { grid-column: 2; grid-row: 3; }
   .topbar-in { flex-wrap: nowrap; padding-inline: var(--s-8); }
   .brand { order: 1; }
   .nav { order: 2; display: flex; align-items: center; gap: var(--s-1); width: auto; flex-wrap: nowrap; margin-inline-start: 0; }
