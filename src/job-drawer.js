@@ -167,7 +167,7 @@ export const paintDrawer = () => {
       }
       group.append(el('button', {
         type: 'button',
-        class: 'btn',
+        class: 'text-btn',
         text: 'ניקוי דירוג',
         'aria-label': `ניקוי דירוג ${criterion.name}`,
         on: { click: () => clearRating(job.id, criterion.id) },
@@ -191,16 +191,22 @@ export const paintDrawer = () => {
       });
       group.append(el('button', {
         type: 'button',
-        class: 'btn',
+        class: 'text-btn',
         text: 'ניקוי דירוג',
         on: { click: () => clearRating(job.id, criterion.id) },
       }));
       control = group;
     } else if (criterion.type === 'travel') {
-      let text = 'לא דורג';
-      if (!store.state.home) text = 'הגדירו כתובת בית לציון אוטומטי';
-      else if (result.value != null) text = `ציון אוטומטי: ${result.value} מתוך 5`;
-      control = el('p', { text });
+      if (!store.state.home) control = el('p', { text: 'הגדירו כתובת בית לציון אוטומטי' });
+      else {
+        const scale = el('div', { class: 'scale is-auto', 'aria-label': 'ציון מרחק אוטומטי' });
+        const value = result.value == null ? 0 : Math.round(Number(result.value));
+        for (let step = 1; step <= 5; step += 1) {
+          const on = value > 0 && step <= value;
+          scale.append(el('span', { class: `sc${on ? ' is-fill' : ''}${step === value ? ' is-sel' : ''}`, text: String(step) }));
+        }
+        control = scale;
+      }
     }
     const notes = el('textarea', {
       id: `notes-${criterion.id}`,

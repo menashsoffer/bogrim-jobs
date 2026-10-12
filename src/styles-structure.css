@@ -62,12 +62,20 @@ body.drawer-open { overflow: hidden; }
 .block h3 { font-size: var(--fs-17); font-weight: var(--fw-semibold); margin-bottom: var(--s-2); }
 .pre { white-space: pre-wrap; overflow-wrap: anywhere; }
 .criterion {
-  border: var(--hairline);
-  border-radius: var(--r-md);
-  padding: var(--s-4);
-  margin-bottom: var(--s-3);
-  background: var(--bg);
+  border: 0;
+  border-top: var(--hairline);
+  border-radius: 0;
+  padding: var(--s-4) 0;
+  margin: 0;
+  background: none;
 }
+.scale { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: var(--s-3); }
+.sc { display: grid; place-items: center; height: 44px; border-radius: 12px; border: var(--hairline); color: var(--text-3); font-size: var(--fs-15); font-variant-numeric: tabular-nums; }
+.sc.is-fill { background: var(--surface-3); border-color: var(--line-strong); color: var(--text); }
+.sc.is-sel { background: var(--text); border-color: var(--text); color: var(--on-invert); font-weight: var(--fw-semibold); }
+.scale.is-auto .sc { border-style: dashed; }
+.scale.is-auto .sc.is-fill { border-style: solid; }
+.scale.is-auto .sc.is-sel { background: var(--accent-08); border-color: var(--accent-24); color: var(--accent); }
 .criterion-head { display: flex; justify-content: space-between; gap: var(--s-3); flex-wrap: wrap; align-items: center; }
 .stars, .yesno { display: flex; flex-wrap: wrap; gap: var(--s-1); }
 .star {

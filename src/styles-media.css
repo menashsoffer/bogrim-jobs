@@ -223,6 +223,7 @@
   .skel-grid { grid-template-columns: 1fr 1fr; }
 }
 @media (prefers-reduced-motion: no-preference) {
+  .drawer { animation: sheet-up 600ms var(--ease-out) both; }
   .sk:not(.sk-ring) {
     background-image: linear-gradient(90deg, var(--surface-2) 30%, var(--skel-shine) 50%, var(--surface-2) 70%);
     background-size: 200% 100%;
@@ -244,6 +245,11 @@
   .btn-link .icon { transition: transform var(--dur-2) var(--ease-out); }
   .btn-link:hover .icon { transform: translateX(-3px); }
 }
+@media (min-width: 760px) and (prefers-reduced-motion: no-preference) {
+  .drawer { animation: drawer-in 600ms var(--ease-out) both; }
+}
+@keyframes drawer-in { from { transform: translateX(-32px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes sheet-up { from { transform: translateY(100%); } to { transform: none; } }
 @keyframes shimmer { from { background-position: 100% 0; } to { background-position: -100% 0; } }
 @keyframes rise { from { transform: translateY(var(--rise)); } to { transform: none; } }
 @keyframes dawn { from { transform: scale(1.04); } to { transform: none; } }
