@@ -212,6 +212,7 @@ textarea { min-height: var(--textarea-min); resize: vertical; }
   font-weight: var(--fw-medium);
 }
 .btn.primary, .filters-done { background: var(--invert); border-color: var(--invert); color: var(--on-invert); }
+a.btn.btn-quiet { background: none; color: var(--text-2); border-color: var(--line); font-weight: var(--fw-regular); }
 .btn.danger { color: var(--text); border-color: var(--line-strong); }
 .btn-link, .text-btn { display: inline-flex; align-items: center; gap: 2px; min-height: 44px; color: var(--accent); background: none; border: 0; }
 .notice, .hint, .muted { color: var(--text-2); font-size: var(--fs-13); }

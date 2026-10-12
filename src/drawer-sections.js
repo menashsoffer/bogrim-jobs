@@ -8,7 +8,7 @@ const travelLink = (href, text, name) => {
   const safe = safeTravelUrl(href);
   if (!safe) return null;
   return el('a', {
-    class: 'btn',
+    class: 'btn btn-quiet',
     href: safe,
     target: '_blank',
     rel: 'noopener noreferrer',
@@ -26,13 +26,18 @@ const travelLinks = (job) => {
     : `https://www.waze.com/ul?ll=${destination}&navigate=yes`;
   const place = { name: job.authority || '', lat: job.lat, lon: job.lon };
   const moovit = moovitLink(store.state.home, place);
-  if (moovit) moovit.prepend(icon('bus', 'sm'));
+  const moovitApp = moovitAppLink(store.state.home, place);
+  if (moovit) {
+    moovit.classList.add('btn-quiet');
+    moovit.prepend(icon('bus', 'sm'));
+  }
+  if (moovitApp) moovitApp.classList.add('btn-quiet');
   return [
     travelLink(google('driving'), 'Google Maps · רכב', 'car'),
     travelLink(waze, 'Waze', 'car'),
     travelLink(google('transit'), 'Google Maps · תחבורה ציבורית', 'bus'),
     moovit,
-    moovitAppLink(store.state.home, place),
+    moovitApp,
   ].filter(Boolean);
 };
 export const travelSection = (job) => {
