@@ -40,7 +40,12 @@
   .nav-tabs .icon-lg { width: 22px; height: 22px; stroke-width: 1.4; }
   #compare-count { position: absolute; inset-block-start: 6px; inset-inline-start: calc(50% + 4px); }
   .nav-more { display: none; }
-  .drawer-actions { padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom)); }
+  .drawer-actions {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    padding-bottom: calc(var(--s-3) + env(safe-area-inset-bottom));
+  }
+  .drawer-actions .btn { min-width: 0; }
   #view-map {
     display: flex;
     flex-direction: column;

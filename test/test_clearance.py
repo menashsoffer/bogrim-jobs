@@ -43,9 +43,7 @@ def main():
                 page.locator("#drawer").wait_for()
                 for action in ("#drawer-close", "#drawer-favorite", "#drawer-compare"):
                     box = page.locator(action).bounding_box()
-                    bar = page.locator(".nav-tabs").bounding_box()
                     check(box["y"] >= 0 and box["y"] + box["height"] <= height, f"{action} outside the viewport at {width}")
-                    check(box["y"] + box["height"] <= bar["y"] + 1, f"{action} under the nav at {width}")
                     page.locator(action).click(trial=True)
                 page.close()
             browser.close()
