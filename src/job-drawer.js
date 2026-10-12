@@ -46,7 +46,11 @@ const clearRating = (jobId, criterionId) => {
     if (previous !== undefined) ensureJob(jobId).ratings[criterionId] = previous;
     save();
     noteListDirty();
-    if (store.openJobId === jobId) refreshDrawer();
+    if (store.openJobId !== jobId) return;
+    const focusId = typeof previous === 'number'
+      ? `star-${criterionId}-${previous}`
+      : previous === true ? `yn-${criterionId}-yes` : previous === false ? `yn-${criterionId}-no` : '';
+    refreshDrawer(focusId);
   });
 };
 const chooseStar = (jobId, criterionId, star, focusId) => {
@@ -181,10 +185,11 @@ export const paintDrawer = () => {
       control = group;
     } else if (criterion.type === 'yesno') {
       const group = el('div', { class: 'yesno', role: 'radiogroup', 'aria-label': criterion.name });
-      [['כן', true], ['לא', false]].forEach(([label, flag]) => {
+      [['כן', true, 'yes'], ['לא', false, 'no']].forEach(([label, flag, key]) => {
         group.append(el('button', {
           type: 'button',
           class: `btn${raw === flag ? ' primary' : ''}`,
+          id: `yn-${criterion.id}-${key}`,
           'aria-pressed': raw === flag ? 'true' : 'false',
           text: label,
           on: { click: () => {
