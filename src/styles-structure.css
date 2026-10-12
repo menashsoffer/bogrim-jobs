@@ -128,10 +128,10 @@ th { background: var(--surface-2); font-weight: var(--fw-medium); }
   border-radius: var(--r-pill);
   background: var(--accent);
 }
-.swatch-hi { background: var(--accent); }
-.swatch-mid { background: var(--text); }
-.swatch-lo { background: var(--clear); border: 1.5px solid var(--text); }
-.swatch-none { background: var(--text-3); opacity: .6; }
+.swatch-hi { background: var(--map-hi); }
+.swatch-mid { background: var(--map-mid); }
+.swatch-lo { background: var(--map-lo); }
+.swatch-none { background: var(--map-none); }
 .swatch-home { background: var(--accent); box-shadow: 0 0 0 3px var(--accent-08); }
 #map {
   position: relative;
@@ -154,11 +154,18 @@ th { background: var(--surface-2); font-weight: var(--fw-medium); }
   border-radius: var(--r-pill);
   box-shadow: var(--glow-dot);
 }
-.leaflet-popup-content-wrapper, .leaflet-popup-tip {
-  background: var(--surface);
+/* leaflet.css is appended after this sheet, so the popup rules need the .leaflet-container prefix to win. */
+.leaflet-container .leaflet-popup-content-wrapper, .leaflet-container .leaflet-popup-tip {
+  background: var(--surface-3);
   color: var(--text);
+  border: var(--hairline-strong);
   box-shadow: var(--lift);
 }
+.leaflet-container .leaflet-popup-content { margin: var(--s-3) var(--s-4); text-align: start; }
+.leaflet-container .leaflet-popup-content strong { display: block; color: var(--text); font-size: var(--fs-15); }
+.leaflet-container .leaflet-popup-content p { margin: var(--s-1) 0 var(--s-3); color: var(--text-2); font-size: var(--fs-13); }
+.leaflet-container .leaflet-popup-content .btn { display: flex; width: 100%; margin-top: var(--s-2); color: var(--text); }
+.leaflet-container a.leaflet-popup-close-button { color: var(--text-2); }
 .leaflet-container a { color: var(--accent); }
 .leaflet-container .leaflet-control-zoom a {
   width: var(--tap) !important;

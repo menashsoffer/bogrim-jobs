@@ -67,15 +67,15 @@ export const drawMarkers = (leaflet) => {
   const bounds = [];
   const theme = getComputedStyle(document.documentElement);
   const ink = theme.getPropertyValue('--bg').trim();
-  const accent = theme.getPropertyValue('--accent').trim();
-  const paper = theme.getPropertyValue('--text').trim();
-  const muted = theme.getPropertyValue('--text-3').trim();
+  const tone = (name) => theme.getPropertyValue(name).trim();
+  const [high, mid, low, none] = ['--map-hi', '--map-mid', '--map-lo', '--map-none'].map(tone);
   groups.forEach((group) => {
     const best = group.map((job) => (hasManualRating(job) ? scoreJob(job).score : null)).filter((score) => score != null).sort((a, b) => b - a)[0];
-    let options = { radius: 3, color: muted, weight: 0, fillColor: muted, fillOpacity: 0.6 };
-    if (best != null && best >= 3.5) options = { radius: 5.5, color: ink, weight: 1.5, fillColor: accent, fillOpacity: 1 };
-    else if (best != null && best >= 2.5) options = { radius: 5.5, color: ink, weight: 1.5, fillColor: paper, fillOpacity: 1 };
-    else if (best != null) options = { radius: 5.5, color: paper, weight: 1.5, fillColor: paper, fillOpacity: 0 };
+    let options = { radius: 4.5, color: ink, weight: 1, fillColor: none, fillOpacity: 0.9 };
+    if (best != null) {
+      const fillColor = best >= 3.5 ? high : best >= 2.5 ? mid : low;
+      options = { radius: 6, color: ink, weight: 1.5, fillColor, fillOpacity: 1 };
+    }
     const marker = leaflet.circleMarker([group[0].lat, group[0].lon], options);
     marker.bindPopup(markerPopup(group));
     marker.bindTooltip(group.length === 1 ? (group[0].title || group[0].role) : group[0].authority);
