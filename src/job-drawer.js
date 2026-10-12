@@ -386,7 +386,9 @@ export const closeJob = () => {
       label: 'הצגה',
       run: () => {
         const card = document.querySelector(`button.card-open[data-job="${CSS.escape(jobId)}"]`);
-        if (card) card.scrollIntoView({ block: 'center' });
+        if (!card) return;
+        card.scrollIntoView({ block: 'center' });
+        card.focus({ preventScroll: true });
       },
     });
   }

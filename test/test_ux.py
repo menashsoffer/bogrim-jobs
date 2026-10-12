@@ -101,6 +101,13 @@ def main():
                     parked,
                 )
                 check(abs(after - before) < 2, f"card top {before} became {after} on pass {index}")
+                if index == 0:
+                    page.locator("#toast .btn", has_text="הצגה").click()
+                    focused = page.evaluate(
+                        "(id) => document.activeElement && document.activeElement.dataset.job === id",
+                        parked,
+                    )
+                    check(focused, "show action left focus on the page")
 
             prod = browser.new_page(locale="he-IL", viewport={"width": 390, "height": 844})
             prod.add_init_script(
