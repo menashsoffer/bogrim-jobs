@@ -1,9 +1,9 @@
+import { STORAGE_KEY } from './storage-key.js';
+
 try {
-  const raw = localStorage.getItem('bogrim-jobs.v1');
+  const raw = localStorage.getItem(STORAGE_KEY);
   const saved = raw ? JSON.parse(raw) : null;
-  if (!saved || saved.welcomeSeen !== true) {
-    /* first visit keeps the hero already in the page */
-  } else {
+  if (saved && saved.welcomeSeen === true) {
     const welcome = document.getElementById('welcome');
     const stats = document.getElementById('hero-stats');
     if (welcome) welcome.remove();

@@ -1,7 +1,8 @@
 import { CRIT_TYPES, STATUSES, toast } from './dom.js';
 import { distanceStops, maxSample, snapScore, snapUp, timeStops } from './filter-scale.js';
+import { STORAGE_KEY } from './storage-key.js';
 
-export const STORAGE_KEY = 'bogrim-jobs.v1';
+export { STORAGE_KEY };
 export const OSRM = { host: 'routed-car', profile: 'driving' };
 export const ORS = 'driving-car';
 export const defaultCriteria = () => ([
