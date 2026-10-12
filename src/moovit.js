@@ -37,5 +37,5 @@ export const moovitLink = (home, destination) => externalLink(safeTravelUrl(moov
 export const moovitAppLink = (home, destination) => el('a', {
   class: 'btn',
   href: moovitAppUrl(home, destination),
-  text: 'באפליקציה',
+  text: 'Moovit · אפליקציה',
 });
