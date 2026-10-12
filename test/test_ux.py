@@ -239,8 +239,8 @@ def main():
             limit.goto(base)
             limit.wait_for_function("() => window.__app && window.__app.jobs.length === 211")
             for index in range(4):
-                limit.locator("#results input[type=checkbox]").nth(index).check()
-            limit.locator("#results input[type=checkbox]").nth(4).click()
+                limit.locator("#results .cmp").nth(index).click()
+            limit.locator("#results .cmp").nth(4).click()
             limit.locator("#toast.is-on").wait_for()
             check("אפשר להשוות עד 4 משרות" in limit.locator("#toast").inner_text(), "compare limit toast")
             check(limit.evaluate("() => !document.getElementById('limit-alert').hidden"), "compare limit alert")

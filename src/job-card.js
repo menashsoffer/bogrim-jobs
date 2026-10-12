@@ -86,7 +86,7 @@ export const jobCard = (job) => {
         fav,
         el('label', { class: `cmp${compare.checked ? ' is-on' : ''}` }, [
           compare,
-          icon('columns-3', 'sm'),
+          icon(compare.checked ? 'check' : 'columns-3', 'sm'),
           compare.checked ? 'בהשוואה' : 'השוואה',
         ]),
       ]),

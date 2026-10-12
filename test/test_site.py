@@ -211,9 +211,9 @@ def main():
             wait_count(page, 1)
             page.click("#clear-filters")
 
-            boxes = page.locator("#results input[type=checkbox]")
+            boxes = page.locator("#results .cmp")
             for index in range(4):
-                boxes.nth(index).check()
+                boxes.nth(index).click()
             check(page.locator("#compare-count").inner_text() == "4", "compare count")
             boxes.nth(4).click()
             page.locator("#limit-alert").wait_for()
