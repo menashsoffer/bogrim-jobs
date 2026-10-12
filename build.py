@@ -293,6 +293,14 @@ def write_site(dest, jobs, localities, include_contacts):
                 handle.write(page)
             continue
         shutil.copy(source_path, dest_path)
+    for extra in ("fonts", "img"):
+        source = os.path.join(SRC, extra)
+        if not os.path.isdir(source):
+            continue
+        target = os.path.join(dest, extra)
+        if os.path.isdir(target):
+            shutil.rmtree(target)
+        shutil.copytree(source, target)
     leaflet_dest = os.path.join(dest, "vendor", "leaflet")
     if os.path.isdir(leaflet_dest):
         shutil.rmtree(leaflet_dest)
