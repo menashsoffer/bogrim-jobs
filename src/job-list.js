@@ -182,7 +182,7 @@ export const renderListShell = () => {
   const search = el('input', {
     id: 'search',
     type: 'search',
-    placeholder: 'חיפוש רשות, תפקיד או תחום',
+    placeholder: 'חיפוש רשות או תפקיד',
     value: filters.q,
     on: { input: () => {
       clearTimeout(store.searchTimer);
