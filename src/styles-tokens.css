@@ -1,0 +1,89 @@
+/* The first block is copied as-is from the approved אופק tokens.css. */
+/* v2 "אופק" — design tokens. */
+@font-face { font-family: "Heebo"; font-style: normal; font-display: swap; font-weight: 100 900;
+  src: url("fonts/heebo-hebrew-wght-normal.woff2") format("woff2-variations"), url("fonts/heebo-hebrew-wght-normal.woff2") format("woff2");
+  unicode-range: U+0307-0308, U+0590-05FF, U+200C-2010, U+20AA, U+25CC, U+FB1D-FB4F; }
+@font-face { font-family: "Heebo"; font-style: normal; font-display: swap; font-weight: 100 900;
+  src: url("fonts/heebo-latin-wght-normal.woff2") format("woff2-variations"), url("fonts/heebo-latin-wght-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+:root {
+  color-scheme: dark;
+  /* palette */
+  --bg: #000000;
+  --surface: #0A0A0B;
+  --surface-2: #141416;
+  --surface-3: #1D1D20;
+  --line: #232326;
+  --line-strong: #38383D;
+  --text: #F5F5F7;
+  --text-2: #A1A1A6;
+  --text-3: #8E8E94;
+  --accent: #A9C9E8;
+  --accent-ink: #000000;
+  --invert: #F5F5F7;
+  --on-invert: #000000;
+  --hairline: 1px solid var(--line);
+  --hairline-strong: 1px solid var(--line-strong);
+  --accent-08: rgba(169, 201, 232, .08);
+  --accent-24: rgba(169, 201, 232, .24);
+
+  /* type — Heebo variable */
+  --font: "Heebo", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --fs-11: 11px; --fs-12: 12px; --fs-13: 13px; --fs-15: 15px; --fs-17: 17px; --fs-20: 20px;
+  --fs-24: 24px; --fs-32: 32px; --fs-44: 44px; --fs-56: 56px; --fs-80: 80px;
+  --fw-light: 300; --fw-regular: 400; --fw-medium: 500; --fw-semibold: 600; --fw-bold: 700;
+  --lh-tight: 1.06; --lh-snug: 1.25; --lh-body: 1.6;
+  --track-display: -0.005em; --track-body: 0.01em; --track-label: 0.06em;
+
+  /* spacing — 4pt base */
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 20px; --s-6: 24px; --s-8: 32px;
+  --s-10: 40px; --s-12: 48px; --s-16: 64px; --s-20: 80px; --s-24: 96px; --s-32: 128px;
+  --container: 1160px; --gutter: 24px;
+
+  /* radii */
+  --r-xs: 6px; --r-sm: 10px; --r-md: 16px; --r-lg: 22px; --r-xl: 28px; --r-pill: 999px;
+
+  /* light & depth — no heavy shadows; light comes from hairlines and soft glows */
+  --edge-top: inset 0 1px 0 rgba(255, 255, 255, .05);
+  --lift: 0 1px 0 rgba(255, 255, 255, .04) inset, 0 24px 60px -30px rgba(0, 0, 0, .9);
+  --glow-accent: 0 0 0 1px var(--accent-24), 0 0 24px -6px rgba(169, 201, 232, .35);
+  --veil: linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,0) 40%);
+  --focus: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent);
+
+  /* motion */
+  --dur-1: 140ms; --dur-2: 280ms; --dur-3: 600ms; --dur-4: 1100ms; --dur-5: 2400ms;
+  --ease-out: cubic-bezier(.22, 1, .36, 1);     /* expo-ish settle */
+  --ease-in-out: cubic-bezier(.65, 0, .35, 1);
+  --ease-std: cubic-bezier(.2, 0, 0, 1);
+  --rise: 14px; --stagger: 70ms;
+
+  /* layout */
+  --topbar-h: 56px; --tabbar-h: 60px;
+}
+
+:root {
+  /* Bars, masks, and the three exception colors. Components reference these instead of literals. */
+  --bar: rgba(0, 0, 0, .72);
+  --bar-strong: rgba(0, 0, 0, .78);
+  --hair-fade: rgba(255, 255, 255, .06);
+  --hair-fade-2: rgba(255, 255, 255, .07);
+  --scrim: rgba(0, 0, 0, .62);
+  --glass: rgba(10, 10, 11, .88);
+  --glass-line: rgba(255, 255, 255, .08);
+  --glass-strong: rgba(10, 10, 11, .92);
+  --clear: transparent;
+  --glow-dot: 0 0 10px 1px rgba(169, 201, 232, .55);
+  --glow-status: 0 0 8px rgba(169, 201, 232, .6);
+  --glow-arc: drop-shadow(0 0 3px rgba(169, 201, 232, .45));
+  --glow-icon: 0 0 60px -12px rgba(169, 201, 232, .35);
+  --map-canvas: #050506;
+  --stack-muted: #5C6670;
+  --skel-shine: #1F1F23;
+  --thumb-ring: 0 0 0 4px rgba(0, 0, 0, .55);
+  --row-hover: rgba(255, 255, 255, .015);
+  --tap: 44px;
+  --icon-sm: 16px;
+  --icon: 20px;
+  --icon-lg: 22px;
+  --textarea-min: 88px;
+}

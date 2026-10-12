@@ -4,7 +4,8 @@ import json
 
 from playwright.sync_api import sync_playwright
 
-from site_harness import DIST, ROOT, TINY_PNG, chrome_path, control_names_unique, parse_csv, search_count, serve, shown_count, stepped_scroll_stuck, wait_count
+from site_harness import DIST, TINY_PNG, chrome_path, control_names_unique, search_count, serve, shown_count, stepped_scroll_stuck, wait_count
+from site_late import check_home_export_and_layout
 
 
 def main():
@@ -118,20 +119,24 @@ def main():
             page.locator(".backdrop").click(position={"x": 1100, "y": 80})
             page.wait_for_function("() => !document.getElementById('drawer')")
             job_id = page.locator("button.card-open").first.get_attribute("data-job")
-            page.goto(base + "#job=" + job_id)
-            page.wait_for_function("() => window.__app && document.getElementById('drawer')")
-            check(page.locator("#drawer-title").inner_text() != "", "hash did not open the drawer")
-            page.locator("#drawer-close").click()
-            page.wait_for_function("() => !document.getElementById('drawer')")
+            for _ in range(3):
+                page.goto(base + "#job=" + job_id)
+                page.wait_for_function("() => window.__app && document.getElementById('drawer')")
+                check(page.locator("#drawer-title").inner_text() != "", "hash did not open the drawer")
+                page.locator("#drawer-close").click()
+                page.wait_for_function("() => !document.getElementById('drawer')")
 
             page.select_option("#filter-district", "דרום")
             wait_count(page, 51)
+            check(page.locator("#filter-toggle").inner_text() == "סינון (1)", "filter count")
             check(page.locator("#job-count").inner_text() == "211 משרות", "header count changed while filtering")
             page.select_option("#filter-district", "לא ידוע")
             wait_count(page, 16)
             page.select_option("#filter-district", "")
             page.select_option("#filter-type", "לא ידוע")
             wait_count(page, 1)
+            check(page.locator("#result-count").inner_text() == "מוצגת משרה אחת", "singular result count")
+            check(page.locator("#filters-done").inner_text() == "הצג משרה אחת", "singular apply label")
             page.click("#clear-filters")
             wait_count(page, 211)
 
@@ -139,12 +144,18 @@ def main():
             wait_count(page, energy)
             check(shown_count(page) == energy, "energy search count")
             page.fill("#search", "zzzz-no-such-job")
-            page.wait_for_selector(".empty")
-            check(page.locator(".empty").inner_text() == "לא נמצאו משרות", "empty state")
-            page.click("#clear-filters")
+            page.wait_for_selector(".empty-title")
+            check(page.locator(".empty-title").inner_text() == "לא נמצאו משרות", "empty state")
+            check("אין משרה שעונה על כל המסננים יחד." in page.locator("#results").inner_text(), "empty hint")
+            page.locator("#filter-min-score").evaluate(
+                "node => { node.value = '1'; node.dispatchEvent(new Event('input', { bubbles: true })); }"
+            )
+            check("משרות ללא ציון מוסתרות" in page.locator("#results").inner_text(), "min score note")
+            page.click("#empty-clear-filters")
             wait_count(page, 211)
 
-            page.select_option("#sort-key", "name")
+            page.locator("#sort-open").click()
+            page.evaluate("() => { const node = document.getElementById('sort-key'); node.value = 'name'; node.dispatchEvent(new Event('change', { bubbles: true })); }")
             check(page.locator("#sort-dir").inner_text() == "עולה", "name sort direction")
             page.click("#sort-dir")
             check(page.locator("#sort-dir").inner_text() == "יורד", "sort direction toggle")
@@ -162,9 +173,11 @@ def main():
                 }"""
             )
             score_text = page.locator("#drawer .score").inner_text()
-            check("4.4" in score_text and "דורג 2/5" in score_text and "חלקי" in score_text, score_text)
+            check("4.4" in score_text and "2 מתוך 5 קריטריונים" in score_text and "חלקי" in score_text, score_text)
+            check(page.locator("#drawer .score").get_attribute("aria-label") == "ממוצע משוקלל של הקריטריונים שדירגת, 1–5", "score label")
+            check(page.locator("#drawer .score span", has_text="חלקי").get_attribute("title") == "חסרים דירוגים", "partial title")
             page.locator("#drawer-favorite").click()
-            page.select_option("#job-status", "מעניין")
+            page.locator('#job-status [data-status="מעניין"]').click()
             page.fill("#notes-role", "הערה על התפקיד")
             page.fill("#general-notes", "=1+1")
             page.fill("#call-name", "ראשון")
@@ -202,9 +215,9 @@ def main():
             wait_count(page, 1)
             page.click("#clear-filters")
 
-            boxes = page.locator("#results input[type=checkbox]")
+            boxes = page.locator("#results .cmp")
             for index in range(4):
-                boxes.nth(index).check()
+                boxes.nth(index).click()
             check(page.locator("#compare-count").inner_text() == "4", "compare count")
             boxes.nth(4).click()
             page.locator("#limit-alert").wait_for()
@@ -235,161 +248,15 @@ def main():
             page.locator('#nav [data-view="list"]').click()
             page.locator("button.card-open").first.click()
             page.locator("#drawer").wait_for()
-            check(page.locator("#job-status").input_value() == "מעניין" or "מעניין" in page.locator("#drawer").inner_text(), "status was not saved")
+            check(page.locator('#job-status [aria-checked="true"]').inner_text() == "מעניין", "status was not saved")
             page.locator("#drawer-close").click()
             page.locator('#nav [data-view="settings"]').click()
             page.click("#reset-criteria")
             page.wait_for_function("() => document.querySelector('[data-crit-name]').value === 'התפקיד והאנשים'")
 
-            page.fill("#home-address", "רחובות")
-            before_external = len(external)
-            page.click("#geocode-home")
-            page.wait_for_function("() => window.__app.state.home && window.__app.state.home.label.includes('רחובות')")
-            check(not any("nominatim" in url for url in external[before_external:]), "exact locality used the network")
-            page.click("#use-my-location")
-            page.wait_for_function("() => window.__app.state.home && window.__app.state.home.label === 'המיקום שלי'")
-            page.fill("#home-address", "רחובות")
-            page.click("#geocode-home")
-            page.wait_for_function("() => window.__app.state.home && window.__app.state.home.label.includes('רחובות')")
-            page.locator('#nav [data-view="list"]').click()
-            check("קו אווירי (הערכה)" in page.locator(".travel-line").first.inner_text(), "air distance label")
-            page.locator("button.card-open").first.click()
-            page.locator("#transit-minutes").evaluate("(node) => { node.value = '-3'; node.dispatchEvent(new Event('change', { bubbles: true })); }")
-            check("אינו שלילי" in page.locator("#transit-error").inner_text(), "negative transit time")
-            page.locator("#transit-minutes").evaluate("(node) => { node.value = 'שעה'; node.dispatchEvent(new Event('change', { bubbles: true })); }")
-            check("זה לא מספר" in page.locator("#transit-error").inner_text(), "non-numeric transit time")
-            check(page.evaluate("() => { const job = window.__app.state.jobs[location.hash.slice(5)]; return !job || job.transitMinutes == null; }"), "invalid transit was stored")
-            page.locator("#transit-minutes").fill("42")
-            page.locator("#transit-minutes").dispatch_event("change")
-            page.wait_for_function("() => window.__app.state.jobs[location.hash.slice(5)].transitMinutes === 42")
-            page.keyboard.press("Escape")
-
-            page.locator('#nav [data-view="settings"]').click()
-            phase["nominatim"] = "fail"
-            page.fill("#home-address", "zzzznotaplace")
-            page.click("#geocode-home")
-            page.wait_for_function("() => document.getElementById('home-status').textContent.includes('לא הצלחנו לאתר את הכתובת')")
-            check("רחובות" in page.evaluate("() => window.__app.state.home.label"), "failed geocode replaced the saved home")
-
-            phase["osrm"] = "ok"
-            page.click("#compute-routes")
-            page.wait_for_function(
-                "() => document.getElementById('route-status').textContent.includes('זמני הנסיעה נשמרו')",
-                timeout=40000,
+            check_home_export_and_layout(
+                page, browser, base, phase, external, tiles, page_errors, console_errors, attach, check,
             )
-            check(any("routing.openstreetmap.de" in url for url in external), "OSRM was not called after confirmation")
-            page.locator('#nav [data-view="list"]').click()
-            air_left = page.locator(".travel-line", has_text="קו אווירי").count()
-            check(air_left == 0, f"{air_left} jobs still show air distance")
-            check("30 דק׳" in page.locator(".travel-line").first.inner_text(), page.locator(".travel-line").first.inner_text())
-
-            page.locator('#nav [data-view="settings"]').click()
-            with page.expect_download() as json_download:
-                page.click("#export-json")
-            json_path = ROOT / "test-results" / "backup.json"
-            json_path.parent.mkdir(exist_ok=True)
-            json_download.value.save_as(str(json_path))
-            backup = json.loads(json_path.read_text(encoding="utf-8"))
-            check(backup["state"]["jobs"], "export was empty")
-            check("routingKey" not in backup["state"], "export included the routing key")
-
-            with page.expect_download() as csv_download:
-                page.click("#export-csv")
-            csv_path = ROOT / "test-results" / "jobs.csv"
-            csv_download.value.save_as(str(csv_path))
-            csv_bytes = csv_path.read_bytes()
-            check(csv_bytes.startswith(b"\xef\xbb\xbf"), "CSV is missing the UTF-8 BOM")
-            csv_text = csv_bytes.decode("utf-8-sig")
-            check("\r\n" in csv_text, "CSV line endings")
-            rows = parse_csv(csv_text)
-            check(len(rows) == 212, f"CSV rows {len(rows)}")
-            check("ציון" in rows[0] and "סטטוס" in rows[0], rows[0])
-            check(any(cell == "'=1+1" for row in rows for cell in row), "formula injection guard")
-            check("managerEmail" not in rows[0] and "טלפון" not in rows[0], "contact column in CSV")
-
-            other = browser.new_context(
-                locale="he-IL",
-                viewport={"width": 1280, "height": 800},
-                accept_downloads=True,
-            )
-            other_page = other.new_page()
-            attach(other_page)
-            other_page.goto(base)
-            other_page.wait_for_function("() => window.__app && window.__app.jobs.length === 211")
-            other_page.locator('#nav [data-view="settings"]').click()
-            other_page.locator("#import-file").set_input_files(str(json_path))
-            other_page.wait_for_function("() => (localStorage.getItem('bogrim-jobs.v1') || '').includes('=1+1')")
-            bad_path = ROOT / "test-results" / "bad.json"
-            bad_path.write_text("{", encoding="utf-8")
-            before = other_page.evaluate("() => localStorage.getItem('bogrim-jobs.v1')")
-            other_page.locator("#import-file").set_input_files(str(bad_path))
-            other_page.wait_for_function("() => document.getElementById('toast').textContent.includes('הקובץ אינו גיבוי תקין')")
-            after = other_page.evaluate("() => localStorage.getItem('bogrim-jobs.v1')")
-            check(before == after, "bad import changed stored data")
-            other.close()
-
-            check(tiles == [], "tiles were requested before the map tab")
-            page.locator('#nav [data-view="map"]').click()
-            try:
-                page.wait_for_function("() => window.L && document.querySelector('#map.leaflet-container')", timeout=20000)
-            except Exception as error:
-                detail = page.evaluate("""() => ({
-                  L: typeof window.L,
-                  text: ((document.getElementById('map') || {}).innerText || '').slice(0, 180),
-                  hidden: !!(document.getElementById('view-map') && document.getElementById('view-map').hidden),
-                })""")
-                raise AssertionError(f"map did not open {detail} page={page_errors[:3]} console={console_errors[:3]}") from error
-            page.wait_for_timeout(500)
-            check(len(tiles) > 0, "opening the map did not request OSM tiles")
-            check("OpenStreetMap" in page.locator("#view-map").inner_text() or page.locator(".leaflet-control-attribution").count() >= 0, "map notice")
-
-            def page_overflow(target):
-                size = target.evaluate("() => ({ sw: document.documentElement.scrollWidth, cw: document.documentElement.clientWidth })")
-                return size["sw"] - size["cw"]
-
-            check(page_overflow(page) <= 1, "desktop page scrolls sideways")
-            page.set_viewport_size({"width": 360, "height": 800})
-            page.locator('#nav [data-view="list"]').click()
-            page.wait_for_timeout(200)
-            check(page_overflow(page) <= 1, "360px page scrolls sideways")
-            page.locator("#filter-toggle").click()
-            page.locator("#filters.is-open").wait_for()
-            page.locator("#close-filters").click()
-            narrow_targets = page.evaluate(
-                """() => [...document.querySelectorAll('button, a.btn, label.check')]
-                  .filter((node) => node.getClientRects().length)
-                  .filter((node) => {
-                    const box = node.getBoundingClientRect();
-                    return box.width < 44 || box.height < 44;
-                  })
-                  .map((node) => (node.id || node.innerText || node.getAttribute('aria-label') || node.tagName).slice(0, 40))"""
-            )
-            check(narrow_targets == [], f"tap targets under 44px: {narrow_targets}")
-
-            page.set_viewport_size({"width": 390, "height": 844})
-            page.locator("button.card-open").first.click()
-            page.locator("#drawer").wait_for()
-            check(page_overflow(page) <= 1, "390px drawer scrolls the page sideways")
-            page.keyboard.press("Escape")
-
-            page.locator('#nav [data-view="privacy"]').click()
-            privacy = page.locator("#view-privacy").inner_text()
-            check("אין כאן שרת" in privacy and "Nominatim" in privacy and "נקה נתונים" in privacy, "privacy copy")
-            page.locator('#nav [data-view="help"]').click()
-            check("למודעה המקורית" in page.locator("#view-help").inner_text(), "help points at the source listing")
-
-            page.locator('#nav [data-view="settings"]').click()
-            page.click("#clear-data")
-            page.wait_for_function("() => window.__app.state.home === null && Object.keys(window.__app.state.jobs).length === 0 && localStorage.getItem('bogrim-jobs.v1') === null")
-            check(page.evaluate("() => localStorage.getItem('bogrim-jobs.v1')") is None, "clear data left the storage key")
-
-            interesting = [
-                item for item in console_errors + page_errors
-                if "Failed to load resource" not in item
-                and "nominatim" not in item.lower()
-                and "tile.openstreetmap.org" not in item
-            ]
-            check(interesting == [], f"console errors: {interesting[:8]}")
             browser.close()
         print("browser checks passed")
     finally:

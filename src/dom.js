@@ -1,17 +1,12 @@
 export const STATUSES = ['לא נבדק', 'דיברתי איתם', 'מעניין', 'פסול'];
 export const UNKNOWN = 'לא ידוע';
 export const AIR_LABEL = 'קו אווירי (הערכה)';
+export const heCount = (count, one, many) => (count === 1 ? one : many.replaceAll('#', String(count)));
 export const CRIT_TYPES = [
   ['rating', 'דירוג 1–5'],
   ['yesno', 'כן/לא'],
   ['text', 'טקסט'],
   ['travel', 'נסיעה אוטומטית'],
-];
-export const SCORE_MODES = [
-  ['car', 'רכב'],
-  ['bike', 'אופניים'],
-  ['walk', 'הליכה'],
-  ['transit', 'תחבורה ציבורית'],
 ];
 export const el = (tag, attrs = {}, kids = []) => {
   const node = document.createElement(tag);
@@ -36,6 +31,17 @@ export const el = (tag, attrs = {}, kids = []) => {
 };
 export const labelOrUnknown = (value) => (value == null || value === '' ? UNKNOWN : String(value));
 export const formatScore = (score) => (Math.round(score * 10) / 10).toFixed(1);
+export const formatDuration = (minutes) => {
+  if (minutes == null || minutes === '') return '';
+  if (typeof minutes === 'number' && Number.isNaN(minutes)) return '';
+  const total = Math.round(Number(minutes));
+  if (!Number.isFinite(total) || total < 0) return '';
+  if (total < 60) return `${total} דק׳`;
+  const hours = Math.floor(total / 60);
+  const rest = total % 60;
+  const hourLabel = hours === 1 ? 'שעה' : hours === 2 ? 'שעתיים' : `${hours} שעות`;
+  return rest > 0 ? `${hourLabel} ו-${rest} דק׳` : hourLabel;
+};
 export const formatKm = (km) => {
   if (km == null || Number.isNaN(km)) return UNKNOWN;
   const rounded = km < 10 ? (Math.round(km * 10) / 10).toFixed(1) : String(Math.round(km));
@@ -56,12 +62,24 @@ export const statusClass = (status) => {
   if (status === 'פסול') return 'status status-no';
   return 'status';
 };
+const allowedHost = (hostname, names) => names.includes(hostname);
 export const safeHttps = (url) => {
   try {
     const parsed = new URL(url);
     if (parsed.protocol !== 'https:') return '';
-    if (parsed.hostname !== 'www.bogrim-muni.com' && parsed.hostname !== 'bogrim-muni.com') return '';
+    if (!allowedHost(parsed.hostname, ['www.bogrim-muni.com', 'bogrim-muni.com'])) return '';
     return parsed.href;
+  } catch (error) {
+    return '';
+  }
+};
+export const safeTravelUrl = (url) => {
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== 'https:') return '';
+    const names = ['www.google.com', 'maps.google.com', 'www.waze.com', 'waze.com', 'moovit.com', 'www.moovit.com', 'moovitapp.com', 'www.moovitapp.com'];
+    if (!allowedHost(parsed.hostname, names)) return '';
+    return url;
   } catch (error) {
     return '';
   }
@@ -75,19 +93,40 @@ export const safeMail = (email) => {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || ''))) return '';
   return `mailto:${email}`;
 };
-export const toast = (message) => {
+export const toast = (message, action) => {
   const node = document.getElementById('toast');
   if (!node) return;
-  node.textContent = message;
+  const hide = () => {
+    node.classList.remove('is-on');
+    node.inert = true;
+    node.replaceChildren();
+  };
+  node.inert = false;
+  node.replaceChildren(document.createTextNode(message));
+  if (action) {
+    node.append(el('button', {
+      type: 'button',
+      class: 'btn',
+      text: action.label,
+      on: { click: () => {
+        hide();
+        action.run();
+      }},
+    }));
+  }
   node.classList.add('is-on');
   clearTimeout(node._timer);
-  node._timer = setTimeout(() => node.classList.remove('is-on'), 3200);
+  node._timer = setTimeout(hide, action ? 5000 : 3200);
+};
+export const toastUndo = (message, onUndo) => {
+  toast(message, { label: 'ביטול', run: onUndo });
 };
 export const showLimit = (message) => {
   const alert = document.getElementById('limit-alert');
   if (alert) {
     alert.hidden = false;
     alert.textContent = message;
+    alert.scrollIntoView({ block: 'nearest' });
   }
   toast(message);
 };

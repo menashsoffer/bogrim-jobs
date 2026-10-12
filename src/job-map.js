@@ -1,7 +1,7 @@
-import { el } from './dom.js';
+import { el, heCount } from './dom.js';
 import { openJob } from './job-drawer.js';
 import { scoreJob, visibleJobs } from './score.js';
-import { store } from './store.js';
+import { peekJob, store } from './store.js';
 
 export const loadLeaflet = () => {
   if (window.L) return Promise.resolve(window.L);
@@ -15,7 +15,46 @@ export const loadLeaflet = () => {
   });
   return store.leafletLoading;
 };
+const markerPopup = (group) => {
+  const popup = el('div');
+  if (group.length === 1) {
+    const job = group[0];
+    popup.append(el('strong', { text: job.title || job.role }));
+    popup.append(el('p', { text: job.authority }));
+    popup.append(el('button', {
+      type: 'button',
+      class: 'btn',
+      text: 'פרטים',
+      on: { click: () => openJob(job.id, null) },
+    }));
+    return popup;
+  }
+  popup.append(el('strong', { text: group[0].authority }));
+  group.forEach((job) => {
+    popup.append(el('button', {
+      type: 'button',
+      class: 'btn',
+      text: job.role || job.title,
+      on: { click: () => openJob(job.id, null) },
+    }));
+  });
+  return popup;
+};
+const hasManualRating = (job) => {
+  const ratings = peekJob(job.id).ratings || {};
+  return store.state.criteria.some((criterion) => {
+    if (criterion.type !== 'rating' && criterion.type !== 'yesno') return false;
+    const raw = ratings[criterion.id];
+    if (criterion.type === 'yesno') return raw === true || raw === false;
+    return typeof raw === 'number' && raw >= 1 && raw <= 5;
+  });
+};
+const paintMapCount = () => {
+  const count = document.getElementById('map-count');
+  if (count) count.textContent = heCount(visibleJobs().length, 'מוצגת משרה אחת לפי הסינון', 'מוצגות # משרות לפי הסינון');
+};
 export const drawMarkers = (leaflet) => {
+  paintMapCount();
   if (!store.map) return;
   if (store.mapLayer) store.mapLayer.remove();
   store.mapLayer = leaflet.layerGroup().addTo(store.map);
@@ -26,32 +65,20 @@ export const drawMarkers = (leaflet) => {
     groups.get(job.authority).push(job);
   });
   const bounds = [];
+  const theme = getComputedStyle(document.documentElement);
+  const ink = theme.getPropertyValue('--bg').trim();
+  const accent = theme.getPropertyValue('--accent').trim();
+  const paper = theme.getPropertyValue('--text').trim();
+  const muted = theme.getPropertyValue('--text-3').trim();
   groups.forEach((group) => {
-    const best = group.map((job) => scoreJob(job).score).filter((score) => score != null).sort((a, b) => b - a)[0];
-    const color = best == null ? '#57534e' : ({ 1: '#9f1239', 2: '#9a3412', 3: '#1e3a8a', 4: '#1d4e89', 5: '#166534' }[Math.max(1, Math.min(5, Math.round(best)))] || '#57534e');
-    const marker = leaflet.circleMarker([group[0].lat, group[0].lon], {
-      radius: 8,
-      color: '#fff',
-      weight: 2,
-      fillColor: color,
-      fillOpacity: 0.95,
-    });
-    marker.on('click', () => {
-      if (group.length === 1) openJob(group[0].id, null);
-    });
-    if (group.length > 1) {
-      const popup = el('div');
-      popup.append(el('strong', { text: group[0].authority }));
-      group.forEach((job) => {
-        popup.append(el('button', {
-          type: 'button',
-          class: 'btn',
-          text: job.role || job.title,
-          on: { click: () => openJob(job.id, null) },
-        }));
-      });
-      marker.bindPopup(popup);
-    }
+    const best = group.map((job) => (hasManualRating(job) ? scoreJob(job).score : null)).filter((score) => score != null).sort((a, b) => b - a)[0];
+    let options = { radius: 3, color: muted, weight: 0, fillColor: muted, fillOpacity: 0.6 };
+    if (best != null && best >= 3.5) options = { radius: 5.5, color: ink, weight: 1.5, fillColor: accent, fillOpacity: 1 };
+    else if (best != null && best >= 2.5) options = { radius: 5.5, color: ink, weight: 1.5, fillColor: paper, fillOpacity: 1 };
+    else if (best != null) options = { radius: 5.5, color: paper, weight: 1.5, fillColor: paper, fillOpacity: 0 };
+    const marker = leaflet.circleMarker([group[0].lat, group[0].lon], options);
+    marker.bindPopup(markerPopup(group));
+    marker.bindTooltip(group.length === 1 ? (group[0].title || group[0].role) : group[0].authority);
     marker.addTo(store.mapLayer);
     bounds.push([group[0].lat, group[0].lon]);
   });
@@ -70,6 +97,8 @@ export const ensureMap = async () => {
   const host = document.getElementById('map');
   try {
     const leaflet = await loadLeaflet();
+    const placeholder = document.querySelector('.map-ph');
+    if (placeholder) placeholder.hidden = true;
     if (!store.map) {
       store.map = leaflet.map(host, { zoomControl: true });
       leaflet.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -78,8 +107,13 @@ export const ensureMap = async () => {
       }).addTo(store.map);
       store.map.setView([31.4, 34.9], 8);
     }
-    setTimeout(() => { if (store.map) store.map.invalidateSize(); }, 60);
     drawMarkers(leaflet);
+    setTimeout(() => {
+      if (!store.map) return;
+      store.map.invalidateSize();
+      drawMarkers(leaflet);
+    }, 60);
+    if (new URLSearchParams(location.search).get('test') === '1') window.__map = store.map;
   } catch (error) {
     host.replaceChildren(el('p', { class: 'empty', text: 'המפה לא נטענה. שאר האתר זמין בלי מפה.' }));
   }

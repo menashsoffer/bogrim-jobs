@@ -23,14 +23,59 @@ export const setHomeStatus = (message) => {
   const node = document.getElementById('home-status');
   if (node) node.textContent = message;
 };
+export const shortAddress = (label) => String(label || '')
+  .split(',')
+  .map((part) => part.trim())
+  .filter(Boolean)
+  .slice(0, 3)
+  .join(', ');
+const choiceRank = (choice, words) => {
+  const label = normName(choice.label);
+  if (!words.length) return 0;
+  const last = normName(words[words.length - 1]);
+  if (last && label.includes(last)) return 2;
+  if (words.some((word) => label.includes(normName(word)))) return 1;
+  return 0;
+};
+export const paintHomeChip = () => {
+  const label = document.getElementById('home-chip-label');
+  const chip = document.getElementById('home-chip');
+  if (!label || !chip) return;
+  if (!store.state.home) {
+    label.textContent = 'כתובת';
+    chip.setAttribute('aria-label', 'הגדרת כתובת בית');
+    return;
+  }
+  const place = shortAddress(store.state.home.label).split(',')[0].trim() || 'הבית';
+  label.textContent = place;
+  chip.setAttribute('aria-label', `כתובת הבית: ${place}. שינוי`);
+};
+export const paintHomeStatus = (focus) => {
+  paintHomeChip();
+  const node = document.getElementById('home-status');
+  if (!node || !store.state.home) return;
+  node.replaceChildren(
+    document.createTextNode(`הבית: ${store.state.home.label} · `),
+    el('button', {
+      type: 'button',
+      class: 'text-btn',
+      text: 'שינוי',
+      on: { click: () => {
+        const address = document.getElementById('home-address');
+        if (address) address.focus();
+      }},
+    }),
+  );
+  if (focus) node.focus();
+};
 export const setHome = (place) => {
   store.state.home = {
-    label: String(place.label).split(',').slice(0, 3).join(', ').trim(),
+    label: shortAddress(place.label),
     lat: Math.round(Number(place.lat) * 1e5) / 1e5,
     lon: Math.round(Number(place.lon) * 1e5) / 1e5,
   };
   saveNow();
-  setHomeStatus(`הבית הוגדר: ${store.state.home.label}`);
+  paintHomeStatus(true);
   const results = document.getElementById('home-results');
   if (results) results.replaceChildren();
   const hint = document.getElementById('home-hint');
@@ -41,10 +86,13 @@ export const setHome = (place) => {
 export const showHomeChoices = (choices) => {
   const host = document.getElementById('home-results');
   if (!host) return;
-  host.replaceChildren(...choices.map((choice) => el('button', {
+  const input = document.getElementById('home-address');
+  const words = input ? input.value.trim().split(/\s+/).filter(Boolean) : [];
+  const ordered = [...choices].sort((a, b) => choiceRank(b, words) - choiceRank(a, words) || shortAddress(a.label).localeCompare(shortAddress(b.label), 'he'));
+  host.replaceChildren(...ordered.map((choice) => el('button', {
     type: 'button',
     class: 'btn',
-    text: choice.label,
+    text: shortAddress(choice.label),
     on: { click: () => setHome(choice) },
   })));
 };
@@ -66,7 +114,12 @@ export const nominatimSearch = async (query) => {
     lon: Number(row.lon),
   })).filter((row) => Number.isFinite(row.lat) && Number.isFinite(row.lon));
 };
+const clearHomeResults = () => {
+  const host = document.getElementById('home-results');
+  if (host) host.replaceChildren();
+};
 export const onGeocode = async () => {
+  clearHomeResults();
   const input = document.getElementById('home-address');
   const query = input ? input.value.trim() : '';
   if (!query) {
@@ -96,6 +149,7 @@ export const onGeocode = async () => {
     const local = localityHits(query, false);
     const choices = found.concat(local).slice(0, 8);
     if (!choices.length) {
+      clearHomeResults();
       setHomeStatus('לא הצלחנו לאתר את הכתובת. נסו שם יישוב מהרשימה, או בדקו את החיבור לאינטרנט.');
       return;
     }
@@ -108,6 +162,7 @@ export const onGeocode = async () => {
       showHomeChoices(local);
       return;
     }
+    clearHomeResults();
     setHomeStatus('לא הצלחנו לאתר את הכתובת. נסו שם יישוב מהרשימה, או בדקו את החיבור לאינטרנט.');
   }
 };
@@ -123,19 +178,18 @@ export const onGps = () => {
     { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 },
   );
 };
-export const storeRoute = (mode, authority, value) => {
+export const storeRoute = (authority, value) => {
   const key = homeKey(store.state.home);
-  if (!store.state.routes[key]) store.state.routes[key] = { car: {}, bike: {}, walk: {} };
-  if (!store.state.routes[key][mode]) store.state.routes[key][mode] = {};
-  store.state.routes[key][mode][authority] = value;
+  if (!store.state.routes[key]) store.state.routes[key] = { car: {} };
+  if (!store.state.routes[key].car) store.state.routes[key].car = {};
+  store.state.routes[key].car[authority] = value;
 };
-export const fetchOsrm = async (mode, names) => {
-  const spec = OSRM[mode];
+export const fetchOsrm = async (names) => {
   const coords = [`${store.state.home.lon},${store.state.home.lat}`].concat(names.map((name) => {
     const point = store.authorityPoint.get(name);
     return `${point.lon},${point.lat}`;
   })).join(';');
-  const url = `https://routing.openstreetmap.de/${spec.host}/table/v1/${spec.profile}/${coords}?sources=0&annotations=duration,distance`;
+  const url = `https://routing.openstreetmap.de/${OSRM.host}/table/v1/${OSRM.profile}/${coords}?sources=0&annotations=duration,distance`;
   const response = await fetch(url);
   if (!response.ok) throw new Error('osrm');
   const body = await response.json();
@@ -144,15 +198,15 @@ export const fetchOsrm = async (mode, names) => {
     const duration = body.durations[0][index + 1];
     const distance = body.distances && body.distances[0] ? body.distances[0][index + 1] : null;
     if (duration == null) return;
-    storeRoute(mode, name, { min: Math.max(0, Math.round(duration / 60)), km: distance == null ? null : Math.round(distance / 100) / 10 });
+    storeRoute(name, { min: Math.max(0, Math.round(duration / 60)), km: distance == null ? null : Math.round(distance / 100) / 10 });
   });
 };
-export const fetchOrs = async (mode, names) => {
+export const fetchOrs = async (names) => {
   const locations = [[store.state.home.lon, store.state.home.lat]].concat(names.map((name) => {
     const point = store.authorityPoint.get(name);
     return [point.lon, point.lat];
   }));
-  const response = await fetch(`https://api.openrouteservice.org/v2/matrix/${ORS[mode]}`, {
+  const response = await fetch(`https://api.openrouteservice.org/v2/matrix/${ORS}`, {
     method: 'POST',
     headers: { Authorization: store.state.routingKey, 'Content-Type': 'application/json' },
     body: JSON.stringify({ locations, sources: [0], metrics: ['duration', 'distance'], units: 'm' }),
@@ -163,7 +217,7 @@ export const fetchOrs = async (mode, names) => {
     const duration = body.durations && body.durations[0] ? body.durations[0][index + 1] : null;
     const distance = body.distances && body.distances[0] ? body.distances[0][index + 1] : null;
     if (duration == null) return;
-    storeRoute(mode, name, { min: Math.max(0, Math.round(duration / 60)), km: distance == null ? null : Math.round(distance / 100) / 10 });
+    storeRoute(name, { min: Math.max(0, Math.round(duration / 60)), km: distance == null ? null : Math.round(distance / 100) / 10 });
   });
 };
 export const computeRoutes = async () => {
@@ -173,35 +227,30 @@ export const computeRoutes = async () => {
     return;
   }
   const names = [...store.authorityPoint.keys()];
-  const missing = ['car', 'bike', 'walk'].some((mode) => names.some((name) => !(store.state.routes[homeKey(store.state.home)] && store.state.routes[homeKey(store.state.home)][mode] && store.state.routes[homeKey(store.state.home)][mode][name])));
-  if (!missing) {
+  const bucket = store.state.routes[homeKey(store.state.home)];
+  const todo = names.filter((name) => !(bucket && bucket.car && bucket.car[name]));
+  if (!todo.length) {
     if (status) status.textContent = 'זמני הנסיעה כבר שמורים במכשיר.';
     return;
   }
   const service = store.state.routingKey ? 'openrouteservice' : 'OSRM';
-  const agreed = window.confirm(`חישוב המסלול שולח את קואורדינטות הבית ומיקומי הרשויות לשירות חיצוני (${service}). להמשיך?`);
+  const agreed = window.confirm(`חישוב זמן הנסיעה ברכב שולח את קואורדינטות הבית ומיקומי הרשויות לשירות חיצוני (${service}). להמשיך?`);
   if (!agreed) {
     if (status) status.textContent = 'החישוב בוטל. מוצג קו אווירי (הערכה).';
     return;
   }
-  if (status) status.textContent = 'מחשב מסלולים…';
   let failed = false;
-  for (let index = 0; index < ['car', 'bike', 'walk'].length; index += 1) {
-    const mode = ['car', 'bike', 'walk'][index];
-    const todo = names.filter((name) => !(store.state.routes[homeKey(store.state.home)] && store.state.routes[homeKey(store.state.home)][mode] && store.state.routes[homeKey(store.state.home)][mode][name]));
-    if (!todo.length) continue;
-    if (index > 0) await sleep(1200);
-    try {
-      const chunks = [];
-      for (let start = 0; start < todo.length; start += 80) chunks.push(todo.slice(start, start + 80));
-      for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex += 1) {
-        if (chunkIndex > 0) await sleep(1200);
-        if (store.state.routingKey) await fetchOrs(mode, chunks[chunkIndex]);
-        else await fetchOsrm(mode, chunks[chunkIndex]);
-      }
-    } catch (error) {
-      failed = true;
+  try {
+    const chunks = [];
+    for (let start = 0; start < todo.length; start += 80) chunks.push(todo.slice(start, start + 80));
+    for (let index = 0; index < chunks.length; index += 1) {
+      if (status) status.textContent = `מחשב זמן נסיעה ברכב… ${index + 1}/${chunks.length}`;
+      if (index > 0) await sleep(1200);
+      if (store.state.routingKey) await fetchOrs(chunks[index]);
+      else await fetchOsrm(chunks[index]);
     }
+  } catch (error) {
+    failed = true;
   }
   saveNow();
   if (status) status.textContent = failed

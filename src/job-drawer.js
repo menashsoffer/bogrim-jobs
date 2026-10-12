@@ -1,10 +1,15 @@
-import { STATUSES, el, formatScore, formatStamp, labelOrUnknown, safeHttps, scoreBand, toast } from './dom.js';
+import { el, formatStamp, labelOrUnknown, safeHttps, toast, toastUndo } from './dom.js';
+import { backIf, pushJob } from './history.js';
+import { icon } from './icons.js';
 import { contactsSection, factsSection, travelSection } from './drawer-sections.js';
-import { renderResults } from './job-list.js';
-import { completionText, criterionValue, scoreJob } from './score.js';
+import { jobPlace, noteListDirty, renderResults, toggleCompare } from './job-list.js';
+import { restoreAnchor } from './scroll-anchor.js';
+import { criterionValue, scoreNode } from './score.js';
+import { statusControl } from './status-control.js';
 import { ensureJob, peekJob, save, store, uid } from './store.js';
 
 export const setBackgroundInert = (on) => {
+  document.body.classList.toggle('drawer-open', on);
   document.querySelectorAll('body > *:not(#drawer-root):not(#toast)').forEach((node) => {
     node.inert = on;
   });
@@ -12,24 +17,47 @@ export const setBackgroundInert = (on) => {
 export const trapFocus = (event) => {
   const drawer = document.getElementById('drawer');
   if (!drawer) return;
-  const focusable = [...drawer.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled])')]
-    .filter((node) => node.getClientRects().length > 0);
-  if (!focusable.length) return;
-  const first = focusable[0];
-  const last = focusable[focusable.length - 1];
-  if (event.shiftKey && document.activeElement === first) {
+  const nodes = [...drawer.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled])')].filter((node) => node.getClientRects().length);
+  const toastButton = document.querySelector('#toast.is-on button:not([disabled])');
+  if (toastButton && toastButton.getClientRects().length) nodes.push(toastButton);
+  const first = nodes[0];
+  const last = nodes[nodes.length - 1];
+  const before = nodes[nodes.length - 2];
+  const active = document.activeElement;
+  if (!event.shiftKey && toastButton && active === before) {
     event.preventDefault();
-    last.focus();
-  } else if (!event.shiftKey && document.activeElement === last) {
+    toastButton.focus();
+  } else if (event.shiftKey ? active === first : active === last) {
     event.preventDefault();
-    first.focus();
+    (event.shiftKey ? last : first).focus();
+  } else if (event.shiftKey && active === toastButton && before) {
+    event.preventDefault();
+    before.focus();
   }
+};
+const clearRating = (jobId, criterionId) => {
+  const record = ensureJob(jobId);
+  const previous = record.ratings[criterionId];
+  delete record.ratings[criterionId];
+  save();
+  refreshDrawer();
+  noteListDirty();
+  toastUndo('הדירוג נוקה', () => {
+    if (previous !== undefined) ensureJob(jobId).ratings[criterionId] = previous;
+    save();
+    noteListDirty();
+    if (store.openJobId !== jobId) return;
+    const focusId = typeof previous === 'number'
+      ? `star-${criterionId}-${previous}`
+      : previous === true ? `yn-${criterionId}-yes` : previous === false ? `yn-${criterionId}-no` : '';
+    refreshDrawer(focusId);
+  });
 };
 const chooseStar = (jobId, criterionId, star, focusId) => {
   ensureJob(jobId).ratings[criterionId] = star;
   save();
   refreshDrawer(focusId);
-  renderResults();
+  noteListDirty();
 };
 const moveStar = (event, jobId, criterionId) => {
   if (event.target.getAttribute('role') !== 'radio') return;
@@ -47,7 +75,6 @@ export const paintDrawer = () => {
   const root = document.getElementById('drawer-root');
   if (!job || !root) return;
   const user = peekJob(job.id);
-  const scored = scoreJob(job);
   const url = safeHttps(job.url);
   const backdrop = el('button', {
     type: 'button',
@@ -57,60 +84,70 @@ export const paintDrawer = () => {
     on: { click: () => closeJob() },
   });
   const body = el('div', { class: 'drawer-body' });
-  const head = el('div', { class: 'drawer-head' }, [
-    el('div', { class: 'row' }, [
-      el('button', {
-        type: 'button',
-        class: 'btn',
-        id: 'drawer-close',
-        text: '× סגירה',
-        on: { click: () => closeJob() },
-      }),
-      el('button', {
-        type: 'button',
-        class: `btn fav${user.favorite ? ' is-on' : ''}`,
-        id: 'drawer-favorite',
-        'aria-pressed': user.favorite ? 'true' : 'false',
-        'aria-label': `${user.favorite ? '★ מועדף' : '☆ מועדף'}: ${job.title || job.role} – ${job.authority}`,
-        text: user.favorite ? '★ מועדף' : '☆ מועדף',
-        on: { click: () => {
-          ensureJob(job.id).favorite = !ensureJob(job.id).favorite;
-          save();
-          refreshDrawer('drawer-favorite');
-          renderResults();
-        }},
-      }),
+  const actions = el('div', { class: 'drawer-actions' }, [
+    el('button', {
+      type: 'button',
+      class: 'btn',
+      id: 'drawer-close',
+      on: { click: () => closeJob() },
+    }, [icon('x'), 'סגירה']),
+    el('button', {
+      type: 'button',
+      class: `btn fav${user.favorite ? ' is-on' : ''}`,
+      id: 'drawer-favorite',
+      'aria-pressed': user.favorite ? 'true' : 'false',
+      'aria-label': `מועדף: ${job.title || job.role} – ${job.authority}`,
+      on: { click: () => {
+        ensureJob(job.id).favorite = !ensureJob(job.id).favorite;
+        save();
+        refreshDrawer('drawer-favorite');
+        noteListDirty();
+      }},
+    }, [icon(user.favorite ? 'heart-fill' : 'heart'), 'מועדף']),
+    el('button', {
+      type: 'button',
+      class: `btn${store.state.compareIds.includes(job.id) ? ' is-on' : ''}`,
+      id: 'drawer-compare',
+      'aria-pressed': store.state.compareIds.includes(job.id) ? 'true' : 'false',
+      on: { click: () => {
+        const next = !store.state.compareIds.includes(job.id);
+        if (!toggleCompare(job.id, next)) return;
+        noteListDirty();
+        refreshDrawer('drawer-compare');
+      }},
+    }, [
+      icon(store.state.compareIds.includes(job.id) ? 'check' : 'columns-3', 'sm'),
+      store.state.compareIds.includes(job.id) ? 'בהשוואה' : 'להשוואה',
     ]),
+  ]);
+  const head = el('div', { class: 'drawer-head' }, [
     el('h2', { id: 'drawer-title', text: job.title || job.role }),
     el('p', { class: 'muted', text: `${job.authority} · ${labelOrUnknown(job.district)} · ${labelOrUnknown(job.authorityType)}` }),
-    el('p', { class: `score ${scoreBand(scored.score)}${scored.partial ? ' is-partial' : ''}` }, [
-      el('strong', { text: scored.score == null ? '—' : formatScore(scored.score) }),
-      el('span', { text: completionText(scored) }),
-      scored.partial ? el('span', { text: 'חלקי' }) : null,
-    ]),
+    (() => {
+      const score = scoreNode(job);
+      score.classList.add('score--lg');
+      score.insertBefore(el('span', { class: 'ds-label', text: 'ציון משוקלל' }), score.querySelector('span'));
+      return score;
+    })(),
     url ? el('a', {
       class: 'btn primary',
       id: 'source-link',
       href: url,
       target: '_blank',
       rel: 'noopener noreferrer',
-      text: 'למודעה המקורית',
-    }) : el('p', { text: 'אין קישור למודעה' }),
+    }, [icon('external-link', 'sm'), 'למודעה המקורית']) : el('p', { text: 'אין קישור למודעה' }),
   ]);
 
-  const status = el('select', { id: 'job-status' });
-  STATUSES.forEach((name) => {
-    const option = el('option', { value: name, text: name });
-    if (name === user.status) option.selected = true;
-    status.append(option);
-  });
-  status.addEventListener('change', () => {
-    ensureJob(job.id).status = status.value;
-    save();
-    renderResults();
-  });
-  body.append(el('label', { class: 'field' }, [el('span', { class: 'field-label', text: 'סטטוס' }), status]));
+  body.append(el('div', { class: 'field' }, [
+    el('span', { class: 'field-label', text: 'סטטוס' }),
+    statusControl(user.status, (name) => {
+      ensureJob(job.id).status = name;
+      save();
+      noteListDirty();
+    }),
+  ]));
 
+  const weightTotal = store.state.criteria.reduce((sum, item) => sum + (item.type === 'text' ? 0 : Number(item.weight) || 0), 0);
   store.state.criteria.forEach((criterion) => {
     const result = criterionValue(job, criterion);
     const raw = user.ratings[criterion.id];
@@ -140,48 +177,47 @@ export const paintDrawer = () => {
       }
       group.append(el('button', {
         type: 'button',
-        class: 'btn',
+        class: 'text-btn',
         text: 'ניקוי דירוג',
         'aria-label': `ניקוי דירוג ${criterion.name}`,
-        on: { click: () => {
-          delete ensureJob(job.id).ratings[criterion.id];
-          save();
-          refreshDrawer();
-          renderResults();
-        }},
+        on: { click: () => clearRating(job.id, criterion.id) },
       }));
       control = group;
     } else if (criterion.type === 'yesno') {
       const group = el('div', { class: 'yesno', role: 'radiogroup', 'aria-label': criterion.name });
-      [['כן', true], ['לא', false]].forEach(([label, flag]) => {
+      [['כן', true, 'yes'], ['לא', false, 'no']].forEach(([label, flag, key]) => {
         group.append(el('button', {
           type: 'button',
           class: `btn${raw === flag ? ' primary' : ''}`,
+          id: `yn-${criterion.id}-${key}`,
           'aria-pressed': raw === flag ? 'true' : 'false',
           text: label,
           on: { click: () => {
             ensureJob(job.id).ratings[criterion.id] = flag;
             save();
             refreshDrawer();
-            renderResults();
+            noteListDirty();
           }},
         }));
       });
       group.append(el('button', {
         type: 'button',
-        class: 'btn',
+        class: 'text-btn',
         text: 'ניקוי דירוג',
-        on: { click: () => {
-          delete ensureJob(job.id).ratings[criterion.id];
-          save();
-          refreshDrawer();
-          renderResults();
-        }},
+        on: { click: () => clearRating(job.id, criterion.id) },
       }));
       control = group;
     } else if (criterion.type === 'travel') {
-      const text = result.value == null ? 'לא דורג' : `ציון אוטומטי: ${result.value} מתוך 5`;
-      control = el('p', { text });
+      if (!store.state.home) control = el('p', { text: 'הגדירו כתובת בית לציון אוטומטי' });
+      else {
+        const scale = el('div', { class: 'scale is-auto', 'aria-label': 'ציון מרחק אוטומטי' });
+        const value = result.value == null ? 0 : Math.round(Number(result.value));
+        for (let step = 1; step <= 5; step += 1) {
+          const on = value > 0 && step <= value;
+          scale.append(el('span', { class: `sc${on ? ' is-fill' : ''}${step === value ? ' is-sel' : ''}`, text: String(step) }));
+        }
+        control = scale;
+      }
     }
     const notes = el('textarea', {
       id: `notes-${criterion.id}`,
@@ -194,15 +230,15 @@ export const paintDrawer = () => {
     body.append(el('section', { class: 'criterion' }, [
       el('div', { class: 'criterion-head' }, [
         el('h3', { text: criterion.name }),
-        criterion.type === 'text' ? el('span', { class: 'muted', text: 'לא נכלל בציון' }) : el('span', { class: 'muted', text: `משקל ${criterion.weight}` }),
+        criterion.type === 'text' ? el('span', { class: 'muted', text: 'לא נכלל בציון' }) : el('span', { class: 'muted', text: `משקל ${weightTotal ? Math.round((Number(criterion.weight) / weightTotal) * 100) : 0}%` }),
       ]),
       control,
-      el('label', { class: 'field' }, [el('span', { class: 'field-label', text: 'הערות' }), notes]),
+      el('label', { class: 'field' }, [el('span', { class: 'field-label' }, [icon('notebook-pen', 'sm'), 'הערות']), notes]),
     ]));
   });
 
   body.append(el('label', { class: 'field' }, [
-    el('span', { class: 'field-label', text: 'הערות כלליות' }),
+    el('span', { class: 'field-label' }, [icon('notebook-pen', 'sm'), 'הערות כלליות']),
     el('textarea', {
       id: 'general-notes',
       value: user.notes,
@@ -228,9 +264,16 @@ export const paintDrawer = () => {
         'aria-label': `מחיקת רשומה ${entry.contactName || ''}`.trim(),
         on: { click: () => {
           const record = ensureJob(job.id);
+          const removed = record.callLog.find((item) => item.id === entry.id);
           record.callLog = record.callLog.filter((item) => item.id !== entry.id);
           save();
           refreshDrawer();
+          toastUndo('הרשומה נמחקה', () => {
+            if (!removed) return;
+            ensureJob(job.id).callLog.push({ ...removed });
+            save();
+            if (store.openJobId === job.id) refreshDrawer();
+          });
         }},
       }),
     ]));
@@ -270,14 +313,14 @@ export const paintDrawer = () => {
     ]));
   });
   if (store.data.meta && store.data.meta.includeContacts) body.append(contactsSection(job));
-
+  body.prepend(head);
   const drawer = el('div', {
     class: 'drawer',
     id: 'drawer',
     role: 'dialog',
     'aria-modal': 'true',
     'aria-labelledby': 'drawer-title',
-  }, [head, body]);
+  }, [body, actions]);
   root.replaceChildren(backdrop, drawer);
 };
 export const refreshDrawer = (focusId) => {
@@ -291,11 +334,20 @@ export const refreshDrawer = (focusId) => {
     if (node) node.focus();
   }
 };
+const cardNode = (id, opener) => {
+  if (opener instanceof HTMLElement && opener.matches('button.card-open')) return opener;
+  return document.querySelector(`button.card-open[data-job="${CSS.escape(id)}"]`);
+};
 export const openJob = (id, opener) => {
   if (!store.jobsById.has(id)) return;
+  const card = cardNode(id, opener);
   store.returnFocus = opener instanceof HTMLElement ? opener : null;
+  store.returnScroll = window.scrollY;
+  store.returnCardTop = card ? card.getBoundingClientRect().top : null;
+  store.returnIndex = jobPlace(id);
+  store.listDirty = false;
   store.openJobId = id;
-  if (location.hash !== `#job=${id}`) history.replaceState(null, '', `#job=${id}`);
+  pushJob(id);
   paintDrawer();
   setBackgroundInert(true);
   const close = document.getElementById('drawer-close');
@@ -305,14 +357,41 @@ export const closeJob = () => {
   if (!store.openJobId && !document.getElementById('drawer')) return;
   const jobId = store.openJobId;
   const focus = store.returnFocus;
+  const scroll = store.returnScroll || 0;
+  const savedTop = store.returnCardTop;
+  const previousIndex = Number.isInteger(store.returnIndex) ? store.returnIndex : -1;
   store.openJobId = '';
   store.returnFocus = null;
+  store.returnCardTop = null;
+  store.returnIndex = -1;
   document.getElementById('drawer-root').replaceChildren();
   setBackgroundInert(false);
-  if (location.hash.startsWith('#job=')) history.replaceState(null, '', `${location.pathname}${location.search}`);
-  if (focus && document.contains(focus)) focus.focus();
-  else if (jobId) {
-    const button = document.querySelector(`button.card-open[data-job="${CSS.escape(jobId)}"]`);
-    if (button) button.focus();
+  if (store.listDirty) {
+    store.listDirty = false;
+    renderResults();
+  }
+  if (!backIf('job') && location.hash.startsWith('#job=')) {
+    history.replaceState({ bogrim: 'list' }, '', `${location.pathname}${location.search}`);
+  }
+  const fresh = jobId ? document.querySelector(`button.card-open[data-job="${CSS.escape(jobId)}"]`) : null;
+  const target = focus && document.contains(focus) ? focus : fresh;
+  if (target) target.focus({ preventScroll: true });
+  else {
+    const heading = document.getElementById('list-t');
+    if (heading) heading.focus({ preventScroll: true });
+  }
+  restoreAnchor({ jobId, previousIndex, savedTop, scroll });
+  const nextIndex = jobId ? jobPlace(jobId) : -1;
+  if (previousIndex >= 0 && nextIndex >= 0 && nextIndex !== previousIndex) {
+    const place = nextIndex + 1;
+    toast(nextIndex < previousIndex ? `המשרה עלתה למקום ${place}` : `המשרה ירדה למקום ${place}`, {
+      label: 'הצגה',
+      run: () => {
+        const card = document.querySelector(`button.card-open[data-job="${CSS.escape(jobId)}"]`);
+        if (!card) return;
+        card.scrollIntoView({ block: 'center' });
+        card.focus({ preventScroll: true });
+      },
+    });
   }
 };

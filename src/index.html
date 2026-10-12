@@ -2,7 +2,7 @@
 <html lang="he" dir="rtl">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="robots" content="noindex">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: https://tile.openstreetmap.org; connect-src 'self' https://nominatim.openstreetmap.org https://routing.openstreetmap.de https://api.openrouteservice.org; object-src 'none'; base-uri 'self'; form-action 'none'">
@@ -11,44 +11,93 @@
   <meta property="og:title" content="בוחר המשרות">
   <meta property="og:description" content="כלי אישי להשוואה ודירוג של 211 משרות השמה לבוגרי תכנית הצוערים לשלטון המקומי. הדירוגים נשמרים רק בדפדפן.">
   <meta property="og:url" content="__PUBLIC_BASE_URL__">
-  <meta property="og:image" content="__PUBLIC_BASE_URL__og-image.png">
+  <meta property="og:image" content="__PUBLIC_BASE_URL__img/og-image.jpg">
   <meta property="og:image:alt" content="בוחר המשרות — השוואת משרות לבוגרי הצוערים">
   <meta property="og:locale" content="he_IL">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="__PUBLIC_BASE_URL__img/og-image.jpg">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="fonts/heebo-hebrew-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="img/hero-relief-m.webp" as="image" type="image/webp" media="(max-width: 759px)" fetchpriority="high">
+  <link rel="preload" href="img/hero-relief.webp" as="image" type="image/webp" media="(min-width: 760px)" fetchpriority="high">
+  <link rel="stylesheet" href="styles-tokens.css">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles-structure.css">
   <link rel="stylesheet" href="styles-media.css">
 </head>
 <body>
   <a class="skip" href="#main">דילוג לתוכן</a>
-  <header class="site-header">
-    <div class="header-inner">
+  <header class="topbar">
+    <div class="topbar-in">
       <div class="brand">
-        <span class="brand-mark" aria-hidden="true">ב</span>
-        <div>
-          <h1>בוחר המשרות</h1>
-          <p class="brand-count" id="job-count">211 משרות</p>
-        </div>
+        <svg class="mark" viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="12.5"/><path d="M3.2 17.2c3.4-2.2 7-3.3 10.8-3.3s7.4 1.1 10.8 3.3"/></svg>
+        <h1>בוחר משרות</h1>
+        <p class="brand-count" id="job-count">211 משרות</p>
       </div>
+      <button type="button" class="home-btn" id="home-chip" aria-label="הגדרת כתובת בית"><svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="icons.svg#i-map-pin"/></svg><span id="home-chip-label">כתובת</span></button>
       <nav class="nav" id="nav" aria-label="ראשי">
-        <button type="button" data-view="list" class="is-active" aria-current="page">משרות</button>
-        <button type="button" data-view="compare">השוואה <span id="compare-count">0</span></button>
-        <button type="button" data-view="map">מפה</button>
-        <button type="button" data-view="settings">הגדרות</button>
-        <button type="button" data-view="privacy">פרטיות</button>
-        <button type="button" data-view="help">עזרה</button>
+        <div class="nav-tabs">
+          <button type="button" data-view="list" class="is-active" aria-current="page"><svg class="icon icon-lg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="icons.svg#i-briefcase"/></svg><span>משרות</span></button>
+          <button type="button" data-view="compare"><svg class="icon icon-lg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="icons.svg#i-columns-3"/></svg><span>השוואה</span> <span id="compare-count" hidden></span></button>
+          <button type="button" data-view="map"><svg class="icon icon-lg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="icons.svg#i-map"/></svg><span>מפה</span></button>
+          <button type="button" data-view="settings"><svg class="icon icon-lg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="icons.svg#i-settings-2"/></svg><span>הגדרות</span></button>
+        </div>
+        <div class="nav-more">
+          <button type="button" data-view="privacy">פרטיות</button>
+          <button type="button" data-view="help">עזרה</button>
+        </div>
       </nav>
     </div>
-    <p class="source-banner">הנתונים מתוך אתר <a href="https://www.bogrim-muni.com/jobs" rel="noopener noreferrer">בוגרים לשלטון המקומי</a>. זהו כלי אישי נפרד — בלי העיצוב ובלי הסמל של אתר המקור.</p>
   </header>
   <main id="main" tabindex="-1">
+    <section class="hero" id="welcome" aria-labelledby="hero-t">
+      <div class="hero-copy">
+        <p class="eyebrow rise r1"><span class="eyebrow-dot" aria-hidden="true"></span>בוגרים לשלטון המקומי</p>
+        <h2 class="hero-title rise r2" id="hero-t">211 משרות.<br><span>בחירה אחת ברורה.</span></h2>
+        <p class="hero-sub rise r3">דרגו כל משרה לפי מה שחשוב לכם — התפקיד, המרחק מהבית, התנאים — וראו בבהירות מה באמת מתאים.</p>
+        <div class="hero-cta rise r4">
+          <button type="button" class="btn primary" id="welcome-start">להתחיל לדרג</button>
+          <button type="button" class="btn-link" id="welcome-dismiss">איך זה עובד</button>
+        </div>
+      </div>
+      <picture class="hero-art">
+        <source media="(min-width: 760px)" srcset="img/hero-relief.webp" width="2400" height="1100">
+        <img src="img/hero-relief-m.webp" alt="" width="900" height="900" decoding="async" fetchpriority="high">
+      </picture>
+    </section>
+    <section class="stats-wrap" id="hero-stats" aria-label="במספרים">
+      <dl class="stats rise r5">
+        <div><dt>משרות פתוחות</dt><dd id="stat-jobs">211</dd></div>
+        <div><dt>רשויות</dt><dd id="stat-authorities">126</dd></div>
+        <div><dt>מחוזות</dt><dd id="stat-districts">7</dd></div>
+      </dl>
+    </section>
+    <script type="module" src="welcome.js"></script>
     <section id="view-list" aria-label="רשימת משרות">
-      <p id="boot-status">טוען משרות…</p>
+      <div id="boot-status" class="skeleton" role="status" aria-live="polite" aria-busy="true">
+        <p class="vh">טוען משרות…</p>
+        <div class="skel-grid">
+          <article class="card job job--skel" aria-hidden="true"><div class="job-head"><div class="job-main"><span class="sk sk-xs"></span><span class="sk sk-lg"></span><span class="sk sk-sm"></span></div><span class="sk sk-ring"></span></div><span class="sk sk-pill"></span></article>
+          <article class="card job job--skel" aria-hidden="true"><div class="job-head"><div class="job-main"><span class="sk sk-xs"></span><span class="sk sk-lg"></span><span class="sk sk-sm"></span></div><span class="sk sk-ring"></span></div><span class="sk sk-pill"></span></article>
+        </div>
+      </div>
     </section>
     <section id="view-compare" hidden aria-label="השוואה"></section>
     <section id="view-map" hidden aria-label="מפה">
       <p class="notice">פתיחת המפה טוענת אריחים מ-OpenStreetMap. שאר האתר עובד גם בלי המפה.</p>
+      <picture class="map-ph">
+        <source media="(min-width: 760px)" srcset="img/map-d.webp" width="1140" height="712">
+        <img src="img/map-m.webp" alt="" width="780" height="1456" loading="lazy" decoding="async">
+      </picture>
+      <p id="map-count" class="hint"></p>
+      <ul class="map-legend" aria-label="מקרא ציונים">
+        <li><span class="swatch swatch-hi" aria-hidden="true"></span> 3.5 ומעלה</li>
+        <li><span class="swatch swatch-mid" aria-hidden="true"></span> 2.5–3.4</li>
+        <li><span class="swatch swatch-lo" aria-hidden="true"></span> מתחת ל-2.5</li>
+        <li><span class="swatch swatch-none" aria-hidden="true"></span> טרם דורג</li>
+        <li><span class="swatch swatch-home" aria-hidden="true"></span> הבית</li>
+      </ul>
       <div id="map"></div>
     </section>
     <section id="view-settings" hidden aria-label="הגדרות"></section>
@@ -57,11 +106,11 @@
         <h2>פרטיות</h2>
         <p>האתר הזה הוא דפים סטטיים שנפתחים בדפדפן שלכם. אין כאן שרת שלנו, אין חשבון, והדירוגים לא נשלחים אלינו.</p>
         <h3>מה נשמר במכשיר</h3>
-        <p>ב-<span dir="ltr">localStorage</span> נשמרים רק הנתונים שלכם: דירוגים, הערות לכל קריטריון, הערות כלליות, יומן שיחות, סטטוס, מועדפים, קריטריונים ומשקלים, סינונים ומיון, כתובת הבית והקואורדינטות שלה, זמני נסיעה שחישבתם או שהקלדתם, ומפתח ניתוב אם הזנתם אחד.</p>
+        <p>ב-<span dir="ltr">localStorage</span> נשמרים רק הנתונים שלכם: דירוגים, הערות לכל קריטריון, הערות כלליות, יומן שיחות, סטטוס, מועדפים, קריטריונים ומשקלים, סינונים ומיון, כתובת הבית והקואורדינטות שלה, זמני נסיעה ברכב שחישבתם, ומפתח ניתוב אם הזנתם אחד.</p>
         <h3>מתי פונים לשירות חיצוני</h3>
         <ul>
           <li>איתור כתובת — רק אחרי לחיצה על «אתר כתובת», ורק אם היישוב לא נמצא ברשימה המקומית. הבקשה נשלחת אל Nominatim של OpenStreetMap, והתוצאה נשמרת במכשיר.</li>
-          <li>מסלול ברכב, באופניים או בהליכה — רק אחרי לחיצה על «חשב זמני נסיעה» ואישור. נשלחות קואורדינטות אל OSRM, או אל openrouteservice אם הוזן מפתח.</li>
+          <li>זמן נסיעה ברכב — רק אחרי לחיצה על «חשב זמני נסיעה» ואישור. נשלחות קואורדינטות אל OSRM, או אל openrouteservice אם הוזן מפתח.</li>
           <li>מפה — אריחי OpenStreetMap נטענים רק כשפותחים את לשונית «מפה».</li>
           <li>מיקום המכשיר — רק אחרי לחיצה על «המיקום שלי».</li>
           <li>Google Maps, Waze, Moovit ומודעת המקור נפתחים רק בלחיצה, אצל הספק עצמו.</li>
@@ -76,8 +125,8 @@
         <ol>
           <li>בהגדרות, מלאו «כתובת הבית» ולחצו «אתר כתובת». יישוב מהרשימה המקומית נקבע בלי רשת.</li>
           <li>לחצו «חשב זמני נסיעה» אם אתם רוצים דקות נסיעה אמיתיות. בלי זה מוצג «קו אווירי (הערכה)».</li>
-          <li>בחרו אם ציון «מרחק מהבית» מחושב לפי רכב, אופניים, הליכה או תחבורה ציבורית. לתחבורה ציבורית פותחים את Google Maps או Moovit ומקלידים את הדקות שמצאתם.</li>
-          <li>דרגו כל משרה. קריטריון בלי דירוג לא נספר כאפס — הציון הוא ממוצע משוקלל של מה שדורג, ומוצג «דורג 2/5» וסימון «חלקי».</li>
+          <li>ציון «מרחק מהבית» מחושב לפי זמן נסיעה ברכב. בלי חישוב מוצג «קו אווירי (הערכה)». לתחבורה ציבורית פותחים את Google Maps או Moovit; הניווט ברכב נפתח ב-Google Maps או ב-Waze.</li>
+          <li>דרגו כל משרה. קריטריון בלי דירוג לא נספר כאפס — הציון הוא ממוצע משוקלל של מה שדורג, ומוצג «2 מתוך 5 קריטריונים» וסימון «חלקי» כשחסרים דירוגים.</li>
           <li>סננו, מיינו, סמנו עד 4 משרות להשוואה, וגבו את הנתונים בקובץ JSON.</li>
         </ol>
         <p>אין בנתונים שכר, היקף משרה, דדליין או דרישות סף — הם לא פורסמו במקור, ולכן הם לא מופיעים כאן. פרטי אנשי קשר אישיים לא כלולים; «למודעה המקורית» מוביל לאתר המקור.</p>
@@ -85,10 +134,10 @@
     </section>
   </main>
   <footer class="site-footer">
-    <p>מקור הרשימה: <a href="https://www.bogrim-muni.com/jobs" rel="noopener noreferrer">bogrim-muni.com/jobs</a>. הכלים כאן לא מפעילים את אתר המקור ולא מייצגים אותו.</p>
+    <p class="source-banner">הנתונים מתוך אתר <a href="https://www.bogrim-muni.com/jobs" rel="noopener noreferrer">בוגרים לשלטון המקומי</a>. זהו כלי אישי נפרד — בלי העיצוב ובלי הסמל של אתר המקור. הדירוגים נשמרים רק במכשיר.</p>
   </footer>
   <div id="drawer-root"></div>
-  <div id="toast" role="status" aria-live="polite"></div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <input id="import-file" type="file" accept="application/json,.json" hidden>
   <noscript><p class="notice">להצגת המשרות צריך JavaScript מקומי. אין טעינה של ספריות משרת חיצוני.</p></noscript>
   <script type="module" src="app.js"></script>
