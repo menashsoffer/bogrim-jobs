@@ -107,8 +107,12 @@ export const ensureMap = async () => {
       }).addTo(store.map);
       store.map.setView([31.4, 34.9], 8);
     }
-    setTimeout(() => { if (store.map) store.map.invalidateSize(); }, 60);
     drawMarkers(leaflet);
+    setTimeout(() => {
+      if (!store.map) return;
+      store.map.invalidateSize();
+      drawMarkers(leaflet);
+    }, 60);
     if (new URLSearchParams(location.search).get('test') === '1') window.__map = store.map;
   } catch (error) {
     host.replaceChildren(el('p', { class: 'empty', text: 'המפה לא נטענה. שאר האתר זמין בלי מפה.' }));
