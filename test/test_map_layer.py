@@ -89,6 +89,27 @@ def run_viewport(page, base, width, height):
         }"""
     )
     check(map_on_top, f"map controls were not hittable at {width}x{height}")
+    if width <= 390:
+        zoom = page.evaluate(
+            """() => {
+              const button = document.querySelector('.leaflet-control-zoom-in');
+              if (!button) return { ok: false, reason: 'missing zoom-in' };
+              const rect = button.getBoundingClientRect();
+              const x = rect.left + rect.width / 2;
+              const probe = (y) => {
+                const node = document.elementFromPoint(x, y);
+                return Boolean(node && (node === button || button.contains(node)));
+              };
+              return {
+                ok: probe(rect.top + rect.height / 2) && probe(rect.top + 1) && Math.round(rect.width) === 44 && Math.round(rect.height) === 44,
+                width: rect.width,
+                height: rect.height,
+                center: probe(rect.top + rect.height / 2),
+                top: probe(rect.top + 1),
+              };
+            }"""
+        )
+        check(zoom["ok"], f"zoom-in at {width} is not a clear 44px target: {zoom}")
     open_drawer(page)
     check(page.locator("#drawer").get_attribute("aria-modal") == "true", "drawer is not a modal")
     covered = page.evaluate(
@@ -162,7 +183,7 @@ def main():
             page = context.new_page()
             page.set_default_timeout(20000)
             page.route("https://**/*", handle_route)
-            for width, height in ((1280, 800), (390, 844)):
+            for width, height in ((1280, 800), (390, 844), (360, 800)):
                 run_viewport(page, base, width, height)
             browser.close()
     finally:
