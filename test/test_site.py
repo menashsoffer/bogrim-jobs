@@ -135,6 +135,8 @@ def main():
             page.select_option("#filter-district", "")
             page.select_option("#filter-type", "לא ידוע")
             wait_count(page, 1)
+            check(page.locator("#result-count").inner_text() == "מוצגת משרה אחת", "singular result count")
+            check(page.locator("#filters-done").inner_text() == "הצג משרה אחת", "singular apply label")
             page.click("#clear-filters")
             wait_count(page, 211)
 

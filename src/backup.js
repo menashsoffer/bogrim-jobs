@@ -1,4 +1,4 @@
-import { el, formatDuration, formatScore, labelOrUnknown, toast } from './dom.js';
+import { el, formatDuration, formatScore, heCount, labelOrUnknown, toast } from './dom.js';
 import { airKm, criterionValue, scoreJob, travelMinutes } from './score.js';
 import { reloadOpenViews } from './shell.js';
 import { peekJob, sanitizeState, saveNow, store, validCriterion } from './store.js';
@@ -93,12 +93,13 @@ export const importText = (text) => {
   const stamp = parsed && typeof parsed.exportedAt === 'string' ? parsed.exportedAt : 'ללא תאריך';
   const incomingRated = ratedJobCount(incoming.jobs);
   const currentRated = ratedJobCount(store.state.jobs);
-  const question = `גיבוי מ-${stamp}, ${incomingRated} משרות מדורגות. להחליף את הנתונים הנוכחיים (${currentRated} משרות מדורגות)?`;
+  const ratedLabel = (count) => heCount(count, 'משרה מדורגת אחת', '# משרות מדורגות');
+  const question = `גיבוי מ-${stamp}, ${ratedLabel(incomingRated)}. להחליף את הנתונים הנוכחיים (${ratedLabel(currentRated)})?`;
   if (!window.confirm(question)) return;
   store.state = sanitizeState(incoming);
   store.state.compareIds = store.state.compareIds.filter((id) => store.jobsById.has(id));
   saveNow({ replace: true });
   reloadOpenViews();
   const notice = store.state.carOnlyNotice ? ' המיקום מחושב עכשיו לפי נסיעה ברכב בלבד.' : '';
-  toast(`יובאו ${incomingRated} דירוגים.${notice}`);
+  toast(`${heCount(incomingRated, 'יובא דירוג אחד.', 'יובאו # דירוגים.')}${notice}`);
 };

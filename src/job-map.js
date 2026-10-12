@@ -1,4 +1,4 @@
-import { el } from './dom.js';
+import { el, heCount } from './dom.js';
 import { openJob } from './job-drawer.js';
 import { scoreJob, visibleJobs } from './score.js';
 import { peekJob, store } from './store.js';
@@ -51,7 +51,7 @@ const hasManualRating = (job) => {
 };
 const paintMapCount = () => {
   const count = document.getElementById('map-count');
-  if (count) count.textContent = `מוצגות ${visibleJobs().length} משרות לפי הסינון`;
+  if (count) count.textContent = heCount(visibleJobs().length, 'מוצגת משרה אחת לפי הסינון', 'מוצגות # משרות לפי הסינון');
 };
 export const drawMarkers = (leaflet) => {
   paintMapCount();

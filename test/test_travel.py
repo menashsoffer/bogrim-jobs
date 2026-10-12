@@ -159,7 +159,7 @@ def main():
             )
             assert_migrated(page, "יובא", 2, 18, "import")
             imported = page.locator("#toast").inner_text()
-            check("יובאו" in imported and CAR_NOTICE in imported, imported)
+            check("יובא דירוג אחד" in imported and CAR_NOTICE in imported, imported)
             page.locator("#import-file").set_input_files(str(backup_path))
             page.wait_for_function(
                 """() => window.__app.state.jobs['1be2f98a-e5bb-4c50-9ac7-9fc025fb8dc7'].notes.split('זמן תחבורה ציבורית שנשמר: 55 דק׳').length === 2"""

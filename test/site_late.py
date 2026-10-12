@@ -81,7 +81,7 @@ def check_home_export_and_layout(page, browser, base, phase, external, tiles, pa
     other_page.locator('#nav [data-view="settings"]').click()
     other_page.locator("#import-file").set_input_files(str(json_path))
     other_page.wait_for_function("() => (localStorage.getItem('bogrim-jobs.v1') || '').includes('=1+1')")
-    check("יובאו" in other_page.locator("#toast").inner_text(), "import summary toast")
+    check("יובא דירוג אחד" in other_page.locator("#toast").inner_text(), "import summary toast")
     check(other_page.evaluate("() => !document.getElementById('view-settings').hidden"), "import left the settings tab")
     bad_path = ROOT / "test-results" / "bad.json"
     bad_path.write_text("{", encoding="utf-8")

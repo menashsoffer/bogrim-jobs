@@ -109,13 +109,17 @@ def control_names_unique(page):
 
 def shown_count(page):
     text = page.locator("#result-count").inner_text()
+    if "משרה אחת" in text:
+        return 1
     return int(text.replace("מוצגות", "").replace("משרות", "").strip())
 
 
 def wait_count(page, count):
     page.wait_for_function(
         """(expected) => {
-          const match = (document.getElementById('result-count').textContent || '').match(/מוצגות\\s+(\\d+)/);
+          const text = document.getElementById('result-count').textContent || '';
+          if (expected === 1) return text.includes('משרה אחת');
+          const match = text.match(/מוצגות\\s+(\\d+)/);
           return match !== null && Number(match[1]) === expected;
         }""",
         arg=count,

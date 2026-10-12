@@ -1,4 +1,4 @@
-import { STATUSES, el, labelOrUnknown, showLimit } from './dom.js';
+import { STATUSES, el, heCount, labelOrUnknown, showLimit } from './dom.js';
 import { distanceText, scoreText, timeText } from './filter-scale.js';
 import { mountSteppedRange, refreshFilterScales } from './filter-controls.js';
 import { mountHero } from './hero.js';
@@ -73,10 +73,10 @@ export const renderResults = () => {
   if (!host) return;
   refreshFilterScales();
   const list = visibleJobs();
-  if (count) count.textContent = `מוצגות ${list.length} משרות`;
+  if (count) count.textContent = heCount(list.length, 'מוצגת משרה אחת', 'מוצגות # משרות');
   paintFilterToggle();
   const done = document.getElementById('filters-done');
-  if (done) done.textContent = `הצג ${list.length} משרות`;
+  if (done) done.textContent = heCount(list.length, 'הצג משרה אחת', 'הצג # משרות');
   host.replaceChildren();
   paintDomainChips();
   if (!list.length) {

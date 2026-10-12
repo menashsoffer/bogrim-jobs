@@ -1,4 +1,4 @@
-import { el, formatScore } from './dom.js';
+import { el, formatScore, heCount } from './dom.js';
 import { icon } from './icons.js';
 import { openJob } from './job-drawer.js';
 import { renderResults, toggleCompare } from './job-list.js';
@@ -49,7 +49,7 @@ export const renderCompare = () => {
   };
   view.replaceChildren(el('header', { class: 'page-head' }, [
     el('h2', { class: 'page-title', text: 'השוואה' }),
-    el('p', { class: 'hint', text: chosen.length < 2 ? 'בחרו לפחות 2 משרות להשוואה, ועד 4.' : `${chosen.length} משרות · עד 4` }),
+    el('p', { class: 'hint', text: chosen.length < 2 ? 'בחרו לפחות 2 משרות להשוואה, ועד 4.' : heCount(chosen.length, 'משרה אחת · עד 4', '# משרות · עד 4') }),
     chosen.length >= 2 ? el('p', { class: 'compare-legend' }, [
       el('i', { class: 'best-dot', 'aria-hidden': 'true' }),
       'הערך הטוב בכל שורה',

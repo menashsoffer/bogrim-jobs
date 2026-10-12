@@ -1,6 +1,7 @@
 export const STATUSES = ['לא נבדק', 'דיברתי איתם', 'מעניין', 'פסול'];
 export const UNKNOWN = 'לא ידוע';
 export const AIR_LABEL = 'קו אווירי (הערכה)';
+export const heCount = (count, one, many) => (count === 1 ? one : many.replaceAll('#', String(count)));
 export const CRIT_TYPES = [
   ['rating', 'דירוג 1–5'],
   ['yesno', 'כן/לא'],
