@@ -57,7 +57,8 @@ def assert_hashed_refs(dest):
             if os.path.splitext(name)[1].lower() not in {".html", ".css", ".js", ".svg"}:
                 continue
             path = os.path.join(dirpath, name)
-            text = open(path, encoding="utf-8").read()
+            with open(path, encoding="utf-8") as handle:
+                text = handle.read()
             for ref in references(text):
                 if ref in SKIP_MISSING or ref == "robots.txt":
                     continue
@@ -85,7 +86,8 @@ class CacheTests(unittest.TestCase):
             stamp_assets(third)
             self.assertEqual(digest(self._find(third, "app.")), app_before)
             self.assertNotEqual(digest(self._find(third, "styles.")), css_before)
-            page = open(os.path.join(first, "index.html"), encoding="utf-8").read()
+            with open(os.path.join(first, "index.html"), encoding="utf-8") as handle:
+                page = handle.read()
             self.assertIn(self._find(first, "styles."), page)
             self.assertIn(self._find(first, "app."), page)
             assert_hashed_refs(first)
@@ -109,7 +111,8 @@ class CacheTests(unittest.TestCase):
             self.assertFalse(os.path.exists(os.path.join(dest, "styles.css")))
             self.assertFalse(os.path.exists(os.path.join(dest, "app.js")))
             self.assertFalse(os.path.exists(os.path.join(dest, "data.json")))
-            page = open(os.path.join(dest, "index.html"), encoding="utf-8").read()
+            with open(os.path.join(dest, "index.html"), encoding="utf-8") as handle:
+                page = handle.read()
             self.assertIn('class="mark" width="28" height="28"', page)
             self.assertIn('class="icon icon-lg" width="24" height="24"', page)
             self.assertRegex(page, r"img/og-image\.[0-9a-f]{8}\.jpg")
