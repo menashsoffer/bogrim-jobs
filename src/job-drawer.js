@@ -323,10 +323,23 @@ export const refreshDrawer = (focusId) => {
     if (node) node.focus();
   }
 };
+const cardNode = (id, opener) => {
+  if (opener instanceof HTMLElement && opener.matches('button.card-open')) return opener;
+  return document.querySelector(`button.card-open[data-job="${CSS.escape(id)}"]`);
+};
+const alignCard = (jobId, savedTop) => {
+  const node = jobId ? document.querySelector(`button.card-open[data-job="${CSS.escape(jobId)}"]`) : null;
+  if (!node || savedTop == null) return false;
+  const delta = node.getBoundingClientRect().top - savedTop;
+  if (Math.abs(delta) > 0.5) window.scrollBy({ top: delta, left: 0, behavior: 'instant' });
+  return true;
+};
 export const openJob = (id, opener) => {
   if (!store.jobsById.has(id)) return;
+  const card = cardNode(id, opener);
   store.returnFocus = opener instanceof HTMLElement ? opener : null;
   store.returnScroll = window.scrollY;
+  store.returnCardTop = card ? card.getBoundingClientRect().top : null;
   store.returnIndex = jobPlace(id);
   store.listDirty = false;
   store.openJobId = id;
@@ -341,9 +354,11 @@ export const closeJob = () => {
   const jobId = store.openJobId;
   const focus = store.returnFocus;
   const scroll = store.returnScroll || 0;
+  const savedTop = store.returnCardTop;
   const previousIndex = store.returnIndex;
   store.openJobId = '';
   store.returnFocus = null;
+  store.returnCardTop = null;
   document.getElementById('drawer-root').replaceChildren();
   setBackgroundInert(false);
   if (store.listDirty) {
@@ -356,7 +371,14 @@ export const closeJob = () => {
   const fresh = jobId ? document.querySelector(`button.card-open[data-job="${CSS.escape(jobId)}"]`) : null;
   const target = focus && document.contains(focus) ? focus : fresh;
   if (target) target.focus({ preventScroll: true });
-  window.scrollTo(0, scroll);
+  if (!alignCard(jobId, savedTop)) window.scrollTo({ top: scroll, left: 0, behavior: 'instant' });
+  let frames = 4;
+  const settle = () => {
+    alignCard(jobId, savedTop);
+    frames -= 1;
+    if (frames > 0) requestAnimationFrame(settle);
+  };
+  requestAnimationFrame(settle);
   const nextIndex = jobId ? jobPlace(jobId) : -1;
   if (previousIndex >= 0 && nextIndex >= 0 && nextIndex !== previousIndex) {
     const place = nextIndex + 1;

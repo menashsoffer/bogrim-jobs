@@ -70,16 +70,57 @@ def main():
             check(page.evaluate("() => document.activeElement && document.activeElement.id === 'home-address'"), "sort toast did not open the home address")
             page.locator('#nav [data-view="list"]').click()
 
-            page.evaluate("() => document.querySelectorAll('button.card-open')[12].scrollIntoView({ block: 'center' })")
-            page.locator("button.card-open").nth(12).click()
-            page.locator("#drawer").wait_for()
-            before = page.evaluate("() => window.scrollY")
-            page.locator("#star-role-5").click()
-            page.locator("#drawer-close").click()
-            page.wait_for_function("() => !document.getElementById('drawer')")
-            kept = page.evaluate("() => window.scrollY")
-            check(before > 400 and abs(kept - before) < 48, f"scroll {before} became {kept}")
-            check("הצגה" in page.locator("#toast").inner_text(), "place toast has no show action")
+            parked = page.evaluate("() => document.querySelectorAll('button.card-open')[12].dataset.job")
+            for index in range(10):
+                before = page.evaluate(
+                    """async (id) => {
+                      await document.fonts.ready;
+                      const card = document.querySelector(`button.card-open[data-job="${CSS.escape(id)}"]`);
+                      card.scrollIntoView({ block: 'center' });
+                      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+                      const top = card.getBoundingClientRect().top;
+                      card.click();
+                      return top;
+                    }""",
+                    parked,
+                )
+                page.locator("#drawer").wait_for()
+                if index == 0:
+                    page.locator("#star-role-5").click()
+                page.locator("#drawer-close").click()
+                page.wait_for_function("() => !document.getElementById('drawer')")
+                if index == 0:
+                    check("הצגה" in page.locator("#toast").inner_text(), "place toast has no show action")
+                after = page.evaluate(
+                    """async (id) => {
+                      await document.fonts.ready;
+                      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+                      const card = document.querySelector(`button.card-open[data-job="${CSS.escape(id)}"]`);
+                      return card.getBoundingClientRect().top;
+                    }""",
+                    parked,
+                )
+                check(abs(after - before) < 2, f"card top {before} became {after} on pass {index}")
+
+            prod = browser.new_page(locale="he-IL", viewport={"width": 390, "height": 844})
+            prod.add_init_script(
+                """(() => {
+                  localStorage.setItem('bogrim-jobs.v1', JSON.stringify({ welcomeSeen: true, jobs: {}, criteria: [] }));
+                  window.__chunks = [];
+                  const watch = () => {
+                    const host = document.getElementById('results');
+                    if (!host) { requestAnimationFrame(watch); return; }
+                    const note = () => window.__chunks.push(host.querySelectorAll('button.card-open').length);
+                    new MutationObserver(note).observe(host, { childList: true });
+                  };
+                  watch();
+                })();"""
+            )
+            prod.goto(origin)
+            prod.wait_for_function("() => window.__chunks && window.__chunks.includes(211)")
+            chunks = prod.evaluate("() => window.__chunks")
+            check(any(0 < count < 211 for count in chunks), f"production list was not batched: {chunks[:6]}")
+            prod.close()
 
             page.locator("button.card-open").first.click()
             page.locator("#drawer").wait_for()
