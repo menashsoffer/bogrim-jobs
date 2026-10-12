@@ -7,7 +7,24 @@ from playwright.sync_api import sync_playwright
 
 from site_harness import chrome_path, serve
 
-SHOTS = "/opt/cursor/artifacts/screenshots"
+
+def screenshot_directory():
+    repo = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    raw = os.environ.get("BOGRIM_SCREENSHOT_DIR", "").strip()
+    if raw:
+        target = os.path.abspath(raw)
+        inside_repo = target == repo or target.startswith(repo + os.sep)
+        if not inside_repo:
+            try:
+                os.makedirs(target, exist_ok=True)
+                return target
+            except OSError:
+                pass
+    directory = "/tmp/bogrim-weights-screenshots"
+    os.makedirs(directory, exist_ok=True)
+    return directory
+
+
 SEEDED = {
     "version": 1,
     "welcomeSeen": True,
@@ -49,7 +66,7 @@ def scroll_weights(page):
 
 
 def main():
-    os.makedirs(SHOTS, exist_ok=True)
+    shots = screenshot_directory()
     server = serve()
     origin = f"http://127.0.0.1:{server.server_address[1]}/"
     try:
@@ -74,11 +91,11 @@ def main():
             check(page.locator("#weight-sum-value").inner_text() == "100%", "sum is not 100%")
             check(page.locator("#weight-sum-live").get_attribute("aria-live") == "polite", "sum is not announced")
             check(page.locator("label[for='weight-a']").inner_text() == "משקל אלף", "slider label")
-            check(page.locator("#weight-a").get_attribute("aria-valuetext") == "50%", "valuetext")
+            check(page.locator("#weight-a").get_attribute("aria-valuetext") == "50% מהציון", "valuetext")
             page.locator("#weight-a").fill("40")
             check(slider_values(page) == [40, 36, 24], slider_values(page))
             check("100%" in page.locator("#weight-sum-live").inner_text(), "live sum")
-            check(page.locator("#weight-b").get_attribute("aria-valuetext") == "36%", "redistributed valuetext")
+            check(page.locator("#weight-b").get_attribute("aria-valuetext") == "36% מהציון", "redistributed valuetext")
 
             page.locator('#nav [data-view="list"]').click()
             page.locator("button.card-open").first.click()
@@ -137,10 +154,10 @@ def main():
             page.locator('[aria-label="נעילת משקל מרחק מהבית"]').click()
             page.evaluate("() => document.getElementById('toast').classList.remove('is-on')")
             scroll_weights(page)
-            page.screenshot(path=os.path.join(SHOTS, "weights-412x915.png"))
+            page.screenshot(path=os.path.join(shots, "weights-412x915.png"))
             page.set_viewport_size({"width": 1280, "height": 900})
             scroll_weights(page)
-            page.screenshot(path=os.path.join(SHOTS, "weights-1280.png"))
+            page.screenshot(path=os.path.join(shots, "weights-1280.png"))
             browser.close()
         print("weight ui checks passed")
     finally:
