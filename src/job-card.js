@@ -56,7 +56,7 @@ export const jobCard = (job) => {
     el('div', { class: 'job-head' }, [
       el('div', { class: 'job-main' }, [
         el('p', { class: 'job-cat', text: category }),
-        el('h3', { class: 'job-title', text: job.title || job.role }),
+        el('h3', { class: 'job-title', text: job.role || job.title }),
         el('p', { class: 'job-auth' }, [
           el('strong', { text: job.authority }),
           el('span', { class: 'sep', 'aria-hidden': 'true' }),
