@@ -126,8 +126,7 @@ export const validCriterion = (criterion) => Boolean(criterion)
   && criterion.id.length < 80
   && typeof criterion.name === 'string'
   && criterion.name.length < 80
-  && CRIT_TYPES.some(([type]) => type === criterion.type)
-  && Number.isFinite(Number(criterion.weight));
+  && CRIT_TYPES.some(([type]) => type === criterion.type);
 export const sanitizeState = (saved) => {
   const next = defaultState();
   if (!saved || typeof saved !== 'object') return next;
@@ -136,7 +135,7 @@ export const sanitizeState = (saved) => {
       id: criterion.id,
       name: String(criterion.name).trim().slice(0, 80) || 'קריטריון ללא שם',
       type: criterion.type,
-      weight: Math.max(0, Math.min(100, Number(criterion.weight) || 0)),
+      weight: Number.isFinite(Number(criterion.weight)) ? Math.max(0, Number(criterion.weight)) : 0,
       locked: criterion.locked === true,
     })));
   }

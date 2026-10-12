@@ -4,7 +4,7 @@ import { icon } from './icons.js';
 import { renderResults } from './job-list.js';
 import { clearData, showView } from './shell.js';
 import { defaultCriteria, save, store, uid } from './store.js';
-import { redistribute, sliderBounds } from './weights.js';
+import { normalizeCriteria, redistribute, sliderBounds } from './weights.js';
 import { computeRoutes, onGeocode, onGps, paintHomeStatus } from './travel.js';
 
 const restoreCriteriaFocus = (host, label) => {
@@ -21,6 +21,29 @@ const restoreCriteriaFocus = (host, label) => {
   if (fallback) fallback.focus();
 };
 const STACK = ['stack-a', 'stack-b', 'stack-c', 'stack-d', 'stack-e'];
+const WEIGHT_PAUSE_MS = 500;
+let weightBasis = null;
+let weightPause = 0;
+let weightPointer = false;
+const rememberWeights = () => store.state.criteria.map((item) => ({
+  id: item.id,
+  weight: Number(item.weight) || 0,
+  locked: item.locked === true,
+  type: item.type,
+}));
+const releaseWeightBasis = () => {
+  clearTimeout(weightPause);
+  weightPause = 0;
+  weightBasis = null;
+  weightPointer = false;
+};
+const holdWeightBasis = (id, fresh) => {
+  if (fresh || !weightBasis || weightBasis.id !== id) weightBasis = { id, criteria: rememberWeights() };
+  if (weightPointer) return;
+  clearTimeout(weightPause);
+  weightPause = setTimeout(releaseWeightBasis, WEIGHT_PAUSE_MS);
+};
+const weightText = (weight) => `${weight}% מהציון`;
 const weightTotal = () => store.state.criteria.reduce((sum, criterion) => sum + (criterion.type === 'text' ? 0 : Number(criterion.weight) || 0), 0);
 const paintShares = (host, announcement) => {
   const total = weightTotal();
@@ -36,12 +59,14 @@ const paintShares = (host, announcement) => {
     const range = row && row.querySelector('.weight-range');
     if (range) {
       const bounds = sliderBounds(store.state.criteria, criterion.id);
+      range.min = String(bounds.min);
+      range.max = String(bounds.max);
       range.value = String(criterion.weight);
       range.disabled = bounds.disabled;
-      range.setAttribute('aria-valuemin', String(bounds.min));
-      range.setAttribute('aria-valuemax', String(bounds.max));
+      range.setAttribute('aria-valuemin', range.min);
+      range.setAttribute('aria-valuemax', range.max);
       range.setAttribute('aria-valuenow', String(criterion.weight));
-      range.setAttribute('aria-valuetext', `${criterion.weight}%`);
+      range.setAttribute('aria-valuetext', weightText(criterion.weight));
       range.style.setProperty('--fill', `${criterion.weight}%`);
     }
     const lock = row && row.querySelector('.ce-lock');
@@ -63,6 +88,7 @@ const paintShares = (host, announcement) => {
   if (live) live.textContent = announcement || `הסכום ${total}%`;
 };
 export const renderCriteriaEditor = (host, focusLabel) => {
+  releaseWeightBasis();
   host.replaceChildren();
   host.append(el('div', { class: 'stack', 'aria-hidden': 'true' }));
   host.append(el('div', { class: 'stack-legend' }));
@@ -97,9 +123,9 @@ export const renderCriteriaEditor = (host, focusLabel) => {
         return;
       }
       if (type.value === 'text') {
-        store.state.criteria = redistribute(store.state.criteria, item.id, 0, { force: true }).map((entry) => (
+        store.state.criteria = normalizeCriteria(redistribute(store.state.criteria, item.id, 0, { force: true }).map((entry) => (
           entry.id === item.id ? { ...entry, type: 'text', weight: 0, locked: false } : entry
-        ));
+        )));
       } else {
         item.type = type.value;
       }
@@ -113,21 +139,32 @@ export const renderCriteriaEditor = (host, focusLabel) => {
       type: 'range',
       class: 'weight-range',
       id: weightId,
-      min: '0',
-      max: '100',
+      min: String(bounds.min),
+      max: String(bounds.max),
       step: '1',
+      dir: 'ltr',
       value: String(criterion.weight),
       disabled: bounds.disabled,
       'aria-label': `משקל ${criterion.name}`,
       'aria-valuemin': String(bounds.min),
       'aria-valuemax': String(bounds.max),
       'aria-valuenow': String(criterion.weight),
-      'aria-valuetext': `${criterion.weight}%`,
+      'aria-valuetext': weightText(criterion.weight),
     });
     weight.style.setProperty('--fill', `${criterion.weight}%`);
+    weight.addEventListener('pointerdown', () => {
+      weightPointer = true;
+      holdWeightBasis(criterion.id, true);
+    });
+    weight.addEventListener('pointerup', releaseWeightBasis);
+    weight.addEventListener('pointercancel', releaseWeightBasis);
+    weight.addEventListener('blur', releaseWeightBasis);
+    weight.addEventListener('keydown', () => holdWeightBasis(criterion.id, false));
     weight.addEventListener('input', () => {
+      if (!weightBasis || weightBasis.id !== criterion.id) holdWeightBasis(criterion.id, false);
       const item = store.state.criteria.find((entry) => entry.id === criterion.id);
-      store.state.criteria = redistribute(store.state.criteria, criterion.id, Number(weight.value));
+      const basis = weightBasis ? weightBasis.criteria : null;
+      store.state.criteria = redistribute(store.state.criteria, criterion.id, Number(weight.value), { basis });
       const updated = store.state.criteria.find((entry) => entry.id === criterion.id);
       paintShares(host, `${item ? item.name : criterion.name} ${updated.weight}%, הסכום ${weightTotal()}%`);
     });
@@ -180,9 +217,17 @@ export const renderCriteriaEditor = (host, focusLabel) => {
         iconButton('chevron-down', `הזזה למטה ${criterion.name}`, index === store.state.criteria.length - 1, () => move(1)),
         iconButton('trash-2', `מחיקת קריטריון ${criterion.name}`, false, () => {
           if (!window.confirm(`למחוק את הקריטריון ${criterion.name}?`)) return;
-          store.state.criteria = redistribute(store.state.criteria, criterion.id, 0, { force: true })
-            .filter((entry) => entry.id !== criterion.id);
+          const before = store.state.criteria.map((entry) => ({ id: entry.id, weight: entry.weight, locked: entry.locked === true }));
+          const next = normalizeCriteria(redistribute(store.state.criteria, criterion.id, 0, { force: true })
+            .filter((entry) => entry.id !== criterion.id));
+          const movedLock = before.some((entry) => {
+            if (!entry.locked || entry.id === criterion.id) return false;
+            const kept = next.find((item) => item.id === entry.id);
+            return Boolean(kept && kept.weight !== entry.weight);
+          });
+          store.state.criteria = next;
           save();
+          if (movedLock) toast('משקל נעול עודכן כדי שהסכום יישאר 100%');
           renderCriteriaEditor(host);
           renderResults();
         }),
@@ -234,7 +279,10 @@ export const renderSettings = () => {
           id: 'add-criterion',
           text: 'הוספת קריטריון',
           on: { click: () => {
-            store.state.criteria.push({ id: uid(), name: 'קריטריון חדש', type: 'rating', weight: 0, locked: false });
+            store.state.criteria = normalizeCriteria([
+              ...store.state.criteria,
+              { id: uid(), name: 'קריטריון חדש', type: 'rating', weight: 0, locked: false },
+            ]);
             save();
             renderCriteriaEditor(editor);
           }},
