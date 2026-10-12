@@ -122,7 +122,8 @@ def check_home_export_and_layout(page, browser, base, phase, external, tiles, pa
               .filter((node) => getComputedStyle(node).display !== 'none').length"""
         )
         check(shown == 2, f"empty compare shows {shown} columns at {width}")
-        check(page_overflow(page) <= 1, f"empty compare overflows at {width} by {page_overflow(page)}px")
+        fits = page.evaluate("() => document.scrollingElement.scrollWidth <= window.innerWidth")
+        check(fits, f"empty compare overflows at {width}")
 
     empty_compare_overflow(360)
     empty_compare_overflow(390)
