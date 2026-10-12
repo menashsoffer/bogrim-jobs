@@ -113,6 +113,12 @@ def check_home_export_and_layout(page, browser, base, phase, external, tiles, pa
 
     check(page_overflow(page) <= 1, "desktop page scrolls sideways")
 
+    page.locator('#nav [data-view="compare"]').click()
+    compare_clear = page.locator("#compare-clear")
+    if compare_clear.count():
+        compare_clear.click()
+        page.locator(".ghost-cols").wait_for()
+
     def empty_compare_overflow(width):
         page.set_viewport_size({"width": width, "height": 800})
         page.locator('#nav [data-view="compare"]').click()
