@@ -59,14 +59,15 @@ export const drawMarkers = (leaflet) => {
   groups.forEach((group) => {
     const best = group.map((job) => scoreJob(job).score).filter((score) => score != null).sort((a, b) => b - a)[0];
     const theme = getComputedStyle(document.documentElement);
-    const band = best == null ? 0 : Math.max(1, Math.min(5, Math.round(best)));
-    const marker = leaflet.circleMarker([group[0].lat, group[0].lon], {
-      radius: 8,
-      color: theme.getPropertyValue('--bg').trim(),
-      weight: 2,
-      fillColor: (band ? theme.getPropertyValue('--accent') : theme.getPropertyValue('--text-3')).trim(),
-      fillOpacity: band ? 0.35 + band * 0.13 : 0.9,
-    });
+    const ink = theme.getPropertyValue('--bg').trim();
+    const accent = theme.getPropertyValue('--accent').trim();
+    const paper = theme.getPropertyValue('--text').trim();
+    const muted = theme.getPropertyValue('--text-3').trim();
+    let options = { radius: 3, color: muted, weight: 0, fillColor: muted, fillOpacity: 0.6 };
+    if (best != null && best >= 3.5) options = { radius: 5.5, color: ink, weight: 1.5, fillColor: accent, fillOpacity: 1 };
+    else if (best != null && best >= 2.5) options = { radius: 5.5, color: ink, weight: 1.5, fillColor: paper, fillOpacity: 1 };
+    else if (best != null) options = { radius: 5.5, color: paper, weight: 1.5, fillColor: paper, fillOpacity: 0 };
+    const marker = leaflet.circleMarker([group[0].lat, group[0].lon], options);
     marker.bindPopup(markerPopup(group));
     marker.bindTooltip(group.length === 1 ? (group[0].title || group[0].role) : group[0].authority);
     marker.addTo(store.mapLayer);
@@ -87,6 +88,8 @@ export const ensureMap = async () => {
   const host = document.getElementById('map');
   try {
     const leaflet = await loadLeaflet();
+    const placeholder = document.querySelector('.map-ph');
+    if (placeholder) placeholder.hidden = true;
     if (!store.map) {
       store.map = leaflet.map(host, { zoomControl: true });
       leaflet.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {

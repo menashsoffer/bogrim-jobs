@@ -3,7 +3,7 @@
   height: var(--icon);
   stroke: currentColor;
   fill: none;
-  stroke-width: 1.75;
+  stroke-width: 1.5;
   stroke-linecap: round;
   stroke-linejoin: round;
   flex: none;
@@ -131,8 +131,13 @@ th { background: var(--surface-2); font-weight: var(--fw-medium); }
   min-height: 320px;
   border-radius: var(--r-lg);
   border: var(--hairline);
-  background: var(--surface);
+  background: var(--map-canvas);
 }
+.leaflet-container { background: var(--map-canvas); }
+.leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) grayscale(1) brightness(.85) contrast(.9); }
+.map-ph { display: block; margin-block: var(--s-3); }
+.map-ph img { display: block; width: 100%; height: auto; max-height: 70vh; object-fit: cover; border-radius: var(--r-lg); }
+.map-ph[hidden] { display: none; }
 .home-pin {
   background: var(--accent);
   border: 2px solid var(--bg);

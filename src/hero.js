@@ -74,7 +74,7 @@ export const mountHero = () => {
       el('div', { class: 'hero-copy' }, [
         el('p', { class: 'eyebrow rise r1' }, [
           el('span', { class: 'eyebrow-dot', 'aria-hidden': 'true' }),
-          'מחזור 2026 · בוגרים לשלטון המקומי',
+          'בוגרים לשלטון המקומי',
         ]),
         el('h2', { class: 'hero-title rise r2', id: 'hero-t' }, [
           `${jobs.length} משרות.`,

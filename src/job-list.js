@@ -90,8 +90,22 @@ export const renderResults = () => {
   if (!list.length) {
     const minScore = store.state.filters.minScore;
     const hideUnrated = minScore !== '' && minScore != null && !store.state.filters.includeUnrated;
-    host.append(el('div', { class: 'empty-state' }, [
-      el('img', { class: 'eclipse', src: 'img/eclipse.webp', alt: '', width: '280', height: '280', loading: 'lazy', decoding: 'async' }),
+    const filters = store.state.filters;
+    const otherFilter = Boolean(filters.q || filters.district || filters.authorityType || filters.role || filters.domain || filters.authority || filters.status || filters.maxMinutes || filters.maxKm || (minScore !== '' && minScore != null));
+    const favoritesOnly = Boolean(filters.favorite) && !otherFilter;
+    host.append(el('div', { class: 'empty-state' }, favoritesOnly ? [
+      icon('heart'),
+      el('p', { class: 'empty', text: 'אין מועדפים' }),
+      el('p', { class: 'hint', text: 'סמנו לב במשרות שתרצו לחזור אליהן.' }),
+      el('button', {
+        type: 'button',
+        class: 'btn',
+        id: 'empty-clear-filters',
+        text: 'לכל המשרות',
+        on: { click: () => clearFilters() },
+      }),
+    ] : [
+      el('img', { class: 'eclipse', src: 'img/eclipse.webp', alt: '', width: '200', height: '200', loading: 'lazy', decoding: 'async' }),
       el('p', { class: 'empty', text: 'אין משרות שמתאימות לסינון' }),
       hideUnrated ? el('p', { class: 'hint', text: 'משרות ללא ציון מוסתרות' }) : null,
       el('button', {

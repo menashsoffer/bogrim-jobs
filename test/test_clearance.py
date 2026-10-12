@@ -11,11 +11,12 @@ def check(condition, message):
 
 
 def fully_above(page, selector, nav):
-    page.locator(selector).last.scroll_into_view_if_needed()
+    page.evaluate("() => window.scrollTo(0, document.documentElement.scrollHeight)")
     box = page.locator(selector).last.bounding_box()
     bar = page.locator(nav).bounding_box()
     check(box is not None and bar is not None, f"missing box for {selector}")
-    check(box["y"] + box["height"] <= bar["y"] + 1, f"{selector} sits under the nav")
+    gap = bar["y"] - (box["y"] + box["height"])
+    check(box["y"] >= 0 and gap >= 48, f"{selector} gap is {gap:.0f}px")
     page.locator(selector).last.click(trial=True)
 
 
