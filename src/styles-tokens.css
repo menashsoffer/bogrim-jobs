@@ -58,85 +58,29 @@
 
   /* layout */
   --topbar-h: 56px; --tabbar-h: 60px;
+}
 
-  /* Derived from the palette above so the rest of the CSS stays free of color literals. */
+:root {
+  /* Handoff glass, bars, and the three exception colors. Components reference these instead of literals. */
   --bar: rgba(0, 0, 0, .72);
   --bar-strong: rgba(0, 0, 0, .78);
   --hair-fade: rgba(255, 255, 255, .06);
   --hair-fade-2: rgba(255, 255, 255, .07);
+  --glass: rgba(10, 10, 11, .88);
+  --glass-strong: rgba(10, 10, 11, .92);
+  --glass-line: rgba(255, 255, 255, .08);
+  --scrim: rgba(0, 0, 0, .62);
+  --toast-bg: rgba(29, 29, 32, .92);
   --glow-dot: 0 0 10px 1px rgba(169, 201, 232, .55);
   --glow-status: 0 0 8px rgba(169, 201, 232, .6);
   --glow-arc: drop-shadow(0 0 3px rgba(169, 201, 232, .45));
-  --scrim: rgba(0, 0, 0, .62);
-  --ink: var(--text);
-  --muted: var(--text-2);
-  --on-accent: var(--on-invert);
-  --accent-soft: var(--surface-2);
-  --danger: var(--text);
-  --danger-line: var(--line-strong);
-  --star: var(--accent);
-  --star-off: var(--text-3);
-  --chip: var(--surface-2);
-  --score-none: var(--text-3);
-  --score-1: color-mix(in srgb, var(--accent) 40%, var(--bg));
-  --score-2: color-mix(in srgb, var(--accent) 55%, var(--bg));
-  --score-3: color-mix(in srgb, var(--accent) 70%, var(--bg));
-  --score-4: color-mix(in srgb, var(--accent) 85%, var(--bg));
-  --score-5: var(--accent);
-  --on-score: var(--bg);
-  --status-bg: var(--surface-2);
-  --status-talk-bg: var(--surface-3);
-  --status-talk: var(--text);
-  --status-yes-bg: var(--accent-08);
-  --status-yes: var(--text);
-  --status-no-bg: var(--surface-2);
-  --status-no: var(--text-2);
-  --alert-bg: var(--surface-2);
-  --alert: var(--text);
-  --alert-line: var(--line-strong);
-  --table-head: var(--surface-2);
-  --map-bg: var(--surface);
-  --pin: var(--accent);
-  --shadow: var(--edge-top);
-  --shadow-drawer: var(--lift);
-  --shadow-score: var(--glow-accent);
-  --shadow-pin: 0 0 0 2px var(--pin);
-  --line-w: 1px;
-  --space-1: 2px;
-  --space-2: var(--s-1);
-  --space-3: 6px;
-  --space-4: var(--s-2);
-  --space-5: var(--s-3);
-  --space-6: var(--s-3);
-  --space-7: var(--s-4);
-  --space-8: var(--s-4);
-  --space-9: var(--s-5);
-  --space-10: var(--s-8);
-  --radius-sm: var(--r-xs);
-  --radius-md: var(--r-md);
-  --radius-lg: var(--r-lg);
-  --radius-pill: var(--r-pill);
+  --map-canvas: #050506;
+  --stack-muted: #5C6670;
+  --skel-shine: #1F1F23;
   --tap: 44px;
   --icon-sm: 16px;
   --icon: 20px;
   --icon-lg: 22px;
-  --mark: 22px;
-  --mark-sm: 22px;
-  --page: var(--container);
   --skeleton-h: 120px;
   --textarea-min: 88px;
-  --duration: var(--dur-2);
-  --ease: var(--ease-std);
-  --fs-2xs: var(--fs-11);
-  --fs-xs: var(--fs-12);
-  --fs-sm: var(--fs-13);
-  --fs-md: var(--fs-13);
-  --fs-lg: var(--fs-15);
-  --fs-body: var(--fs-15);
-  --fs-title: var(--fs-20);
-  --fs-xl: var(--fs-24);
-  --fs-score: var(--fs-17);
-  --fs-star: var(--fs-20);
-  --fs-mark: var(--fs-15);
-  --lh-title: var(--lh-snug);
 }
