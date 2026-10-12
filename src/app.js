@@ -2,7 +2,7 @@ import { importText } from './backup.js';
 import { distanceStops, distanceText, scoreStops, scoreText, timeStops, timeText } from './filter-scale.js';
 import { filtersFromHash, jobIdFromHash, viewFromHash } from './history.js';
 import { closeJob, openJob, trapFocus } from './job-drawer.js';
-import { closeFilterSheet, renderListShell, renderResults, updateCompareCount } from './job-list.js';
+import { closeFilterSheet, jobPlace, renderListShell, renderResults, updateCompareCount } from './job-list.js';
 import { formatDuration, toast } from './dom.js';
 import { moovitAppUrl, moovitWebUrl } from './moovit.js';
 import { airKm, scoreJob, travelMinutes, travelSummary } from './score.js';
@@ -10,6 +10,7 @@ import { refreshAfterStorage, showView } from './shell.js';
 import { paintHomeChip } from './travel.js';
 import { STORAGE_KEY, loadState, sanitizeState, saveNow, store, takeRemoteState } from './store.js';
 
+let bootReady = false;
 const syncFromLocation = () => {
   store.ignoreHistory = true;
   try {
@@ -26,7 +27,33 @@ const syncFromLocation = () => {
     store.ignoreHistory = false;
   }
 };
+const applyLocation = () => {
+  const named = viewFromHash();
+  if (named) showView(named);
+  if (filtersFromHash()) {
+    const sheet = document.getElementById('filters');
+    if (sheet) sheet.classList.add('is-open');
+  }
+  const hashed = jobIdFromHash();
+  if (hashed && store.jobsById.has(hashed) && store.openJobId !== hashed) openJob(hashed, null);
+};
 export const boot = async () => {
+  window.addEventListener('popstate', () => {
+    store.sawPop = true;
+    if (store.ignoreHistory) {
+      store.ignoreHistory = false;
+      return;
+    }
+    if (bootReady) syncFromLocation();
+  });
+  window.addEventListener('hashchange', () => {
+    if (!bootReady) return;
+    if (store.sawPop) {
+      store.sawPop = false;
+      return;
+    }
+    syncFromLocation();
+  });
   const response = await fetch(new URL('./data.json', import.meta.url));
   if (!response.ok) throw new Error('data');
   store.data = await response.json();
@@ -74,41 +101,17 @@ export const boot = async () => {
       closeFilterSheet();
     } else if (event.key === 'Tab' && store.openJobId) trapFocus(event);
   });
-  window.addEventListener('popstate', () => {
-    store.sawPop = true;
-    if (store.ignoreHistory) {
-      store.ignoreHistory = false;
-      return;
-    }
-    syncFromLocation();
-  });
-  window.addEventListener('hashchange', () => {
-    if (store.sawPop) {
-      store.sawPop = false;
-      return;
-    }
-    syncFromLocation();
-  });
   window.addEventListener('pagehide', () => saveNow());
   window.addEventListener('storage', (event) => {
-    if (event.key !== STORAGE_KEY) return;
+    if (!bootReady || event.key !== STORAGE_KEY) return;
     if (!takeRemoteState()) return;
     store.state.compareIds = store.state.compareIds.filter((id) => store.jobsById.has(id));
     refreshAfterStorage();
   });
   renderListShell();
   paintHomeChip();
-  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-  renderResults();
-  updateCompareCount();
-  const named = viewFromHash();
-  if (named) showView(named);
-  if (filtersFromHash()) {
-    const sheet = document.getElementById('filters');
-    if (sheet) sheet.classList.add('is-open');
-  }
-  const hashed = jobIdFromHash();
-  if (hashed && store.jobsById.has(hashed)) openJob(hashed, null);
+  bootReady = true;
+  applyLocation();
   if (new URLSearchParams(location.search).get('test') === '1') {
     window.__app = {
       get state() { return store.state; },
@@ -129,6 +132,10 @@ export const boot = async () => {
       scoreText,
     };
   }
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  renderResults();
+  updateCompareCount();
+  if (store.openJobId && store.returnIndex < 0) store.returnIndex = jobPlace(store.openJobId);
 };
 
 boot().catch(() => {

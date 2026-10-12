@@ -119,11 +119,12 @@ def main():
             page.locator(".backdrop").click(position={"x": 1100, "y": 80})
             page.wait_for_function("() => !document.getElementById('drawer')")
             job_id = page.locator("button.card-open").first.get_attribute("data-job")
-            page.goto(base + "#job=" + job_id)
-            page.wait_for_function("() => window.__app && document.getElementById('drawer')")
-            check(page.locator("#drawer-title").inner_text() != "", "hash did not open the drawer")
-            page.locator("#drawer-close").click()
-            page.wait_for_function("() => !document.getElementById('drawer')")
+            for _ in range(3):
+                page.goto(base + "#job=" + job_id)
+                page.wait_for_function("() => window.__app && document.getElementById('drawer')")
+                check(page.locator("#drawer-title").inner_text() != "", "hash did not open the drawer")
+                page.locator("#drawer-close").click()
+                page.wait_for_function("() => !document.getElementById('drawer')")
 
             page.select_option("#filter-district", "דרום")
             wait_count(page, 51)
