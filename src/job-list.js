@@ -1,4 +1,4 @@
-import { STATUSES, el, labelOrUnknown, showLimit, toast } from './dom.js';
+import { STATUSES, el, labelOrUnknown, showLimit } from './dom.js';
 import { distanceText, scoreText, timeText } from './filter-scale.js';
 import { mountSteppedRange, refreshFilterScales } from './filter-controls.js';
 import { mountHero } from './hero.js';
@@ -7,16 +7,8 @@ import { backIf, filtersFromHash, pushFilters } from './history.js';
 import { icon } from './icons.js';
 import { jobCard } from './job-card.js';
 import { visibleJobs } from './score.js';
+import { mountSort } from './sort-menu.js';
 import { defaultFilters, save, store } from './store.js';
-
-const sortDirectionText = (direction) => (direction === 'asc' ? 'עולה' : 'יורד');
-const paintSortDirection = (button, direction) => {
-  const label = sortDirectionText(direction);
-  const text = button.querySelector('span');
-  if (text) text.textContent = label;
-  else button.textContent = label;
-  button.setAttribute('aria-label', `כיוון מיון: ${label}`);
-};
 export const noteListDirty = () => {
   store.listDirty = true;
 };
@@ -200,47 +192,6 @@ export const renderListShell = () => {
     save();
     renderResults();
   });
-  const sort = el('select', { id: 'sort-key', 'aria-label': 'מיון' });
-  [['score', 'ציון'], ['time', 'זמן נסיעה'], ['name', 'שם'], ['completeness', 'השלמה'], ['distance', 'מרחק']].forEach(([key, label]) => {
-    const option = el('option', { value: key, text: label });
-    if (key === store.state.sortKey) option.selected = true;
-    sort.append(option);
-  });
-  sort.addEventListener('change', () => {
-    if ((sort.value === 'time' || sort.value === 'distance') && !store.state.home) {
-      const subject = sort.value === 'time' ? 'זמן נסיעה' : 'מרחק';
-      toast(`כדי למיין לפי ${subject} צריך כתובת בית`, {
-        label: 'הגדרות',
-        run: () => {
-          const tab = document.querySelector('#nav [data-view="settings"]');
-          if (tab) tab.click();
-          const address = document.getElementById('home-address');
-          if (address) address.focus();
-        },
-      });
-      sort.value = store.state.sortKey;
-      return;
-    }
-    store.state.sortKey = sort.value;
-    if (store.state.sortKey === 'name' || store.state.sortKey === 'time' || store.state.sortKey === 'distance') store.state.sortDir = 'asc';
-    else store.state.sortDir = 'desc';
-    save();
-    const dir = document.getElementById('sort-dir');
-    if (dir) paintSortDirection(dir, store.state.sortDir);
-    renderResults();
-  });
-  const dirButton = el('button', {
-    type: 'button',
-    class: 'btn',
-    id: 'sort-dir',
-    'aria-label': `כיוון מיון: ${sortDirectionText(store.state.sortDir)}`,
-    on: { click: () => {
-      store.state.sortDir = store.state.sortDir === 'asc' ? 'desc' : 'asc';
-      paintSortDirection(dirButton, store.state.sortDir);
-      save();
-      renderResults();
-    }},
-  }, [icon('arrow-up-down', 'sm'), el('span', { text: sortDirectionText(store.state.sortDir) })]);
   const filterBox = el('div', { class: 'filters', id: 'filters' }, [
     el('div', { class: 'row' }, [
       el('h2', { id: 'filters-title', tabindex: '-1', text: 'סינון' }),
@@ -325,7 +276,7 @@ export const renderListShell = () => {
           el('h2', { class: 'list-title', id: 'list-t', text: 'המשרות' }),
           el('p', { id: 'result-count', class: 'list-count', 'aria-live': 'polite', text: '' }),
         ]),
-        el('div', { class: 'sort-pair ghost-btn' }, [sort, dirButton]),
+        mountSort(),
       ]),
       el('div', { class: 'toolbar' }, [
         el('label', { class: 'search' }, [

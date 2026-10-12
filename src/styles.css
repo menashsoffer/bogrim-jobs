@@ -145,13 +145,6 @@ main { margin: 0; padding: 0; min-height: 100dvh; }
   background: var(--clear);
 }
 .ghost-btn:hover, #sort-dir:hover, .filter-toggle:hover { border-color: var(--line-strong); color: var(--text); }
-#sort-key {
-  min-height: 44px;
-  border: 0;
-  background: var(--clear);
-  color: var(--text-2);
-  padding-inline: var(--s-2);
-}
 .filters, .panel, .card, .empty-state {
   background: var(--surface);
   border: var(--hairline);
@@ -181,7 +174,22 @@ input:not([type="checkbox"]):not([type="range"]):not([type="file"]), select, tex
   min-height: 0;
   box-shadow: none;
 }
-#sort-key { min-height: 0; border: 0; background: none; padding: 0; }
+.sort-wrap { position: relative; }
+.sort-menu[hidden] { display: none; }
+.sort-menu {
+  position: absolute;
+  z-index: 5;
+  inset-inline-end: 0;
+  inset-block-start: calc(100% + var(--s-2));
+  display: grid;
+  min-width: 180px;
+  padding: var(--s-2);
+  background: var(--surface);
+  border: var(--hairline);
+  border-radius: var(--r-md);
+}
+.sort-menu button { display: flex; align-items: center; width: 100%; min-height: 44px; padding-inline: var(--s-3); color: var(--text); text-align: start; }
+.sort-menu button[aria-checked="true"] { color: var(--accent); }
 input[type="range"] { accent-color: var(--accent); padding-inline: 0; width: 100%; }
 input.step-range { direction: ltr; }
 .range-ends { display: flex; justify-content: space-between; direction: ltr; color: var(--text-3); font-size: var(--fs-11); }

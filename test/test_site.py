@@ -151,6 +151,7 @@ def main():
             wait_count(page, 211)
 
             page.select_option("#sort-key", "name")
+            page.locator("#sort-open").click()
             check(page.locator("#sort-dir").inner_text() == "עולה", "name sort direction")
             page.click("#sort-dir")
             check(page.locator("#sort-dir").inner_text() == "יורד", "sort direction toggle")
