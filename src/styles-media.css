@@ -207,7 +207,8 @@
 .ghost-col { min-height: 120px; border: 1px dashed var(--line-strong); border-radius: var(--r-lg); }
 .ghost-col.is-faint { opacity: .45; }
 @media (min-width: 760px) {
-  .page-title { font-size: var(--fs-56); }
+  .page-title, .empty-title { font-size: var(--fs-32); }
+  .empty-state .eclipse { width: 180px; height: 180px; }
   .cmp-m { display: none; }
   .cmp-d { display: block; }
   .ghost-cols { grid-template-columns: repeat(4, 1fr); width: min(100%, 720px); }

@@ -146,7 +146,7 @@ main { margin: 0; padding: 0; min-height: 100dvh; }
   background: var(--clear);
 }
 .ghost-btn:hover, #sort-dir:hover, .filter-toggle:hover { border-color: var(--line-strong); color: var(--text); }
-.filters, .panel, .card, .empty-state {
+.filters, .panel, .card {
   background: var(--surface);
   border: var(--hairline);
   border-radius: var(--r-lg);
@@ -237,6 +237,8 @@ textarea { min-height: var(--textarea-min); resize: vertical; }
   background: var(--clear);
 }
 .chip.is-on, .chip.role { background: var(--text); color: var(--on-invert); border-color: var(--text); }
+.chip--filter { display: inline-flex; align-items: center; gap: 6px; }
+.chip--filter.is-on { background: var(--accent-08); color: var(--accent); border-color: var(--accent-24); }
 .results, .grid { display: grid; gap: var(--s-3); margin-block-start: var(--s-4); }
 .card {
   position: relative;
@@ -309,8 +311,10 @@ textarea { min-height: var(--textarea-min); resize: vertical; }
 .cmp input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
 .cmp:has(input:focus-visible) { box-shadow: var(--focus); }
 .empty, .empty-state { color: var(--text-2); text-align: center; }
-.empty-state { padding: var(--s-10) var(--s-5); display: grid; justify-items: center; gap: var(--s-4); }
-.eclipse { width: min(280px, 70vw); height: auto; display: block; }
+.empty-state { padding: var(--s-10) var(--s-5); display: grid; justify-items: center; gap: var(--s-4); background: none; border: 0; box-shadow: none; }
+.empty-title { margin: 0; font-size: var(--fs-24); font-weight: var(--fw-semibold); color: var(--text); }
+.empty-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: var(--s-4); }
+.eclipse { width: 200px; height: 200px; object-fit: cover; display: block; mask-image: radial-gradient(closest-side, var(--bg) 70%, var(--clear)); }
 .alert {
   background: var(--surface-2);
   color: var(--text);

@@ -85,6 +85,41 @@ export const renderResults = () => {
     const filters = store.state.filters;
     const otherFilter = Boolean(filters.q || filters.district || filters.authorityType || filters.role || filters.domain || filters.authority || filters.status || filters.maxMinutes || filters.maxKm || (minScore !== '' && minScore != null));
     const favoritesOnly = Boolean(filters.favorite) && !otherFilter;
+    const drop = (key) => {
+      if (key === 'q') {
+        store.state.filters.q = '';
+        const search = document.getElementById('search');
+        if (search) search.value = '';
+      } else if (key === 'favorite') {
+        store.state.filters.favorite = false;
+        const box = document.getElementById('favorite-only');
+        if (box) box.checked = false;
+      } else store.state.filters[key] = '';
+      const ids = { district: 'filter-district', authorityType: 'filter-type', role: 'filter-role', domain: 'filter-domain', authority: 'filter-authority', status: 'filter-status' };
+      const field = document.getElementById(ids[key] || '');
+      if (field) field.value = '';
+      save();
+      renderResults();
+    };
+    const chip = (key, label) => (label ? el('button', {
+      type: 'button',
+      class: 'chip chip--filter is-on',
+      'aria-label': `הסרת מסנן ${label}`,
+      on: { click: () => drop(key) },
+    }, [label, icon('x', 'sm')]) : null);
+    const chips = [
+      chip('q', filters.q),
+      chip('district', filters.district ? `מחוז: ${filters.district}` : ''),
+      chip('authorityType', filters.authorityType || ''),
+      chip('role', filters.role || ''),
+      chip('domain', filters.domain || ''),
+      chip('authority', filters.authority || ''),
+      chip('status', filters.status || ''),
+      chip('maxMinutes', filters.maxMinutes !== '' && filters.maxMinutes != null ? 'זמן נסיעה' : ''),
+      chip('maxKm', filters.maxKm !== '' && filters.maxKm != null ? 'מרחק' : ''),
+      chip('minScore', minScore !== '' && minScore != null ? 'ציון מינימלי' : ''),
+      chip('favorite', filters.favorite ? 'מועדפים בלבד' : ''),
+    ];
     host.append(el('div', { class: 'empty-state' }, favoritesOnly ? [
       icon('heart'),
       el('p', { class: 'empty', text: 'אין מועדפים' }),
@@ -98,15 +133,26 @@ export const renderResults = () => {
       }),
     ] : [
       el('img', { class: 'eclipse', src: 'img/eclipse.webp', alt: '', width: '200', height: '200', loading: 'lazy', decoding: 'async' }),
+      el('h2', { class: 'empty-title', text: 'לא נמצאו משרות' }),
       el('p', { class: 'empty', text: 'אין משרות שמתאימות לסינון' }),
+      el('p', { class: 'hint', text: 'אין משרה שעונה על כל המסננים יחד.' }),
       hideUnrated ? el('p', { class: 'hint', text: 'משרות ללא ציון מוסתרות' }) : null,
-      el('button', {
-        type: 'button',
-        class: 'btn',
-        id: 'empty-clear-filters',
-        text: 'נקה סינון',
-        on: { click: () => clearFilters() },
-      }),
+      chips.some(Boolean) ? el('div', { class: 'chips', role: 'group', 'aria-label': 'מסננים פעילים' }, chips) : null,
+      el('div', { class: 'empty-actions' }, [
+        el('button', {
+          type: 'button',
+          class: 'btn primary',
+          id: 'empty-clear-filters',
+          text: 'נקה סינון',
+          on: { click: () => clearFilters() },
+        }),
+        el('button', {
+          type: 'button',
+          class: 'btn-link',
+          text: `לכל ${store.jobs.length} המשרות`,
+          on: { click: () => clearFilters() },
+        }),
+      ]),
     ]));
     return;
   }
