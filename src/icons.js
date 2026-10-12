@@ -25,6 +25,8 @@ export const icon = (name, size = 'md') => {
   const scale = size === 'lg' ? 'icon icon-lg' : size === 'sm' ? 'icon icon-sm' : 'icon';
   svg.setAttribute('class', scale);
   svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('width', '24');
+  svg.setAttribute('height', '24');
   svg.setAttribute('aria-hidden', 'true');
   svg.setAttribute('focusable', 'false');
   const use = document.createElementNS(SVG_NS, 'use');

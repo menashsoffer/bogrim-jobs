@@ -113,7 +113,7 @@ const scoreRing = (scored) => {
       'stroke-dasharray': `${amount.toFixed(1)} 100`,
     }));
   }
-  const svg = svgNode('svg', { viewBox: '0 0 56 56', 'aria-hidden': 'true' });
+  const svg = svgNode('svg', { viewBox: '0 0 56 56', width: '56', height: '56', 'aria-hidden': 'true' });
   parts.forEach((part) => svg.append(part));
   return svg;
 };

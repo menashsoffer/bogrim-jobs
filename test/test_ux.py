@@ -2,6 +2,7 @@
 """Behavior added for the round-2 UX list."""
 import json
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -20,8 +21,8 @@ def main():
     if not (DIST / "index.html").exists():
         raise SystemExit("dist/ is missing; run python3 build.py first")
     html = (DIST / "index.html").read_text(encoding="utf-8")
-    check('rel="preload" href="fonts/heebo-hebrew-wght-normal.woff2" as="font"' in html, "hebrew font is not preloaded")
-    check('rel="preload" href="img/hero-relief-m.webp" as="image"' in html, "hero image is not preloaded")
+    check(re.search(r'rel="preload" href="fonts/heebo-hebrew-wght-normal\.[0-9a-f]{8}\.woff2" as="font"', html), "hebrew font is not preloaded")
+    check(re.search(r'rel="preload" href="img/hero-relief-m\.[0-9a-f]{8}\.webp" as="image"', html), "hero image is not preloaded")
     check('rel="preload" href="data.json"' not in html, "data.json preload competes with the hero")
     server = serve()
     origin = f"http://127.0.0.1:{server.server_address[1]}/"
