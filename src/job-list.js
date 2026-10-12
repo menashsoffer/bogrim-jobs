@@ -286,20 +286,22 @@ export const renderListShell = () => {
     ]),
     el('p', { class: 'hint', id: 'unrated-hint', hidden: true, text: 'בלי הסימון, משרות ללא ציון מוסתרות.' }),
     el('label', { class: 'check' }, [favorite, 'מועדפים בלבד']),
-    el('button', {
-      type: 'button',
-      class: 'btn',
-      id: 'clear-filters',
-      text: 'נקה סינון',
-      on: { click: () => clearFilters() },
-    }),
-    el('button', {
-      type: 'button',
-      class: 'btn primary filters-done',
-      id: 'filters-done',
-      text: 'הצג משרות',
-      on: { click: () => closeFilterSheet() },
-    }),
+    el('div', { class: 'filters-foot' }, [
+      el('button', {
+        type: 'button',
+        class: 'btn primary filters-done',
+        id: 'filters-done',
+        text: 'הצג משרות',
+        on: { click: () => closeFilterSheet() },
+      }),
+      el('button', {
+        type: 'button',
+        class: 'btn',
+        id: 'clear-filters',
+        text: 'נקה סינון',
+        on: { click: () => clearFilters() },
+      }),
+    ]),
   ]);
   const domains = uniqueValues(store.jobs.flatMap((job) => job.categories || []));
   const chipButton = (domain, label) => el('button', {

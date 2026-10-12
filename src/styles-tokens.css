@@ -67,6 +67,7 @@
   --hair-fade: rgba(255, 255, 255, .06);
   --hair-fade-2: rgba(255, 255, 255, .07);
   --scrim: rgba(0, 0, 0, .62);
+  --glass-strong: rgba(10, 10, 11, .92);
   --clear: transparent;
   --glow-dot: 0 0 10px 1px rgba(169, 201, 232, .55);
   --glow-status: 0 0 8px rgba(169, 201, 232, .6);

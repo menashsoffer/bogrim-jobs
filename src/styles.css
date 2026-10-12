@@ -159,6 +159,7 @@ main { margin: 0; padding: 0; min-height: 100dvh; }
   box-shadow: var(--edge-top);
 }
 .filters, .panel { padding: var(--s-5); }
+.filters-foot { display: grid; grid-template-columns: 1.6fr 1fr; gap: var(--s-2); margin-top: var(--s-2); }
 .filters h2, .panel h2, .prose h2 { font-size: var(--fs-24); font-weight: var(--fw-bold); margin-bottom: var(--s-3); }
 .field { display: flex; flex-direction: column; gap: var(--s-1); margin-bottom: var(--s-3); }
 .field-label { display: inline-flex; align-items: center; gap: var(--s-1); color: var(--text-3); font-size: var(--fs-12); letter-spacing: var(--track-label); }
