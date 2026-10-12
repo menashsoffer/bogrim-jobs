@@ -2,7 +2,7 @@ import { UNKNOWN, el, labelOrUnknown, statusClass } from './dom.js';
 import { icon } from './icons.js';
 import { openJob, refreshDrawer } from './job-drawer.js';
 import { renderResults, toggleCompare } from './job-list.js';
-import { completionText, scoreJob, scoreNode, travelSummary } from './score.js';
+import { completionCompact, scoreJob, scoreNode, travelCard } from './score.js';
 import { ensureJob, peekJob, save, store } from './store.js';
 
 const segments = (scored) => {
@@ -16,7 +16,7 @@ const segments = (scored) => {
 export const jobCard = (job) => {
   const user = peekJob(job.id);
   const scored = scoreJob(job);
-  const travel = travelSummary(job);
+  const travel = travelCard(job);
   const jobName = `${job.title || job.role} – ${job.authority}`;
   const favLabel = user.favorite ? '★ מועדף' : '☆ מועדף';
   const open = el('button', {
@@ -70,11 +70,11 @@ export const jobCard = (job) => {
     el('dl', { class: 'job-meta' }, [
       el('div', {}, [
         el('dt', {}, [icon('car', 'sm'), 'ברכב']),
-        el('dd', { class: 'travel-line', text: travel || 'הגדירו כתובת בית' }),
+        el('dd', { class: 'travel-line', text: travel.text, title: travel.title || null }),
       ]),
       el('div', {}, [
         el('dt', { text: 'דירוג' }),
-        el('dd', {}, [segments(scored), completionText(scored)]),
+        el('dd', { class: 'job-done' }, [segments(scored), completionCompact(scored)]),
       ]),
     ]),
     el('div', { class: 'job-foot' }, [

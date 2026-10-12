@@ -80,6 +80,18 @@ export const completionText = (scored) => {
   if (!scored.rated) return 'טרם דורג';
   return `${scored.rated} מתוך ${scored.total} קריטריונים`;
 };
+export const completionCompact = (scored) => {
+  if (!scored.total) return 'אין ציון';
+  if (!scored.rated) return 'טרם דורג';
+  return `${scored.rated}/${scored.total} קריטריונים`;
+};
+export const travelCard = (job) => {
+  if (!store.state.home) return { text: 'הגדירו כתובת בית', title: '' };
+  if (job.lat == null || job.lon == null) return { text: UNKNOWN, title: '' };
+  const hit = routeFor(job);
+  if (hit) return { text: formatDuration(hit.min), title: hit.km == null ? '' : formatKm(hit.km) };
+  return { text: `${AIR_LABEL}: ${formatKm(airKm(job))}`, title: '' };
+};
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const svgNode = (name, attrs) => {
   const node = document.createElementNS(SVG_NS, name);
