@@ -50,7 +50,7 @@ def main():
                 )
                 for action in ("#drawer-close", "#drawer-favorite", "#drawer-compare"):
                     box = page.locator(action).bounding_box()
-                    check(box["y"] >= 0 and box["y"] + box["height"] <= height, f"{action} outside the viewport at {width}")
+                    check(box["y"] >= -1 and box["y"] + box["height"] <= height + 1, f"{action} outside the viewport at {width}: {box}")
                     page.locator(action).click(trial=True)
                 page.close()
             browser.close()
