@@ -64,6 +64,8 @@ def main():
                 }"""
             )
             check(got["samples"] == EXPECTED, got["samples"])
+            empty = page.evaluate("() => [null, '', NaN, undefined].map((value) => window.__app.formatDuration(value))")
+            check(empty == ["", "", "", ""], empty)
             check(got["minutes"] == [59, 121], got["minutes"])
             check("59 דק׳" in got["labels"][0] and "שעתיים ו-1 דק׳" in got["labels"][1], got["labels"])
             browser.close()

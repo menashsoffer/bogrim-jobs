@@ -31,6 +31,8 @@ export const el = (tag, attrs = {}, kids = []) => {
 export const labelOrUnknown = (value) => (value == null || value === '' ? UNKNOWN : String(value));
 export const formatScore = (score) => (Math.round(score * 10) / 10).toFixed(1);
 export const formatDuration = (minutes) => {
+  if (minutes == null || minutes === '') return '';
+  if (typeof minutes === 'number' && Number.isNaN(minutes)) return '';
   const total = Math.round(Number(minutes));
   if (!Number.isFinite(total) || total < 0) return '';
   if (total < 60) return `${total} דק׳`;
