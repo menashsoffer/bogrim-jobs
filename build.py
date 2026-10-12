@@ -21,6 +21,7 @@ import re
 import shutil
 import sys
 
+from build_assets import copy_fonts_and_images
 from privacy_scan import find_personal_data
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -293,14 +294,7 @@ def write_site(dest, jobs, localities, include_contacts):
                 handle.write(page)
             continue
         shutil.copy(source_path, dest_path)
-    for extra in ("fonts", "img"):
-        source = os.path.join(SRC, extra)
-        if not os.path.isdir(source):
-            continue
-        target = os.path.join(dest, extra)
-        if os.path.isdir(target):
-            shutil.rmtree(target)
-        shutil.copytree(source, target)
+    copy_fonts_and_images(SRC, dest)
     leaflet_dest = os.path.join(dest, "vendor", "leaflet")
     if os.path.isdir(leaflet_dest):
         shutil.rmtree(leaflet_dest)
