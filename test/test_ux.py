@@ -189,6 +189,61 @@ def main():
                 arg={"remote": remote_id, "other": other_id},
             )
             context.close()
+
+            held = browser.new_context(locale="he-IL", viewport={"width": 390, "height": 844})
+            tab_a = held.new_page()
+            tab_b = held.new_page()
+            tab_b.add_init_script(
+                """() => {
+                  const real = EventTarget.prototype.addEventListener;
+                  EventTarget.prototype.addEventListener = function (type, listener, options) {
+                    if (type !== 'storage') return real.call(this, type, listener, options);
+                    const wrapped = (event) => {
+                      if (!window.__holdStorage) listener.call(this, event);
+                    };
+                    return real.call(this, type, wrapped, options);
+                  };
+                  window.__holdStorage = true;
+                }"""
+            )
+            tab_a.set_default_timeout(20000)
+            tab_b.set_default_timeout(20000)
+            tab_a.goto(base)
+            tab_b.goto(base)
+            tab_a.wait_for_function("() => window.__app && window.__app.jobs.length === 211")
+            tab_b.wait_for_function("() => window.__app && window.__app.jobs.length === 211")
+            same_id = tab_a.evaluate("() => window.__app.jobs[0].id")
+            tab_a.locator(f"button.card-open[data-job='{same_id}']").click()
+            tab_a.locator("#star-role-4").click()
+            tab_a.wait_for_function(
+                """(id) => {
+                  const raw = localStorage.getItem('bogrim-jobs.v1');
+                  const job = raw && JSON.parse(raw).jobs[id];
+                  return job && job.ratings && job.ratings.role === 4;
+                }""",
+                arg=same_id,
+            )
+            tab_b.locator(f"button.card-open[data-job='{same_id}']").click()
+            tab_b.locator("#general-notes").fill("הערה משותפת")
+            tab_b.wait_for_function(
+                """(id) => {
+                  const raw = localStorage.getItem('bogrim-jobs.v1');
+                  const job = raw && JSON.parse(raw).jobs[id];
+                  return job && job.notes === 'הערה משותפת' && job.ratings && job.ratings.role === 4;
+                }""",
+                arg=same_id,
+            )
+            tab_a.locator("#star-conditions-2").click()
+            tab_a.wait_for_function(
+                """(id) => {
+                  const raw = localStorage.getItem('bogrim-jobs.v1');
+                  const job = raw && JSON.parse(raw).jobs[id];
+                  return job && job.ratings && job.ratings.role === 4 && job.ratings.conditions === 2
+                    && job.notes === 'הערה משותפת';
+                }""",
+                arg=same_id,
+            )
+            held.close()
             fresh = browser.new_page(locale="he-IL", viewport={"width": 390, "height": 844})
             fresh.set_default_timeout(20000)
             fresh.goto(base + "#view=settings")

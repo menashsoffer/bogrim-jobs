@@ -58,7 +58,6 @@ export const store = {
   sawPop: false,
   lastSaved: '',
 };
-const dirtyJobIds = new Set();
 export const homeKey = (home) => (home ? `${home.lat.toFixed(5)},${home.lon.toFixed(5)}` : '');
 export const normName = (value) => String(value || '').replace(/[\s\-–־'"״׳"().,]/g, '').toLowerCase();
 export const uid = () => (crypto.randomUUID ? crypto.randomUUID() : `id-${Date.now()}-${Math.random().toString(16).slice(2)}`);
@@ -90,7 +89,6 @@ export const ensureJob = (id) => {
   if (!current.criterionNotes) current.criterionNotes = {};
   if (!Array.isArray(current.callLog)) current.callLog = [];
   if (!STATUSES.includes(current.status)) current.status = STATUSES[0];
-  dirtyJobIds.add(id);
   return current;
 };
 const transitNote = (minutes) => `זמן תחבורה ציבורית שנשמר: ${minutes} דק׳`;
@@ -236,6 +234,63 @@ const readStored = () => {
     return null;
   }
 };
+const sameValue = (left, right) => {
+  if (Object.is(left, right)) return true;
+  if (left == null || right == null || typeof left !== 'object' || typeof right !== 'object') return false;
+  return JSON.stringify(left) === JSON.stringify(right);
+};
+const pickField = (baseValue, localValue, remoteValue) => (
+  sameValue(localValue, baseValue) ? remoteValue : localValue
+);
+const mergeKeyed = (baseMap, localMap, remoteMap) => {
+  const base = baseMap && typeof baseMap === 'object' ? baseMap : {};
+  const local = localMap && typeof localMap === 'object' ? localMap : {};
+  const remote = remoteMap && typeof remoteMap === 'object' ? remoteMap : {};
+  const next = {};
+  new Set([...Object.keys(base), ...Object.keys(local), ...Object.keys(remote)]).forEach((key) => {
+    const value = pickField(base[key], local[key], remote[key]);
+    if (value !== undefined) next[key] = value;
+  });
+  return next;
+};
+const jobChanged = (baseJob, localJob) => {
+  const base = baseJob || emptyJob();
+  return !sameValue(localJob.favorite, base.favorite)
+    || !sameValue(localJob.status, base.status)
+    || !sameValue(localJob.notes, base.notes)
+    || !sameValue(localJob.callLog, base.callLog)
+    || !sameValue(localJob.ratings, base.ratings)
+    || !sameValue(localJob.criterionNotes, base.criterionNotes);
+};
+const mergeJob = (baseJob, localJob, remoteJob) => {
+  if (!localJob) return baseJob ? null : (remoteJob || null);
+  if (!remoteJob) return jobChanged(baseJob, localJob) || !baseJob ? localJob : null;
+  const base = baseJob || emptyJob();
+  return {
+    favorite: Boolean(pickField(base.favorite, localJob.favorite, remoteJob.favorite)),
+    status: pickField(base.status, localJob.status, remoteJob.status) || emptyJob().status,
+    notes: pickField(base.notes, localJob.notes, remoteJob.notes) || '',
+    ratings: mergeKeyed(base.ratings, localJob.ratings, remoteJob.ratings),
+    criterionNotes: mergeKeyed(base.criterionNotes, localJob.criterionNotes, remoteJob.criterionNotes),
+    callLog: pickField(base.callLog, localJob.callLog, remoteJob.callLog) || [],
+  };
+};
+const savedBase = () => {
+  if (!store.lastSaved) return defaultState();
+  try {
+    return sanitizeState(JSON.parse(store.lastSaved));
+  } catch (error) {
+    return defaultState();
+  }
+};
+const mergeJobMap = (base, local, remote) => {
+  const jobs = {};
+  new Set([...Object.keys(base.jobs), ...Object.keys(local.jobs), ...Object.keys(remote.jobs)]).forEach((id) => {
+    const job = mergeJob(base.jobs[id], local.jobs[id], remote.jobs[id]);
+    if (job) jobs[id] = job;
+  });
+  return jobs;
+};
 const absorbRemoteJobs = () => {
   const raw = readStored();
   if (!raw || raw === store.lastSaved) return;
@@ -245,29 +300,20 @@ const absorbRemoteJobs = () => {
   } catch (error) {
     return;
   }
-  Object.entries(disk.jobs).forEach(([id, job]) => {
-    if (!dirtyJobIds.has(id)) store.state.jobs[id] = job;
-  });
-  Object.keys(store.state.jobs).forEach((id) => {
-    if (!dirtyJobIds.has(id) && !disk.jobs[id]) delete store.state.jobs[id];
-  });
+  store.state.jobs = mergeJobMap(savedBase(), store.state, disk);
 };
 export const takeRemoteState = () => {
   const raw = readStored();
   if (raw === store.lastSaved) return false;
-  const kept = new Map();
-  dirtyJobIds.forEach((id) => {
-    if (store.state.jobs[id]) kept.set(id, store.state.jobs[id]);
-  });
+  let disk;
   try {
-    store.state = raw ? sanitizeState(JSON.parse(raw)) : defaultState();
+    disk = raw ? sanitizeState(JSON.parse(raw)) : defaultState();
   } catch (error) {
     return false;
   }
-  kept.forEach((job, id) => { store.state.jobs[id] = job; });
-  dirtyJobIds.forEach((id) => {
-    if (!kept.has(id)) delete store.state.jobs[id];
-  });
+  const jobs = mergeJobMap(savedBase(), store.state, disk);
+  store.state = disk;
+  store.state.jobs = jobs;
   store.lastSaved = raw || '';
   return true;
 };
@@ -278,7 +324,6 @@ export const saveNow = (mode) => {
     const raw = JSON.stringify(store.state);
     localStorage.setItem(STORAGE_KEY, raw);
     store.lastSaved = raw;
-    dirtyJobIds.clear();
   } catch (error) {
     toast('השמירה בדפדפן נכשלה');
   }
