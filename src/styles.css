@@ -130,7 +130,7 @@ main { margin: 0; padding: 0; min-height: 100dvh; }
   border-radius: var(--r-md);
   color: var(--text-3);
 }
-.search:focus-within { border-color: var(--line-strong); background: var(--surface); }
+.search:focus-within { border-color: var(--line-strong); background: var(--surface); box-shadow: var(--focus); }
 .search input { flex: 1; min-width: 0; background: none; border: 0; color: var(--text); }
 .search input::placeholder { color: var(--text-3); }
 .ghost-btn, #sort-dir, .filter-toggle, .close-filters {
