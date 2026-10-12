@@ -176,6 +176,16 @@ def main():
             page.locator("#drawer button[aria-label='ניקוי דירוג התפקיד והאנשים']").click()
             page.locator("#toast.is-on").wait_for()
             check("הדירוג נוקה" in page.locator("#toast").inner_text(), "rating undo toast")
+            page.evaluate(
+                """() => {
+                  const drawer = document.getElementById('drawer');
+                  const nodes = [...drawer.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled])')]
+                    .filter((node) => node.getClientRects().length);
+                  nodes[nodes.length - 1].focus();
+                }"""
+            )
+            page.keyboard.press("Tab")
+            check(page.evaluate("() => !!(document.activeElement && document.activeElement.closest('#toast'))"), "undo toast was outside the tab order")
             page.locator("#toast .btn", has_text="ביטול").click()
             check(page.locator("#star-role-5").get_attribute("aria-checked") == "true", "rating was not restored")
             page.fill("#call-name", "בדיקה")

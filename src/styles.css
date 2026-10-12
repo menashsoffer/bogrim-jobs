@@ -156,6 +156,7 @@ main { margin: 0; padding: 0; min-height: 100dvh; }
 .filters-foot { display: grid; grid-template-columns: 1.6fr 1fr; gap: var(--s-2); margin-top: var(--s-2); }
 .settings-grid { display: grid; gap: var(--s-4); }
 .settings-links { display: flex; flex-wrap: wrap; gap: var(--s-4); grid-column: 1 / -1; }
+.settings-links .text-btn { min-width: var(--tap); justify-content: center; }
 .filters h2, .panel h2, .prose h2 { font-size: var(--fs-24); font-weight: var(--fw-bold); margin-bottom: var(--s-3); }
 .field { display: flex; flex-direction: column; gap: var(--s-1); margin-bottom: var(--s-3); }
 .field-label { display: inline-flex; align-items: center; gap: var(--s-1); color: var(--text-3); font-size: var(--fs-12); letter-spacing: var(--track-label); }
@@ -168,11 +169,11 @@ input:not([type="checkbox"]):not([type="range"]):not([type="file"]), select, tex
   color: var(--text);
 }
 .search input:not([type="checkbox"]):not([type="range"]):not([type="file"]) {
+  align-self: stretch;
   background: none;
   border: 0;
   border-radius: 0;
   padding: 0;
-  min-height: 0;
   box-shadow: none;
 }
 .sort-wrap { position: relative; }

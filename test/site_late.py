@@ -129,6 +129,21 @@ def check_home_export_and_layout(page, browser, base, phase, external, tiles, pa
     empty_compare_overflow(390)
     page.locator('#nav [data-view="list"]').click()
     page.set_viewport_size({"width": 360, "height": 800})
+    search_box = page.evaluate(
+        """() => {
+          const label = document.querySelector('label.search');
+          const input = document.querySelector('#search');
+          const labelBox = label.getBoundingClientRect();
+          const inputBox = input.getBoundingClientRect();
+          return { labelTop: labelBox.top, labelBottom: labelBox.bottom, inputTop: inputBox.top, inputBottom: inputBox.bottom, inputH: inputBox.height };
+        }"""
+    )
+    check(
+        search_box["inputH"] >= 44 and search_box["inputTop"] <= search_box["labelTop"] + 1 and search_box["inputBottom"] >= search_box["labelBottom"] - 1,
+        f"search input does not fill its wrapper {search_box}",
+    )
+    page.locator("label.search .icon").click()
+    check(page.evaluate("() => document.activeElement && document.activeElement.id === 'search'"), "search icon did not focus the input")
     page.locator('#nav [data-view="list"]').click()
     page.wait_for_timeout(200)
     check(page_overflow(page) <= 1, "360px page scrolls sideways")
@@ -153,6 +168,10 @@ def check_home_export_and_layout(page, browser, base, phase, external, tiles, pa
     page.keyboard.press("Escape")
 
     page.locator('#nav [data-view="settings"]').click()
+    help_box = page.locator('#view-settings [data-view="help"]').bounding_box()
+    check(help_box and help_box["width"] >= 44 and help_box["height"] >= 44, f"help target {help_box}")
+    weight_box = page.locator("input.weight-range").first.bounding_box()
+    check(weight_box and weight_box["height"] >= 44, f"weight target {weight_box}")
     page.locator('#view-settings [data-view="privacy"]').click()
     privacy = page.locator("#view-privacy").inner_text()
     check("אין כאן שרת" in privacy and "Nominatim" in privacy and "נקה נתונים" in privacy, "privacy copy")

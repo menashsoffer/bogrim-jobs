@@ -16,17 +16,22 @@ export const setBackgroundInert = (on) => {
 export const trapFocus = (event) => {
   const drawer = document.getElementById('drawer');
   if (!drawer) return;
-  const focusable = [...drawer.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled])')]
-    .filter((node) => node.getClientRects().length > 0);
-  if (!focusable.length) return;
-  const first = focusable[0];
-  const last = focusable[focusable.length - 1];
-  if (event.shiftKey && document.activeElement === first) {
+  const nodes = [...drawer.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled])')].filter((node) => node.getClientRects().length);
+  const toastButton = document.querySelector('#toast.is-on button:not([disabled])');
+  if (toastButton && toastButton.getClientRects().length) nodes.push(toastButton);
+  const first = nodes[0];
+  const last = nodes[nodes.length - 1];
+  const before = nodes[nodes.length - 2];
+  const active = document.activeElement;
+  if (!event.shiftKey && toastButton && active === before) {
     event.preventDefault();
-    last.focus();
-  } else if (!event.shiftKey && document.activeElement === last) {
+    toastButton.focus();
+  } else if (event.shiftKey ? active === first : active === last) {
     event.preventDefault();
-    first.focus();
+    (event.shiftKey ? last : first).focus();
+  } else if (event.shiftKey && active === toastButton && before) {
+    event.preventDefault();
+    before.focus();
   }
 };
 const clearRating = (jobId, criterionId) => {
