@@ -313,6 +313,7 @@ textarea { min-height: var(--textarea-min); resize: vertical; }
 .empty, .empty-state { color: var(--text-2); text-align: center; }
 .empty-state { padding: var(--s-10) var(--s-5); display: grid; justify-items: center; gap: var(--s-4); background: none; border: 0; box-shadow: none; }
 .empty-title { margin: 0; font-size: var(--fs-24); font-weight: var(--fw-semibold); color: var(--text); }
+.empty-icon { width: 76px; height: 76px; display: grid; place-items: center; border-radius: 50%; border: var(--hairline-strong); color: var(--text-2); box-shadow: var(--glow-icon), var(--edge-top); }
 .empty-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: var(--s-4); }
 .eclipse { width: 200px; height: 200px; object-fit: cover; display: block; mask-image: radial-gradient(closest-side, var(--bg) 70%, var(--clear)); }
 .alert {

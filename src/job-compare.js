@@ -82,7 +82,7 @@ export const renderCompare = () => {
         el('span', { class: 'ghost-col is-faint' }),
         el('span', { class: 'ghost-col is-faint' }),
       ]),
-      el('img', { class: 'eclipse', src: 'img/eclipse.webp', alt: '', width: '180', height: '180', loading: 'lazy', decoding: 'async' }),
+      el('h2', { class: 'empty-title', text: 'השוואה ריקה' }),
       el('p', { class: 'empty', text: 'בחרו לפחות 2 משרות, ועד 4.' }),
     ]));
     return;

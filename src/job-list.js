@@ -120,8 +120,9 @@ export const renderResults = () => {
       chip('minScore', minScore !== '' && minScore != null ? 'ציון מינימלי' : ''),
       chip('favorite', filters.favorite ? 'מועדפים בלבד' : ''),
     ];
-    host.append(el('div', { class: 'empty-state' }, favoritesOnly ? [
-      icon('heart'),
+    host.append(el('div', { class: favoritesOnly ? 'empty-state empty-fav' : 'empty-state' }, favoritesOnly ? [
+      el('div', { class: 'empty-icon', 'aria-hidden': 'true' }, [icon('heart')]),
+      el('h2', { class: 'empty-title', text: 'אין מועדפים' }),
       el('p', { class: 'empty', text: 'אין מועדפים' }),
       el('p', { class: 'hint', text: 'סמנו לב במשרות שתרצו לחזור אליהן.' }),
       el('button', {
