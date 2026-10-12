@@ -32,7 +32,7 @@ const removeJob = (job) => {
   renderResults();
 };
 const marked = (value, win) => el('span', { class: win ? 'cv is-best' : 'cv' }, [
-  el('span', { class: 'cv-num', text: value.text }),
+  el('span', { class: value.score == null ? 'cv-num is-muted' : 'cv-num', text: value.text }),
   win ? el('i', { class: 'best-dot', 'aria-hidden': 'true' }) : null,
   value.score != null ? segs(value.score) : null,
 ]);
@@ -89,14 +89,15 @@ export const renderCompare = () => {
   }
   const mobile = el('div', { class: 'cmp-m' });
   chosen.forEach((job) => {
-    const scored = scoreJob(job);
+    const ring = scoreNode(job);
+    ring.classList.add('score--sm');
     mobile.append(el('article', { class: 'cj' }, [
-      el('strong', { class: 'cv', text: scored.score == null ? '—' : formatScore(scored.score) }),
-      el('div', {}, [
-        el('strong', { text: job.title || job.role }),
-        el('span', { text: job.authority }),
+      ring,
+      el('div', { class: 'cj-main' }, [
+        el('strong', { class: 'cj-title', text: job.role || job.title }),
+        el('span', { class: 'cj-auth', text: job.authority }),
       ]),
-      el('button', { type: 'button', class: 'icon-btn', 'aria-label': `הסרה מההשוואה: ${job.title || job.role}`, on: { click: () => removeJob(job) } }, [icon('x', 'sm')]),
+      el('button', { type: 'button', class: 'icon-btn', 'aria-label': `הסרה מההשוואה: ${job.role || job.title}`, on: { click: () => removeJob(job) } }, [icon('x', 'sm')]),
     ]));
   });
   store.state.criteria.forEach((criterion) => {
@@ -108,12 +109,9 @@ export const renderCompare = () => {
       ...chosen.map((job, index) => {
         const value = values[index];
         const win = best != null && value.score === best;
-        return el('div', { class: win ? 'cr-row cv is-best' : 'cr-row cv' }, [
-          el('span', { text: job.authority }),
-          el('span', { class: value.score == null ? 'cv is-muted' : '' }, [
-            value.text,
-            value.score != null ? segs(value.score, win) : null,
-          ]),
+        return el('div', { class: 'cr-row' }, [
+          el('span', { class: 'cr-name', text: job.authority }),
+          marked(value, win),
         ]);
       }),
     ]));
