@@ -1,6 +1,6 @@
 # בוחר המשרות
 
-כלי סטטי בעברית, מימין לשמאל, להשוואה ולדירוג של 211 משרות ההשמה מאתר [בוגרים לשלטון המקומי](https://www.bogrim-muni.com/jobs). זהו כלי אישי נפרד: בלי שרת שלנו, בלי הסמל ובלי העיצוב של אתר המקור. העיצוב כאן הוא «אופק»: רקע כהה, גופן [Heebo](src/fonts/LICENSE-heebo.txt) (OFL), ואייקונים מ-[Lucide](vendor/lucide/LICENSE) (ISC). הדירוגים, ההערות, יומן השיחות, הכתובת והמסלולים נשמרים רק בדפדפן, במפתח `bogrim-jobs.v1`. קטלוג המשרות לא נשמר שם.
+כלי סטטי בעברית, מימין לשמאל, להשוואה ולדירוג של 211 משרות ההשמה מאתר [בוגרים לשלטון המקומי](https://www.bogrim-muni.com/jobs). זהו כלי אישי נפרד: בלי שרת שלנו, בלי הסמל ובלי העיצוב של אתר המקור. העיצוב כאן הוא «אופק»: רקע כהה, גופן [Heebo](src/fonts/LICENSE-heebo.txt) (OFL), ואייקונים מ-[Lucide](vendor/lucide/LICENSE): ISC (+MIT for Feather-derived icons). הדירוגים, ההערות, יומן השיחות, הכתובת והמסלולים נשמרים רק בדפדפן, במפתח `bogrim-jobs.v1`. קטלוג המשרות לא נשמר שם.
 
 ![רשימת המשרות](docs/screenshots/list-desktop.png)
 
@@ -45,7 +45,7 @@
 | `dist-contacts/` | בנייה מקומית עם אנשי קשר. לא במאגר |
 | `geo/` | קואורדינטות הרשויות ורשימת היישובים. `loc.json` ו-`cities_il_gist.json` לא במאגר |
 | `vendor/leaflet/` | Leaflet 1.9.4, בלי CDN. `vendor/` פטור מכלל 400 השורות |
-| `vendor/lucide/` | אייקוני Lucide, ברישיון ISC |
+| `vendor/lucide/` | אייקוני Lucide: ISC (+MIT for Feather-derived icons) |
 
 ## בנייה והרצה
 
