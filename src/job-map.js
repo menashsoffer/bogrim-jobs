@@ -1,7 +1,7 @@
 import { el, heCount } from './dom.js';
 import { openJob } from './job-drawer.js';
 import { scoreJob, visibleJobs } from './score.js';
-import { isShowcase, SHOWCASE_HINT, SHOWCASE_LABEL } from './showcase.js';
+import { showcaseBadge } from './showcase.js';
 import { peekJob, store } from './store.js';
 
 export const loadLeaflet = () => {
@@ -16,9 +16,6 @@ export const loadLeaflet = () => {
   });
   return store.leafletLoading;
 };
-const showcaseBadge = (authority) => (isShowcase(authority)
-  ? el('span', { class: 'badge-showcase', title: SHOWCASE_HINT, text: SHOWCASE_LABEL })
-  : null);
 const markerPopup = (group) => {
   const popup = el('div');
   const badge = showcaseBadge(group[0].authority);

@@ -1,3 +1,5 @@
+import { el } from './dom.js';
+
 // Authorities that will present the role at the showcase day. Names match the catalog's `authority` field.
 // "חכ"ל יהודה" has no matching authority in the catalog, so it is left out until a name shows up there.
 const SHOWCASE = new Set([
@@ -6,6 +8,6 @@ const SHOWCASE = new Set([
   'ירושלים', 'רמלה', 'שדרות', 'חבל אילות',
 ]);
 
-export const isShowcase = (authority) => SHOWCASE.has(authority);
-export const SHOWCASE_LABEL = 'יום הצגה';
-export const SHOWCASE_HINT = 'הרשות תציג את התפקיד ביום ההצגה';
+export const showcaseBadge = (authority) => (SHOWCASE.has(authority)
+  ? el('span', { class: 'badge-showcase', title: 'הרשות תציג את התפקיד ביום ההצגה', text: 'יום הצגה' })
+  : null);
