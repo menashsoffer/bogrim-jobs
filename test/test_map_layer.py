@@ -67,7 +67,7 @@ def run_viewport(page, base, width, height):
     page.wait_for_function("() => window.__app && window.__app.jobs.length === 211")
     open_map(page)
     check("מוצגות 211 משרות לפי הסינון" in page.locator("#map-count").inner_text(), "map count")
-    check(page.locator(".map-legend .score-none").count() == 1 and page.locator(".map-legend .score-5").count() == 1, "map legend")
+    check(page.locator(".map-legend .swatch-none").count() == 1 and page.locator(".map-legend .swatch-home").count() == 1, "map legend")
     page.evaluate(
         """() => {
           let opened = false;

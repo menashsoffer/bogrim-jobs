@@ -1,7 +1,7 @@
 import { el } from './dom.js';
 import { openJob } from './job-drawer.js';
 import { scoreJob, visibleJobs } from './score.js';
-import { store } from './store.js';
+import { peekJob, store } from './store.js';
 
 export const loadLeaflet = () => {
   if (window.L) return Promise.resolve(window.L);
@@ -40,6 +40,15 @@ const markerPopup = (group) => {
   });
   return popup;
 };
+const hasManualRating = (job) => {
+  const ratings = peekJob(job.id).ratings || {};
+  return store.state.criteria.some((criterion) => {
+    if (criterion.type !== 'rating' && criterion.type !== 'yesno') return false;
+    const raw = ratings[criterion.id];
+    if (criterion.type === 'yesno') return raw === true || raw === false;
+    return typeof raw === 'number' && raw >= 1 && raw <= 5;
+  });
+};
 const paintMapCount = () => {
   const count = document.getElementById('map-count');
   if (count) count.textContent = `מוצגות ${visibleJobs().length} משרות לפי הסינון`;
@@ -62,7 +71,7 @@ export const drawMarkers = (leaflet) => {
   const paper = theme.getPropertyValue('--text').trim();
   const muted = theme.getPropertyValue('--text-3').trim();
   groups.forEach((group) => {
-    const best = group.map((job) => scoreJob(job).score).filter((score) => score != null).sort((a, b) => b - a)[0];
+    const best = group.map((job) => (hasManualRating(job) ? scoreJob(job).score : null)).filter((score) => score != null).sort((a, b) => b - a)[0];
     let options = { radius: 3, color: muted, weight: 0, fillColor: muted, fillOpacity: 0.6 };
     if (best != null && best >= 3.5) options = { radius: 5.5, color: ink, weight: 1.5, fillColor: accent, fillOpacity: 1 };
     else if (best != null && best >= 2.5) options = { radius: 5.5, color: ink, weight: 1.5, fillColor: paper, fillOpacity: 1 };
