@@ -92,6 +92,17 @@ export const ensureJob = (id) => {
   dirtyJobIds.add(id);
   return current;
 };
+const transitNote = (minutes) => `זמן תחבורה ציבורית שנשמר: ${minutes} דק׳`;
+const savedTransitMinutes = (value) => {
+  if (!value || typeof value !== 'object' || !Object.prototype.hasOwnProperty.call(value, 'transitMinutes')) return null;
+  if (value.transitMinutes == null || value.transitMinutes === '') return null;
+  const number = Number(value.transitMinutes);
+  if (!Number.isFinite(number) || number < 0) return null;
+  return Math.round(number);
+};
+const markCarOnlyNotice = (state) => {
+  Object.defineProperty(state, 'carOnlyNotice', { value: true, enumerable: false, configurable: true });
+};
 export const sanitizeRoutes = (routes) => {
   const next = {};
   if (!routes || typeof routes !== 'object' || Array.isArray(routes)) return next;
@@ -128,6 +139,7 @@ export const sanitizeState = (saved) => {
       weight: Math.max(0, Math.min(100, Number(criterion.weight) || 0)),
     }));
   }
+  let keptTransit = false;
   if (saved.jobs && typeof saved.jobs === 'object' && !Array.isArray(saved.jobs)) {
     Object.entries(saved.jobs).forEach(([id, value]) => {
       if (!value || typeof value !== 'object') return;
@@ -135,6 +147,12 @@ export const sanitizeState = (saved) => {
       job.favorite = Boolean(value.favorite);
       job.status = STATUSES.includes(value.status) ? value.status : STATUSES[0];
       job.notes = typeof value.notes === 'string' ? value.notes : '';
+      const transit = savedTransitMinutes(value);
+      if (transit != null) {
+        const line = transitNote(transit);
+        if (!job.notes.includes(line)) job.notes = job.notes ? `${job.notes}\n${line}` : line;
+        keptTransit = true;
+      }
       if (value.ratings && typeof value.ratings === 'object') {
         Object.entries(value.ratings).forEach(([key, rating]) => {
           if (typeof rating === 'number' || typeof rating === 'boolean') job.ratings[key] = rating;
@@ -196,6 +214,9 @@ export const sanitizeState = (saved) => {
   if (saved.geocodeCache && typeof saved.geocodeCache === 'object') next.geocodeCache = saved.geocodeCache;
   if (Array.isArray(saved.compareIds)) next.compareIds = saved.compareIds.filter((id) => typeof id === 'string').slice(0, 4);
   next.welcomeSeen = saved.welcomeSeen === true;
+  if (keptTransit || saved.scoreMode === 'transit' || saved.scoreMode === 'bike' || saved.scoreMode === 'walk') {
+    markCarOnlyNotice(next);
+  }
   return next;
 };
 export const loadState = () => {

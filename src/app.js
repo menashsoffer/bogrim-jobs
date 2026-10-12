@@ -3,12 +3,12 @@ import { distanceStops, distanceText, scoreStops, scoreText, timeStops, timeText
 import { filtersFromHash, jobIdFromHash, viewFromHash } from './history.js';
 import { closeJob, openJob, trapFocus } from './job-drawer.js';
 import { closeFilterSheet, renderListShell, renderResults, updateCompareCount } from './job-list.js';
-import { formatDuration } from './dom.js';
+import { formatDuration, toast } from './dom.js';
 import { moovitAppUrl, moovitWebUrl } from './moovit.js';
 import { airKm, scoreJob, travelMinutes, travelSummary } from './score.js';
 import { refreshAfterStorage, showView } from './shell.js';
 import { paintHomeChip } from './travel.js';
-import { STORAGE_KEY, loadState, saveNow, store, takeRemoteState } from './store.js';
+import { STORAGE_KEY, loadState, sanitizeState, saveNow, store, takeRemoteState } from './store.js';
 
 const syncFromLocation = () => {
   store.ignoreHistory = true;
@@ -39,6 +39,10 @@ export const boot = async () => {
   });
   store.state = loadState();
   try { store.lastSaved = localStorage.getItem(STORAGE_KEY) || ''; } catch (error) { store.lastSaved = ''; }
+  if (store.state.carOnlyNotice) {
+    toast('המיקום מחושב עכשיו לפי נסיעה ברכב בלבד');
+    saveNow();
+  }
   store.state.compareIds = store.state.compareIds.filter((id) => store.jobsById.has(id));
   const count = document.getElementById('job-count');
   if (count) count.textContent = `${store.data.meta && store.data.meta.count ? store.data.meta.count : store.jobs.length} משרות`;
@@ -113,6 +117,7 @@ export const boot = async () => {
       travelMinutes,
       travelSummary,
       formatDuration,
+      sanitizeState,
       moovitWebUrl,
       moovitAppUrl,
       airKm,

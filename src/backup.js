@@ -99,5 +99,6 @@ export const importText = (text) => {
   store.state.compareIds = store.state.compareIds.filter((id) => store.jobsById.has(id));
   saveNow({ replace: true });
   reloadOpenViews();
-  toast(`יובאו ${incomingRated} דירוגים`);
+  const notice = store.state.carOnlyNotice ? ' המיקום מחושב עכשיו לפי נסיעה ברכב בלבד.' : '';
+  toast(`יובאו ${incomingRated} דירוגים.${notice}`);
 };
