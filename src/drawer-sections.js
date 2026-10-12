@@ -1,6 +1,6 @@
 import { UNKNOWN, el, labelOrUnknown, safeMail, safeTel, safeTravelUrl } from './dom.js';
 import { icon } from './icons.js';
-import { moovitLink } from './moovit.js';
+import { moovitAppLink, moovitLink } from './moovit.js';
 import { travelSummary } from './score.js';
 import { store } from './store.js';
 
@@ -24,13 +24,15 @@ const travelLinks = (job) => {
   const waze = origin
     ? `https://www.waze.com/ul?ll=${destination}&navigate=yes&from=${origin}`
     : `https://www.waze.com/ul?ll=${destination}&navigate=yes`;
-  const moovit = moovitLink(store.state.home, { name: job.authority || '', lat: job.lat, lon: job.lon });
+  const place = { name: job.authority || '', lat: job.lat, lon: job.lon };
+  const moovit = moovitLink(store.state.home, place);
   if (moovit) moovit.prepend(icon('bus', 'sm'));
   return [
     travelLink(google('driving'), 'Google Maps · רכב', 'car'),
     travelLink(waze, 'Waze', 'car'),
     travelLink(google('transit'), 'Google Maps · תחבורה ציבורית', 'bus'),
     moovit,
+    moovitAppLink(store.state.home, place),
   ].filter(Boolean);
 };
 export const travelSection = (job) => {

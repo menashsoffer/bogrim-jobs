@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Color literals stay in the token file. Vendor and bitmap logos are exempt."""
+"""Color literals stay in the token file. Vendor and the colored favicon are exempt."""
 import os
 import re
 import unittest
@@ -10,9 +10,26 @@ TOKENS = os.path.join(SRC, "styles-tokens.css")
 EXEMPT = {
     os.path.normpath(TOKENS),
     os.path.normpath(os.path.join(SRC, "favicon.svg")),
-    os.path.normpath(os.path.join(SRC, "og-image.png")),
 }
-COLOR = re.compile(r"#[0-9A-Fa-f]{3,8}\b|rgba?\(|hsla?\(")
+NAMED = (
+    "aliceblue|antiquewhite|aqua|aquamarine|azure|beige|bisque|black|blanchedalmond|blue|blueviolet|"
+    "brown|burlywood|cadetblue|chartreuse|chocolate|coral|cornflowerblue|cornsilk|crimson|cyan|"
+    "darkblue|darkcyan|darkgoldenrod|darkgray|darkgreen|darkgrey|darkkhaki|darkmagenta|darkolivegreen|"
+    "darkorange|darkorchid|darkred|darksalmon|darkseagreen|darkslateblue|darkslategray|darkslategrey|"
+    "darkturquoise|darkviolet|deeppink|deepskyblue|dimgray|dimgrey|dodgerblue|firebrick|floralwhite|"
+    "forestgreen|fuchsia|gainsboro|ghostwhite|gold|goldenrod|gray|green|greenyellow|grey|honeydew|"
+    "hotpink|indianred|indigo|ivory|khaki|lavender|lavenderblush|lawngreen|lemonchiffon|lightblue|"
+    "lightcoral|lightcyan|lightgoldenrodyellow|lightgray|lightgreen|lightgrey|lightpink|lightsalmon|"
+    "lightseagreen|lightskyblue|lightslategray|lightslategrey|lightsteelblue|lightyellow|lime|"
+    "limegreen|linen|magenta|maroon|mediumaquamarine|mediumblue|mediumorchid|mediumpurple|"
+    "mediumseagreen|mediumslateblue|mediumspringgreen|mediumturquoise|mediumvioletred|midnightblue|"
+    "mintcream|mistyrose|moccasin|navajowhite|navy|oldlace|olive|olivedrab|orange|orangered|orchid|"
+    "palegoldenrod|palegreen|paleturquoise|palevioletred|papayawhip|peachpuff|peru|pink|plum|powderblue|"
+    "purple|rebeccapurple|red|rosybrown|royalblue|saddlebrown|salmon|sandybrown|seagreen|seashell|"
+    "sienna|silver|skyblue|slateblue|slategray|slategrey|snow|springgreen|steelblue|tan|teal|thistle|"
+    "tomato|transparent|turquoise|violet|wheat|white|whitesmoke|yellow|yellowgreen"
+)
+COLOR = re.compile(rf"#[0-9A-Fa-f]{{3,8}}\b|rgba?\(|hsla?\(|(?<![\w-])(?:{NAMED})(?![\w-])", re.IGNORECASE)
 SKIP_DIRS = {"vendor", "fonts"}
 
 

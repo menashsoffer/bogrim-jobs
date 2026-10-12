@@ -56,13 +56,13 @@ export const drawMarkers = (leaflet) => {
     groups.get(job.authority).push(job);
   });
   const bounds = [];
+  const theme = getComputedStyle(document.documentElement);
+  const ink = theme.getPropertyValue('--bg').trim();
+  const accent = theme.getPropertyValue('--accent').trim();
+  const paper = theme.getPropertyValue('--text').trim();
+  const muted = theme.getPropertyValue('--text-3').trim();
   groups.forEach((group) => {
     const best = group.map((job) => scoreJob(job).score).filter((score) => score != null).sort((a, b) => b - a)[0];
-    const theme = getComputedStyle(document.documentElement);
-    const ink = theme.getPropertyValue('--bg').trim();
-    const accent = theme.getPropertyValue('--accent').trim();
-    const paper = theme.getPropertyValue('--text').trim();
-    const muted = theme.getPropertyValue('--text-3').trim();
     let options = { radius: 3, color: muted, weight: 0, fillColor: muted, fillOpacity: 0.6 };
     if (best != null && best >= 3.5) options = { radius: 5.5, color: ink, weight: 1.5, fillColor: accent, fillOpacity: 1 };
     else if (best != null && best >= 2.5) options = { radius: 5.5, color: ink, weight: 1.5, fillColor: paper, fillOpacity: 1 };

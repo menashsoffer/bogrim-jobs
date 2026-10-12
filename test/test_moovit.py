@@ -63,6 +63,8 @@ def main():
             rel = link.get_attribute("rel") or ""
             check(href and href.startswith("https://moovitapp.com/?") and "fll=" in href and "lang=he" in href, href)
             check(link.get_attribute("target") == "_blank" and "noopener" in rel, rel)
+            app_href = page.locator("#travel-links a", has_text="באפליקציה").get_attribute("href") or ""
+            check(app_href.startswith("moovit://directions?") and "dest_lat=" in app_href, app_href)
             browser.close()
     finally:
         server.shutdown()

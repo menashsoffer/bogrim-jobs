@@ -261,17 +261,17 @@ export const renderListShell = () => {
       store.state.filters.maxMinutes = value;
       save();
       renderResults();
-    }),
+    }, ['קרוב', 'ללא הגבלה']),
     mountSteppedRange('filter-max-km', 'מרחק מקסימלי', distanceText, (value) => {
       store.state.filters.maxKm = value;
       save();
       renderResults();
-    }),
+    }, ['קרוב', 'ללא הגבלה']),
     mountSteppedRange('filter-min-score', 'ציון מינימלי', scoreText, (value) => {
       store.state.filters.minScore = value;
       save();
       renderResults();
-    }),
+    }, ['הכול', '5']),
     el('label', { class: 'check' }, [
       el('input', {
         id: 'include-unrated',

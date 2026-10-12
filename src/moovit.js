@@ -1,4 +1,4 @@
-import { externalLink, safeTravelUrl } from './dom.js';
+import { el, externalLink, safeTravelUrl } from './dom.js';
 
 const clean = (value) => String(value ?? '').replace(/\s+/g, ' ').trim();
 const enc = (value) => encodeURIComponent(clean(value));
@@ -31,19 +31,11 @@ export const moovitAppUrl = (home, destination) => {
   parts.push('auto_run=true');
   return `moovit://directions?${parts.join('&')}`;
 };
-export const moovitLink = (home, destination) => {
-  const href = safeTravelUrl(moovitWebUrl(home, destination));
-  const app = moovitAppUrl(home, destination);
-  const link = externalLink(href, 'Moovit');
-  link.addEventListener('click', (event) => {
-    if (!/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) return;
-    event.preventDefault();
-    const started = Date.now();
-    window.location.href = app;
-    window.setTimeout(() => {
-      if (document.visibilityState === 'hidden' || Date.now() - started > 2000) return;
-      window.open(href, '_blank', 'noopener');
-    }, 700);
-  });
-  return link;
-};
+// The visible action is always the web planner. Custom-scheme detection is not
+// reliable in browsers, so the app link is a second, optional control.
+export const moovitLink = (home, destination) => externalLink(safeTravelUrl(moovitWebUrl(home, destination)), 'Moovit');
+export const moovitAppLink = (home, destination) => el('a', {
+  class: 'btn',
+  href: moovitAppUrl(home, destination),
+  text: 'באפליקציה',
+});

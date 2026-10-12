@@ -78,7 +78,7 @@ body.drawer-open { overflow: hidden; }
   min-width: var(--tap);
   min-height: var(--tap);
   border: 0;
-  background: transparent;
+  background: var(--clear);
   font-size: var(--fs-20);
   color: var(--text-3);
   border-radius: var(--r-sm);
@@ -203,8 +203,8 @@ th { background: var(--surface-2); font-weight: var(--fw-medium); }
   aspect-ratio: 1 / 1;
   object-fit: cover;
   opacity: 0.95;
-  -webkit-mask-image: linear-gradient(180deg, transparent 0, black 18%, black 78%, transparent 100%);
-  mask-image: linear-gradient(180deg, transparent 0, black 18%, black 78%, transparent 100%);
+  -webkit-mask-image: linear-gradient(180deg, var(--clear) 0, var(--bg) 18%, var(--bg) 78%, var(--clear) 100%);
+  mask-image: linear-gradient(180deg, var(--clear) 0, var(--bg) 18%, var(--bg) 78%, var(--clear) 100%);
 }
 .hero-copy { padding: var(--s-12) var(--s-6) 0; max-width: 34rem; }
 .eyebrow { display: inline-flex; align-items: center; gap: var(--s-2); font-size: var(--fs-12); font-weight: var(--fw-medium); letter-spacing: var(--track-label); color: var(--text-2); }
