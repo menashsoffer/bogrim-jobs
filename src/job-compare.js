@@ -116,7 +116,7 @@ export const renderCompare = () => {
     ]));
   });
   const table = el('table');
-  const head = el('tr', {}, [el('th', { scope: 'col', text: '' }), ...chosen.map((job) => {
+  const head = el('tr', {}, [el('th', { scope: 'col' }, [el('span', { class: 'vh', text: 'קריטריון' })]), ...chosen.map((job) => {
     const ring = scoreNode(job);
     ring.classList.add('score--sm');
     return el('th', { scope: 'col' }, [
