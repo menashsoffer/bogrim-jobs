@@ -11,20 +11,16 @@
 .icon-sm { width: var(--icon-sm); height: var(--icon-sm); }
 .icon-lg { width: var(--icon-lg); height: var(--icon-lg); }
 .art-slot:empty { display: none; }
-.skeleton { padding: var(--s-8) var(--s-5); }
-.skeleton-block {
-  display: block;
-  height: var(--skeleton-h);
-  margin-top: var(--s-3);
-  border-radius: var(--r-lg);
-  background: var(--surface);
-  border: var(--hairline);
-  box-shadow: var(--edge-top);
-  animation: skeleton-pulse 1.4s var(--ease-std) infinite;
-}
-.skeleton-block:nth-child(3) { animation-delay: 120ms; }
-.skeleton-block:nth-child(4) { animation-delay: 240ms; }
-@keyframes skeleton-pulse { 50% { opacity: 0.45; } }
+.skeleton { padding: var(--s-8) var(--s-5); max-width: var(--container); margin-inline: auto; }
+.skel-grid { display: grid; gap: var(--s-3); }
+.job--skel { pointer-events: none; display: grid; gap: var(--s-4); }
+.job--skel .job-head { display: flex; justify-content: space-between; gap: var(--s-3); }
+.sk { display: block; height: 10px; border-radius: 6px; background: var(--surface-2); }
+.sk-xs { width: 26%; height: 8px; }
+.sk-lg { width: 70%; height: 18px; }
+.sk-sm { width: 50%; }
+.sk-ring { width: 56px; height: 56px; border-radius: 50%; border: 1.5px solid var(--surface-2); background: none; }
+.sk-pill { width: 96px; height: 36px; border-radius: var(--r-pill); }
 .panel-title { display: flex; align-items: center; gap: var(--s-2); }
 .backdrop {
   position: fixed;

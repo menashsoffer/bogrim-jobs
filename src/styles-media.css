@@ -214,7 +214,15 @@
   .cmp-m { display: none; }
   .cmp-d { display: block; }
 }
+@media (min-width: 760px) {
+  .skel-grid { grid-template-columns: 1fr 1fr; }
+}
 @media (prefers-reduced-motion: no-preference) {
+  .sk:not(.sk-ring) {
+    background-image: linear-gradient(90deg, var(--surface-2) 30%, var(--skel-shine) 50%, var(--surface-2) 70%);
+    background-size: 200% 100%;
+    animation: shimmer 1.8s var(--ease-in-out) infinite;
+  }
   .rise { animation: rise var(--dur-4) var(--ease-out) both; }
   .r2 { animation-delay: var(--stagger); }
   .r3 { animation-delay: calc(var(--stagger) * 2); }
@@ -231,6 +239,7 @@
   .btn-link .icon { transition: transform var(--dur-2) var(--ease-out); }
   .btn-link:hover .icon { transform: translateX(-3px); }
 }
+@keyframes shimmer { from { background-position: 100% 0; } to { background-position: -100% 0; } }
 @keyframes rise { from { transform: translateY(var(--rise)); } to { transform: none; } }
 @keyframes dawn { from { transform: scale(1.04); } to { transform: none; } }
 @keyframes draw { from { stroke-dasharray: 0 100; } }

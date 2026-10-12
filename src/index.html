@@ -39,7 +39,7 @@
       <nav class="nav" id="nav" aria-label="ראשי">
         <div class="nav-tabs">
           <button type="button" data-view="list" class="is-active" aria-current="page"><svg class="icon icon-lg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="icons.svg#i-briefcase"/></svg><span>משרות</span></button>
-          <button type="button" data-view="compare"><svg class="icon icon-lg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="icons.svg#i-columns-3"/></svg><span>השוואה</span> <span id="compare-count">0</span></button>
+          <button type="button" data-view="compare"><svg class="icon icon-lg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="icons.svg#i-columns-3"/></svg><span>השוואה</span> <span id="compare-count" hidden></span></button>
           <button type="button" data-view="map"><svg class="icon icon-lg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="icons.svg#i-map"/></svg><span>מפה</span></button>
           <button type="button" data-view="settings"><svg class="icon icon-lg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="icons.svg#i-settings-2"/></svg><span>הגדרות</span></button>
         </div>
@@ -76,10 +76,11 @@
     <script type="module" src="welcome.js"></script>
     <section id="view-list" aria-label="רשימת משרות">
       <div id="boot-status" class="skeleton" role="status" aria-live="polite" aria-busy="true">
-        <p>טוען משרות…</p>
-        <span class="skeleton-block" aria-hidden="true"></span>
-        <span class="skeleton-block" aria-hidden="true"></span>
-        <span class="skeleton-block" aria-hidden="true"></span>
+        <p class="vh">טוען משרות…</p>
+        <div class="skel-grid">
+          <article class="card job job--skel" aria-hidden="true"><div class="job-head"><div class="job-main"><span class="sk sk-xs"></span><span class="sk sk-lg"></span><span class="sk sk-sm"></span></div><span class="sk sk-ring"></span></div><span class="sk sk-pill"></span></article>
+          <article class="card job job--skel" aria-hidden="true"><div class="job-head"><div class="job-main"><span class="sk sk-xs"></span><span class="sk sk-lg"></span><span class="sk sk-sm"></span></div><span class="sk sk-ring"></span></div><span class="sk sk-pill"></span></article>
+        </div>
       </div>
     </section>
     <section id="view-compare" hidden aria-label="השוואה"></section>
