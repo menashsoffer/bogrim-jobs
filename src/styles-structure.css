@@ -15,6 +15,8 @@
 .skel-grid { display: grid; gap: var(--s-3); }
 .job--skel { pointer-events: none; display: grid; gap: var(--s-4); }
 .job--skel .job-head { display: flex; justify-content: space-between; gap: var(--s-3); }
+.job--skel .job-main { flex: 1; min-width: 0; }
+.job--skel .job-meta div { flex: 1; }
 .sk { display: block; height: 10px; border-radius: 6px; background: var(--surface-2); }
 .sk-xs { width: 26%; height: 8px; }
 .sk-lg { width: 70%; height: 18px; }
