@@ -83,7 +83,6 @@ export const renderCompare = () => {
         el('span', { class: 'ghost-col is-faint' }),
       ]),
       el('h2', { class: 'empty-title', text: 'השוואה ריקה' }),
-      el('p', { class: 'empty', text: 'בחרו לפחות 2 משרות, ועד 4.' }),
     ]));
     return;
   }

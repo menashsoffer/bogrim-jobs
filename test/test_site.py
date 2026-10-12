@@ -142,8 +142,9 @@ def main():
             wait_count(page, energy)
             check(shown_count(page) == energy, "energy search count")
             page.fill("#search", "zzzz-no-such-job")
-            page.wait_for_selector(".empty")
-            check(page.locator(".empty").inner_text() == "אין משרות שמתאימות לסינון", "empty state")
+            page.wait_for_selector(".empty-title")
+            check(page.locator(".empty-title").inner_text() == "לא נמצאו משרות", "empty state")
+            check("אין משרה שעונה על כל המסננים יחד." in page.locator("#results").inner_text(), "empty hint")
             page.locator("#filter-min-score").evaluate(
                 "node => { node.value = '1'; node.dispatchEvent(new Event('input', { bubbles: true })); }"
             )

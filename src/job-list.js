@@ -123,7 +123,6 @@ export const renderResults = () => {
     host.append(el('div', { class: favoritesOnly ? 'empty-state empty-fav' : 'empty-state' }, favoritesOnly ? [
       el('div', { class: 'empty-icon', 'aria-hidden': 'true' }, [icon('heart')]),
       el('h2', { class: 'empty-title', text: 'אין מועדפים' }),
-      el('p', { class: 'empty', text: 'אין מועדפים' }),
       el('p', { class: 'hint', text: 'סמנו לב במשרות שתרצו לחזור אליהן.' }),
       el('button', {
         type: 'button',
@@ -135,7 +134,6 @@ export const renderResults = () => {
     ] : [
       el('img', { class: 'eclipse', src: 'img/eclipse.webp', alt: '', width: '200', height: '200', loading: 'lazy', decoding: 'async' }),
       el('h2', { class: 'empty-title', text: 'לא נמצאו משרות' }),
-      el('p', { class: 'empty', text: 'אין משרות שמתאימות לסינון' }),
       el('p', { class: 'hint', text: 'אין משרה שעונה על כל המסננים יחד.' }),
       hideUnrated ? el('p', { class: 'hint', text: 'משרות ללא ציון מוסתרות' }) : null,
       chips.some(Boolean) ? el('div', { class: 'chips', role: 'group', 'aria-label': 'מסננים פעילים' }, chips) : null,
