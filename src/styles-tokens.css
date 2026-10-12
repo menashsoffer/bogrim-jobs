@@ -77,6 +77,10 @@
   --glow-arc: drop-shadow(0 0 3px rgba(169, 201, 232, .45));
   --glow-icon: 0 0 60px -12px rgba(169, 201, 232, .35);
   --map-canvas: #050506;
+  --map-hi: #4ADE80;
+  --map-mid: #FBBF24;
+  --map-lo: #F87171;
+  --map-none: #60A5FA;
   --stack-muted: #5C6670;
   --skel-shine: #1F1F23;
   --thumb-ring: 0 0 0 4px rgba(0, 0, 0, .55);
