@@ -71,6 +71,10 @@ export const showView = (name) => {
   const sheet = document.getElementById('filters');
   if (sheet && sheet.classList.contains('is-open') && !store.ignoreHistory) sheet.classList.remove('is-open');
   pushView(name);
+  const welcome = document.getElementById('welcome');
+  const stats = document.getElementById('hero-stats');
+  if (welcome) welcome.hidden = name !== 'list';
+  if (stats) stats.hidden = name !== 'list';
   ['list', 'compare', 'map', 'settings', 'privacy', 'help'].forEach((view) => {
     const section = document.getElementById(`view-${view}`);
     if (section) section.hidden = view !== name;

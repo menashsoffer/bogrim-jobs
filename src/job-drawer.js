@@ -73,41 +73,41 @@ export const paintDrawer = () => {
     on: { click: () => closeJob() },
   });
   const body = el('div', { class: 'drawer-body' });
+  const actions = el('div', { class: 'drawer-actions' }, [
+    el('button', {
+      type: 'button',
+      class: 'btn',
+      id: 'drawer-close',
+      on: { click: () => closeJob() },
+    }, [icon('x'), 'סגירה']),
+    el('button', {
+      type: 'button',
+      class: `btn fav${user.favorite ? ' is-on' : ''}`,
+      id: 'drawer-favorite',
+      'aria-pressed': user.favorite ? 'true' : 'false',
+      'aria-label': `${user.favorite ? '★ מועדף' : '☆ מועדף'}: ${job.title || job.role} – ${job.authority}`,
+      on: { click: () => {
+        ensureJob(job.id).favorite = !ensureJob(job.id).favorite;
+        save();
+        refreshDrawer('drawer-favorite');
+        noteListDirty();
+      }},
+    }, [icon(user.favorite ? 'heart-fill' : 'heart'), 'מועדף']),
+    el('button', {
+      type: 'button',
+      class: 'btn',
+      id: 'drawer-compare',
+      'aria-pressed': store.state.compareIds.includes(job.id) ? 'true' : 'false',
+      text: '＋ להשוואה',
+      on: { click: () => {
+        const next = !store.state.compareIds.includes(job.id);
+        if (!toggleCompare(job.id, next)) return;
+        noteListDirty();
+        refreshDrawer('drawer-compare');
+      }},
+    }),
+  ]);
   const head = el('div', { class: 'drawer-head' }, [
-    el('div', { class: 'row' }, [
-      el('button', {
-        type: 'button',
-        class: 'btn',
-        id: 'drawer-close',
-        on: { click: () => closeJob() },
-      }, [icon('x'), 'סגירה']),
-      el('button', {
-        type: 'button',
-        class: `btn fav${user.favorite ? ' is-on' : ''}`,
-        id: 'drawer-favorite',
-        'aria-pressed': user.favorite ? 'true' : 'false',
-        'aria-label': `${user.favorite ? '★ מועדף' : '☆ מועדף'}: ${job.title || job.role} – ${job.authority}`,
-        on: { click: () => {
-          ensureJob(job.id).favorite = !ensureJob(job.id).favorite;
-          save();
-          refreshDrawer('drawer-favorite');
-          noteListDirty();
-        }},
-      }, [icon(user.favorite ? 'heart-fill' : 'heart'), 'מועדף']),
-      el('button', {
-        type: 'button',
-        class: 'btn',
-        id: 'drawer-compare',
-        'aria-pressed': store.state.compareIds.includes(job.id) ? 'true' : 'false',
-        text: '＋ להשוואה',
-        on: { click: () => {
-          const next = !store.state.compareIds.includes(job.id);
-          if (!toggleCompare(job.id, next)) return;
-          noteListDirty();
-          refreshDrawer('drawer-compare');
-        }},
-      }),
-    ]),
     el('h2', { id: 'drawer-title', text: job.title || job.role }),
     el('p', { class: 'muted', text: `${job.authority} · ${labelOrUnknown(job.district)} · ${labelOrUnknown(job.authorityType)}` }),
     scoreNode(job),
@@ -298,7 +298,7 @@ export const paintDrawer = () => {
     role: 'dialog',
     'aria-modal': 'true',
     'aria-labelledby': 'drawer-title',
-  }, [head, body]);
+  }, [head, body, actions]);
   root.replaceChildren(backdrop, drawer);
 };
 export const refreshDrawer = (focusId) => {

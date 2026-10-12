@@ -37,7 +37,21 @@ const choiceRank = (choice, words) => {
   if (words.some((word) => label.includes(normName(word)))) return 1;
   return 0;
 };
+export const paintHomeChip = () => {
+  const label = document.getElementById('home-chip-label');
+  const chip = document.getElementById('home-chip');
+  if (!label || !chip) return;
+  if (!store.state.home) {
+    label.textContent = 'כתובת';
+    chip.setAttribute('aria-label', 'הגדרת כתובת בית');
+    return;
+  }
+  const place = shortAddress(store.state.home.label).split(',')[0].trim() || 'הבית';
+  label.textContent = place;
+  chip.setAttribute('aria-label', `כתובת הבית: ${place}. שינוי`);
+};
 export const paintHomeStatus = (focus) => {
+  paintHomeChip();
   const node = document.getElementById('home-status');
   if (!node || !store.state.home) return;
   node.replaceChildren(

@@ -24,7 +24,7 @@ export const renderCompare = () => {
   ]));
   if (!chosen.length) {
     view.append(el('div', { class: 'empty-state' }, [
-      el('div', { class: 'art-slot', 'data-art': 'empty-compare', 'aria-hidden': 'true' }),
+      el('img', { class: 'eclipse', src: 'img/eclipse.webp', alt: '', width: '280', height: '280', loading: 'lazy', decoding: 'async' }),
       el('p', { class: 'empty' }, [icon('columns-3'), 'בחרו 2-4 משרות להשוואה']),
     ]));
     return;

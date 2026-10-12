@@ -59,13 +59,13 @@ export const drawMarkers = (leaflet) => {
   groups.forEach((group) => {
     const best = group.map((job) => scoreJob(job).score).filter((score) => score != null).sort((a, b) => b - a)[0];
     const theme = getComputedStyle(document.documentElement);
-    const band = best == null ? 'none' : String(Math.max(1, Math.min(5, Math.round(best))));
+    const band = best == null ? 0 : Math.max(1, Math.min(5, Math.round(best)));
     const marker = leaflet.circleMarker([group[0].lat, group[0].lon], {
       radius: 8,
-      color: theme.getPropertyValue('--surface').trim(),
+      color: theme.getPropertyValue('--bg').trim(),
       weight: 2,
-      fillColor: theme.getPropertyValue(`--score-${band}`).trim(),
-      fillOpacity: 0.95,
+      fillColor: (band ? theme.getPropertyValue('--accent') : theme.getPropertyValue('--text-3')).trim(),
+      fillOpacity: band ? 0.35 + band * 0.13 : 0.9,
     });
     marker.bindPopup(markerPopup(group));
     marker.bindTooltip(group.length === 1 ? (group[0].title || group[0].role) : group[0].authority);

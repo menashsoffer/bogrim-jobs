@@ -80,16 +80,43 @@ export const completionText = (scored) => {
   if (!scored.rated) return 'טרם דורג';
   return `${scored.rated} מתוך ${scored.total} קריטריונים`;
 };
+const SVG_NS = 'http://www.w3.org/2000/svg';
+const svgNode = (name, attrs) => {
+  const node = document.createElementNS(SVG_NS, name);
+  Object.entries(attrs).forEach(([key, value]) => node.setAttribute(key, String(value)));
+  return node;
+};
+const scoreRing = (scored) => {
+  const track = svgNode('circle', { class: 'track', cx: 28, cy: 28, r: 26 });
+  const parts = [track];
+  if (scored.score == null) track.setAttribute('pathLength', '100');
+  else {
+    const amount = Math.max(0, Math.min(100, (scored.score / 5) * 100));
+    parts.push(svgNode('circle', {
+      class: 'arc',
+      cx: 28,
+      cy: 28,
+      r: 26,
+      pathLength: 100,
+      'stroke-dasharray': `${amount.toFixed(1)} 100`,
+    }));
+  }
+  const svg = svgNode('svg', { viewBox: '0 0 56 56', 'aria-hidden': 'true' });
+  parts.forEach((part) => svg.append(part));
+  return svg;
+};
 const scoreMeaning = 'ממוצע משוקלל של הקריטריונים שדירגת, 1–5';
 export const scoreNode = (job) => {
   const scored = scoreJob(job);
-  const headline = scored.score == null ? (scored.total ? 'טרם דורג' : '—') : formatScore(scored.score);
+  const headline = scored.score == null ? '—' : formatScore(scored.score);
   const showDetail = scored.rated > 0 || !scored.total;
   return el('p', {
     class: `score ${scoreBand(scored.score)}${scored.partial ? ' is-partial' : ''}`,
+    role: 'img',
     'aria-label': scoreMeaning,
     title: scoreMeaning,
   }, [
+    scoreRing(scored),
     el('strong', { text: headline }),
     showDetail ? el('span', { text: completionText(scored) }) : null,
     scored.partial ? el('span', { text: 'חלקי', title: 'חסרים דירוגים' }) : null,

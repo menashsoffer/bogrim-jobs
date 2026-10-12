@@ -7,6 +7,7 @@ import { formatDuration } from './dom.js';
 import { moovitAppUrl, moovitWebUrl } from './moovit.js';
 import { airKm, scoreJob, travelMinutes, travelSummary } from './score.js';
 import { refreshAfterStorage, showView } from './shell.js';
+import { paintHomeChip } from './travel.js';
 import { STORAGE_KEY, loadState, saveNow, store, takeRemoteState } from './store.js';
 
 const syncFromLocation = () => {
@@ -43,6 +44,13 @@ export const boot = async () => {
   if (count) count.textContent = `${store.data.meta && store.data.meta.count ? store.data.meta.count : store.jobs.length} משרות`;
   document.querySelectorAll('#nav [data-view]').forEach((button) => {
     button.addEventListener('click', () => showView(button.dataset.view));
+  });
+  const homeChip = document.getElementById('home-chip');
+  if (homeChip) homeChip.addEventListener('click', () => {
+    const tab = document.querySelector('#nav [data-view="settings"]');
+    if (tab) tab.click();
+    const address = document.getElementById('home-address');
+    if (address) address.focus();
   });
   document.getElementById('import-file').addEventListener('change', (event) => {
     const file = event.target.files && event.target.files[0];
@@ -85,6 +93,8 @@ export const boot = async () => {
     refreshAfterStorage();
   });
   renderListShell();
+  paintHomeChip();
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
   renderResults();
   updateCompareCount();
   const named = viewFromHash();

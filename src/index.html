@@ -2,7 +2,7 @@
 <html lang="he" dir="rtl">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="robots" content="noindex">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: https://tile.openstreetmap.org; connect-src 'self' https://nominatim.openstreetmap.org https://routing.openstreetmap.de https://api.openrouteservice.org; object-src 'none'; base-uri 'self'; form-action 'none'">
@@ -17,7 +17,10 @@
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <link rel="preload" href="data.json" as="fetch" crossorigin>
+  <link rel="preload" href="fonts/heebo-hebrew-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/heebo-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="img/hero-relief-m.webp" as="image" type="image/webp" media="(max-width: 759px)" fetchpriority="high">
+  <link rel="preload" href="img/hero-relief.webp" as="image" type="image/webp" media="(min-width: 760px)" fetchpriority="high">
   <link rel="stylesheet" href="styles-tokens.css">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="styles-structure.css">
@@ -25,27 +28,52 @@
 </head>
 <body>
   <a class="skip" href="#main">דילוג לתוכן</a>
-  <header class="site-header">
-    <div class="header-inner">
+  <header class="topbar">
+    <div class="topbar-in">
       <div class="brand">
-        <span class="brand-mark" aria-hidden="true">ב</span>
-        <div>
-          <h1>בוחר המשרות</h1>
-          <p class="brand-count" id="job-count">211 משרות</p>
-        </div>
+        <svg class="mark" viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="12.5"/><path d="M3.2 17.2c3.4-2.2 7-3.3 10.8-3.3s7.4 1.1 10.8 3.3"/></svg>
+        <h1>בוחר משרות</h1>
+        <p class="brand-count" id="job-count">211 משרות</p>
       </div>
+      <button type="button" class="home-btn" id="home-chip" aria-label="הגדרת כתובת בית"><svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="icons.svg#i-map-pin"/></svg><span id="home-chip-label">כתובת</span></button>
       <nav class="nav" id="nav" aria-label="ראשי">
-        <button type="button" data-view="list" class="is-active" aria-current="page"><svg class="icon icon-lg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="icons.svg#i-briefcase"/></svg><span>משרות</span></button>
-        <button type="button" data-view="compare"><svg class="icon icon-lg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="icons.svg#i-columns-3"/></svg><span>השוואה</span> <span id="compare-count">0</span></button>
-        <button type="button" data-view="map"><svg class="icon icon-lg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="icons.svg#i-map"/></svg><span>מפה</span></button>
-        <button type="button" data-view="settings"><svg class="icon icon-lg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="icons.svg#i-settings-2"/></svg><span>הגדרות</span></button>
-        <button type="button" data-view="privacy">פרטיות</button>
-        <button type="button" data-view="help">עזרה</button>
+        <div class="nav-tabs">
+          <button type="button" data-view="list" class="is-active" aria-current="page"><svg class="icon icon-lg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="icons.svg#i-briefcase"/></svg><span>משרות</span></button>
+          <button type="button" data-view="compare"><svg class="icon icon-lg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="icons.svg#i-columns-3"/></svg><span>השוואה</span> <span id="compare-count">0</span></button>
+          <button type="button" data-view="map"><svg class="icon icon-lg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="icons.svg#i-map"/></svg><span>מפה</span></button>
+          <button type="button" data-view="settings"><svg class="icon icon-lg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="icons.svg#i-settings-2"/></svg><span>הגדרות</span></button>
+        </div>
+        <div class="nav-more">
+          <button type="button" data-view="privacy">פרטיות</button>
+          <button type="button" data-view="help">עזרה</button>
+        </div>
       </nav>
     </div>
-    <p class="source-banner">הנתונים מתוך אתר <a href="https://www.bogrim-muni.com/jobs" rel="noopener noreferrer">בוגרים לשלטון המקומי</a>. זהו כלי אישי נפרד — בלי העיצוב ובלי הסמל של אתר המקור.</p>
   </header>
   <main id="main" tabindex="-1">
+    <section class="hero" id="welcome" aria-labelledby="hero-t">
+      <div class="hero-copy">
+        <p class="eyebrow rise r1"><span class="eyebrow-dot" aria-hidden="true"></span>מחזור 2026 · בוגרים לשלטון המקומי</p>
+        <h2 class="hero-title rise r2" id="hero-t">211 משרות.<br><span>בחירה אחת ברורה.</span></h2>
+        <p class="hero-sub rise r3">דרגו כל משרה לפי מה שחשוב לכם — התפקיד, המרחק מהבית, התנאים — וראו בבהירות מה באמת מתאים.</p>
+        <div class="hero-cta rise r4">
+          <button type="button" class="btn primary" id="welcome-start">להתחיל לדרג</button>
+          <button type="button" class="btn-link" id="welcome-dismiss">איך זה עובד</button>
+        </div>
+      </div>
+      <picture class="hero-art">
+        <source media="(min-width: 760px)" srcset="img/hero-relief.webp" width="2400" height="1100">
+        <img src="img/hero-relief-m.webp" alt="" width="900" height="900" fetchpriority="high">
+      </picture>
+    </section>
+    <section class="stats-wrap" id="hero-stats" aria-label="במספרים">
+      <dl class="stats rise r5">
+        <div><dt>משרות פתוחות</dt><dd id="stat-jobs">211</dd></div>
+        <div><dt>רשויות</dt><dd id="stat-authorities">126</dd></div>
+        <div><dt>מחוזות</dt><dd id="stat-districts">7</dd></div>
+      </dl>
+    </section>
+    <script src="welcome.js" defer></script>
     <section id="view-list" aria-label="רשימת משרות">
       <div id="boot-status" class="skeleton" role="status" aria-live="polite">
         <p>טוען משרות…</p>
@@ -102,7 +130,7 @@
     </section>
   </main>
   <footer class="site-footer">
-    <p>מקור הרשימה: <a href="https://www.bogrim-muni.com/jobs" rel="noopener noreferrer">bogrim-muni.com/jobs</a>. הכלים כאן לא מפעילים את אתר המקור ולא מייצגים אותו.</p>
+    <p class="source-banner">הנתונים מתוך אתר <a href="https://www.bogrim-muni.com/jobs" rel="noopener noreferrer">בוגרים לשלטון המקומי</a>. זהו כלי אישי נפרד — בלי העיצוב ובלי הסמל של אתר המקור. הדירוגים נשמרים רק במכשיר.</p>
   </footer>
   <div id="drawer-root"></div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>

@@ -1,11 +1,13 @@
-import { STATUSES, UNKNOWN, el, labelOrUnknown, showLimit, statusClass, toast } from './dom.js';
+import { STATUSES, el, labelOrUnknown, showLimit, toast } from './dom.js';
 import { distanceText, scoreText, timeText } from './filter-scale.js';
 import { mountSteppedRange, refreshFilterScales } from './filter-controls.js';
+import { mountHero } from './hero.js';
+import { paintHomeChip } from './travel.js';
 import { backIf, filtersFromHash, pushFilters } from './history.js';
-import { DOMAIN_ICON, STATUS_ICON, TYPE_ICON, icon } from './icons.js';
-import { openJob, refreshDrawer } from './job-drawer.js';
-import { scoreNode, travelSummary, visibleJobs } from './score.js';
-import { defaultFilters, ensureJob, peekJob, save, store } from './store.js';
+import { icon } from './icons.js';
+import { jobCard } from './job-card.js';
+import { visibleJobs } from './score.js';
+import { defaultFilters, save, store } from './store.js';
 
 const sortDirectionText = (direction) => (direction === 'asc' ? 'עולה' : 'יורד');
 const paintSortDirection = (button, direction) => {
@@ -21,7 +23,10 @@ export const noteListDirty = () => {
 export const jobPlace = (id) => [...document.querySelectorAll('button.card-open')].findIndex((button) => button.dataset.job === id);
 export const updateCompareCount = () => {
   const badge = document.getElementById('compare-count');
-  if (badge) badge.textContent = String(store.state.compareIds.length);
+  if (!badge) return;
+  const count = store.state.compareIds.length;
+  badge.textContent = String(count);
+  badge.hidden = count === 0;
 };
 export const toggleCompare = (id, on) => {
   const has = store.state.compareIds.includes(id);
@@ -62,6 +67,14 @@ export const clearFilters = () => {
   renderListShell();
   renderResults();
 };
+const paintDomainChips = () => {
+  const current = store.state.filters.domain || '';
+  document.querySelectorAll('#domain-chips .chip').forEach((chip) => {
+    const on = (chip.dataset.domain || '') === current;
+    chip.classList.toggle('is-on', on);
+    chip.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+};
 export const renderResults = () => {
   const host = document.getElementById('results');
   const count = document.getElementById('result-count');
@@ -73,11 +86,12 @@ export const renderResults = () => {
   const done = document.getElementById('filters-done');
   if (done) done.textContent = `הצג ${list.length} משרות`;
   host.replaceChildren();
+  paintDomainChips();
   if (!list.length) {
     const minScore = store.state.filters.minScore;
     const hideUnrated = minScore !== '' && minScore != null && !store.state.filters.includeUnrated;
     host.append(el('div', { class: 'empty-state' }, [
-      el('div', { class: 'art-slot', 'data-art': 'empty-results', 'aria-hidden': 'true' }),
+      el('img', { class: 'eclipse', src: 'img/eclipse.webp', alt: '', width: '280', height: '280', loading: 'lazy', decoding: 'async' }),
       el('p', { class: 'empty', text: 'אין משרות שמתאימות לסינון' }),
       hideUnrated ? el('p', { class: 'hint', text: 'משרות ללא ציון מוסתרות' }) : null,
       el('button', {
@@ -90,64 +104,34 @@ export const renderResults = () => {
     ]));
     return;
   }
-  list.forEach((job) => {
-    const user = peekJob(job.id);
-    const travel = travelSummary(job);
-    const open = el('button', {
-      type: 'button',
-      class: 'card-open',
-      data: { job: job.id },
-      on: { click: () => openJob(job.id, open) },
-    }, [
-      el('span', { class: 'card-title', text: job.title || job.role }),
-      el('span', { class: 'card-meta' }, [
-        icon(TYPE_ICON[job.authorityType] || 'map-pin', 'sm'),
-        `${job.authority} · ${labelOrUnknown(job.district)} · ${labelOrUnknown(job.authorityType)}`,
-      ]),
-    ]);
-    const favLabel = user.favorite ? '★ מועדף' : '☆ מועדף';
-    const jobName = `${job.title || job.role} – ${job.authority}`;
-    const fav = el('button', {
-      type: 'button',
-      class: `btn fav${user.favorite ? ' is-on' : ''}`,
-      'aria-pressed': user.favorite ? 'true' : 'false',
-      'aria-label': `${favLabel}: ${jobName}`,
-      on: { click: () => {
-        const record = ensureJob(job.id);
-        record.favorite = !record.favorite;
-        save();
-        renderResults();
-        if (store.openJobId === job.id) refreshDrawer();
-      }},
-    }, [icon(user.favorite ? 'heart-fill' : 'heart'), 'מועדף']);
-    const compare = el('input', {
-      type: 'checkbox',
-      'aria-label': `הוספה להשוואה: ${jobName}`,
-    });
-    compare.checked = store.state.compareIds.includes(job.id);
-    compare.addEventListener('change', () => {
-      const ok = toggleCompare(job.id, compare.checked);
-      if (!ok) compare.checked = false;
-    });
-    const card = el('article', { class: `card${user.status === 'פסול' ? ' is-rejected' : ''}` }, [
-      scoreNode(job),
-      open,
-      el('div', { class: 'chips' }, [
-        el('span', { class: 'chip role' }, [icon('briefcase', 'sm'), job.role || UNKNOWN]),
-        ...(job.categories || []).map((category) => el('span', { class: 'chip' }, [
-          icon(DOMAIN_ICON[category] || 'briefcase', 'sm'),
-          category,
-        ])),
-      ]),
-      travel ? el('p', { class: 'travel-line' }, [icon('car', 'sm'), travel]) : null,
-      el('div', { class: 'card-actions' }, [
-        fav,
-        el('span', { class: statusClass(user.status) }, [icon(STATUS_ICON[user.status] || 'circle-dashed', 'sm'), user.status]),
-        el('label', { class: 'check' }, [compare, icon('columns-3', 'sm'), 'השוואה']),
-      ]),
-    ]);
-    host.append(card);
+  const paintAll = () => list.forEach((job) => host.append(jobCard(job)));
+  const testing = new URLSearchParams(location.search).get('test') === '1';
+  if (testing) {
+    paintAll();
+    return;
+  }
+  const paintChunked = () => {
+    let generation = (host.dataset.generation || '0');
+    generation = String(Number(generation) + 1);
+    host.dataset.generation = generation;
+    const step = (start) => {
+      if (host.dataset.generation !== generation) return;
+      const end = Math.min(start + 8, list.length);
+      for (let index = start; index < end; index += 1) host.append(jobCard(list[index]));
+      if (end < list.length) requestAnimationFrame(() => step(end));
+    };
+    step(0);
+  };
+  if (!document.getElementById('welcome')) {
+    paintChunked();
+    return;
+  }
+  const observer = new IntersectionObserver((entries) => {
+    if (!entries.some((entry) => entry.isIntersecting)) return;
+    observer.disconnect();
+    paintChunked();
   });
+  observer.observe(host);
 };
 export const uniqueValues = (values) => [...new Set(values.filter(Boolean))].sort((a, b) => a.localeCompare(b, 'he'));
 export const closeFilterSheet = () => {
@@ -184,6 +168,7 @@ export const renderListShell = () => {
   const search = el('input', {
     id: 'search',
     type: 'search',
+    placeholder: 'חיפוש רשות, תפקיד או תחום',
     value: filters.q,
     on: { input: () => {
       clearTimeout(store.searchTimer);
@@ -201,7 +186,7 @@ export const renderListShell = () => {
     save();
     renderResults();
   });
-  const sort = el('select', { id: 'sort-key' });
+  const sort = el('select', { id: 'sort-key', 'aria-label': 'מיון' });
   [['score', 'ציון'], ['time', 'זמן נסיעה'], ['name', 'שם'], ['completeness', 'השלמה'], ['distance', 'מרחק']].forEach(([key, label]) => {
     const option = el('option', { value: key, text: label });
     if (key === store.state.sortKey) option.selected = true;
@@ -252,7 +237,6 @@ export const renderListShell = () => {
         on: { click: () => closeFilterSheet() },
       }, [icon('x', 'sm'), 'סגירה']),
     ]),
-    el('label', { class: 'field' }, [el('span', { class: 'field-label' }, [icon('search', 'sm'), 'חיפוש']), search]),
     selectField('filter-district', 'מחוז', uniqueValues(store.jobs.map((job) => labelOrUnknown(job.district))), filters.district, (value) => { store.state.filters.district = value; }),
     selectField('filter-type', 'סוג רשות', uniqueValues(store.jobs.map((job) => labelOrUnknown(job.authorityType))), filters.authorityType, (value) => { store.state.filters.authorityType = value; }),
     selectField('filter-role', 'תפקיד', uniqueValues(store.jobs.map((job) => job.role)), filters.role, (value) => { store.state.filters.role = value; }),
@@ -303,51 +287,39 @@ export const renderListShell = () => {
       on: { click: () => closeFilterSheet() },
     }),
   ]);
-  const welcome = store.state.welcomeSeen ? null : el('section', { class: 'panel welcome', id: 'welcome' }, [
-    el('div', { class: 'art-slot', 'data-art': 'welcome', 'aria-hidden': 'true' }),
-    el('h2', { text: 'בוחר המשרות' }),
-    el('p', { text: 'כלי אישי להשוואה ולדירוג של משרות הצוערים. הדירוגים נשמרים רק בדפדפן.' }),
-    el('ol', {}, [
-      el('li', { text: 'הגדירו כתובת בית כדי לראות זמן נסיעה.' }),
-      el('li', { text: 'דרגו את הקריטריונים שחשובים לכם.' }),
-      el('li', { text: 'השוו עד 4 משרות זו לצד זו.' }),
-    ]),
-    el('div', { class: 'row' }, [
-      el('button', {
-        type: 'button',
-        class: 'btn primary',
-        id: 'welcome-start',
-        text: 'להגדרת כתובת הבית',
-        on: { click: () => {
-          store.state.welcomeSeen = true;
-          save();
-          const node = document.getElementById('welcome');
-          if (node) node.remove();
-          const tab = document.querySelector('#nav [data-view="settings"]');
-          if (tab) tab.click();
-        }},
-      }),
-      el('button', {
-        type: 'button',
-        class: 'btn',
-        id: 'welcome-dismiss',
-        text: 'אחר כך',
-        on: { click: () => {
-          store.state.welcomeSeen = true;
-          save();
-          const node = document.getElementById('welcome');
-          if (node) node.remove();
-        }},
-      }),
-    ]),
-  ]);
-  const layout = el('div', { class: 'list-layout' }, [
+  const domains = uniqueValues(store.jobs.flatMap((job) => job.categories || []));
+  const chipButton = (domain, label) => el('button', {
+    type: 'button',
+    class: 'chip',
+    'data-domain': domain,
+    text: label,
+    on: { click: () => {
+      store.state.filters.domain = domain;
+      const select = document.getElementById('filter-domain');
+      if (select) select.value = domain;
+      save();
+      renderResults();
+    }},
+  });
+  const layout = el('div', { class: 'list-layout', id: 'jobs', tabindex: '-1' }, [
     filterBox,
     el('div', {}, [
+      el('div', { class: 'list-head' }, [
+        el('div', {}, [
+          el('h2', { class: 'list-title', id: 'list-t', text: 'המשרות' }),
+          el('p', { id: 'result-count', class: 'list-count', 'aria-live': 'polite', text: '' }),
+        ]),
+        el('div', { class: 'sort-pair ghost-btn' }, [sort, dirButton]),
+      ]),
       el('div', { class: 'toolbar' }, [
+        el('label', { class: 'search' }, [
+          icon('search', 'sm'),
+          el('span', { class: 'vh', text: 'חיפוש' }),
+          search,
+        ]),
         el('button', {
           type: 'button',
-          class: 'btn filter-toggle',
+          class: 'ghost-btn filter-toggle',
           id: 'filter-toggle',
           on: { click: () => {
             filterBox.classList.add('is-open');
@@ -356,14 +328,15 @@ export const renderListShell = () => {
             if (title) title.focus();
           }},
         }, [icon('sliders-horizontal', 'sm'), el('span', { text: 'סינון' })]),
-        el('p', { id: 'result-count', class: 'grow', 'aria-live': 'polite', text: '' }),
-        el('label', { class: 'field', style: null }, [el('span', { class: 'field-label', text: 'מיון' }), sort]),
-        dirButton,
+      ]),
+      el('div', { class: 'chips', id: 'domain-chips', role: 'group', 'aria-label': 'תחום' }, [
+        chipButton('', 'הכל'),
+        ...domains.map((domain) => chipButton(domain, domain)),
       ]),
       el('button', {
         type: 'button',
         id: 'home-hint',
-        class: 'btn',
+        class: 'btn-link',
         hidden: Boolean(store.state.home),
         text: 'הגדרת כתובת בית',
         on: { click: () => {
@@ -377,8 +350,9 @@ export const renderListShell = () => {
       el('div', { id: 'results', class: 'results' }),
     ]),
   ]);
-  if (welcome) view.append(welcome);
+  mountHero().forEach((node) => view.append(node));
   view.append(layout);
+  paintHomeChip();
   const hint = document.getElementById('home-hint');
   if (hint) hint.hidden = Boolean(store.state.home);
 };
