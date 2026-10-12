@@ -80,6 +80,19 @@ def run_viewport(page, base, width, height):
     )
     page.locator(".leaflet-popup").wait_for()
     check(page.locator("#drawer").count() == 0, "marker opened the drawer without a popup choice")
+    shown = page.evaluate(
+        """() => {
+          const out = {};
+          window.__map.eachLayer((layer) => {
+            if (!layer.getTooltip || !layer.getTooltip()) return;
+            layer.openPopup();
+            const node = layer.getPopup().getContent();
+            out[layer.getTooltip().getContent()] = Boolean(node.querySelector('.badge-showcase'));
+          });
+          return out;
+        }"""
+    )
+    check(shown.get("אשדוד") is True and shown.get("שפיר") is False, f"showcase badge in popups: {shown}")
     map_on_top = page.evaluate(
         """() => {
           const zoom = document.querySelector('.leaflet-control-zoom');
